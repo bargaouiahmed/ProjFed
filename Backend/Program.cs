@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connStr));
-    
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

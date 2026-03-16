@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Database\" />
-    <Folder Include="Database\Auth\" />
-    <Folder Include="Database\Auth\Entities\" />
-    <Folder Include="Database\Auth\Serialized\" />
+    <Folder Include="Auth\" />
+    <Folder Include="Auth\Controllers\" />
+    <Folder Include="Auth\Entities\" />
+    <Folder Include="Auth\Services\" />
   </ItemGroup>
 
 </Project>
