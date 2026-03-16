@@ -14,4 +14,11 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Database\" />
+    <Folder Include="Database\Auth\" />
+    <Folder Include="Database\Auth\Entities\" />
+    <Folder Include="Database\Auth\Serialized\" />
+  </ItemGroup>
+
 </Project>
