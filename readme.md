@@ -11,3 +11,4 @@ tailwindcss
 tanstack query
 tanstack router
 motion
+formik
