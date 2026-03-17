@@ -1,4 +1,4 @@
-import Login from "@/components/examples/login";
+import SignIn from "@/components/examples/signIn";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth")({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/auth")({
 function RouteComponent() {
   return (
     <div>
-      auth <Login />
+      <SignIn />
     </div>
   );
 }
