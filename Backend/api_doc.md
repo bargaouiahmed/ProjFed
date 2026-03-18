@@ -115,9 +115,3 @@ I only tested Register student, login and register uni admin
 more testing to follow tomorrow
 
 i'll document errors tomorrow as well
-
-
-```json
-
-
-```
