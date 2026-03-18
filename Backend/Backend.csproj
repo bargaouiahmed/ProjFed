@@ -24,6 +24,7 @@
     <Folder Include="Auth\Controllers\" />
     <Folder Include="Auth\DataTransferObjects\Responses\" />
     <Folder Include="Auth\Entities\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
