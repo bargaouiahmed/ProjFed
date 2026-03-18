@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Auth.Services;
 
-public class AuthService(AppDbContext db, IEmailService emailService) :IAuthService
+public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEnvironment env) :IAuthService
 {
     public async Task EnsureSuperAdminExistsAsync()
     {
@@ -105,18 +105,23 @@ public class AuthService(AppDbContext db, IEmailService emailService) :IAuthServ
         var fileExtension = Path.GetExtension(document.FileName).ToLowerInvariant();
         if(!allowedExtensions.Contains(fileExtension))throw new InvalidDataException("Unsupported file type");
         if(document.Length>25 *1024 *1024) throw new InvalidDataException("Document size limit exceeded, make sure the uploaded document is less than 25 mbs");
-        var uploadDir = Path.Combine("uploads","institutes", instituteName,"admindocuments","proofdocuments");
-        if (!Directory.Exists(uploadDir))
+        var webRootPath = env.WebRootPath;
+        if (string.IsNullOrWhiteSpace(webRootPath))
         {
-            Directory.CreateDirectory(uploadDir);
+            webRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
         }
+
+        var relativeUploadDir = Path.Combine("uploads", "institutes", instituteName, "admindocuments", "proofdocuments");
+        var uploadDir = Path.Combine(webRootPath, relativeUploadDir);
+        Directory.CreateDirectory(uploadDir);
+
         var filename = Guid.NewGuid().ToString()+fileExtension;
         var filePath = Path.Combine(uploadDir, filename);
         using(var stream=new FileStream(filePath, FileMode.Create))
         {
             await document.CopyToAsync(stream);
         }
-        return filePath;
+        return "/" + Path.Combine(relativeUploadDir, filename).Replace("\\", "/");
         
     }
     public async Task RegisterStudent(RegisterStudentRequest request)
@@ -198,9 +203,11 @@ public class AuthService(AppDbContext db, IEmailService emailService) :IAuthServ
 
     public async Task ActivateAccount(Guid identityId, string activationToken)
     {
+        Console.WriteLine($"Activating account for IdentityId: {identityId}, ActivationToken: {activationToken}");
         var identity = await db.Identities.FirstOrDefaultAsync(i => i.Id == identityId);
-
-        if (identity == null || identity.ActivateAccountToken != activationToken || identity.ActivateAccountTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Invalid activation token or token expired");
+        if(identity==null) throw new InvalidOperationException("Invalid activation link");
+        if(identity.IsActive) throw new InvalidOperationException("This account is already active");
+        if(identity.ActivateAccountToken != activationToken || identity.ActivateAccountTokenExpiresAt <DateTime.UtcNow) throw new InvalidOperationException("Invalid activation token or token expired");
 
         identity.IsActive = true;
         identity.ActivateAccountToken = null;

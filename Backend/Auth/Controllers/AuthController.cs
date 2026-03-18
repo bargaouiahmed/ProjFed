@@ -56,12 +56,13 @@ namespace Backend.Auth.Controllers
             }
 
         }
-        [HttpPost("auth/activate-account")]
-        public async Task<ActionResult> ActivateAccount([FromQuery] Guid identityId, [FromQuery] string token)
+        [HttpGet("student/auth/activate-account")]
+        public async Task<ActionResult> ActivateAccount([FromQuery] string id, [FromQuery] string token)
         {
+            token = token.Replace(' ', '+');
             try
             {
-                await authService.ActivateAccount(identityId, token);
+                await authService.ActivateAccount(new Guid(id), token);
                 return Ok("Account activated successfully");
             }
             catch (Exception ex)
