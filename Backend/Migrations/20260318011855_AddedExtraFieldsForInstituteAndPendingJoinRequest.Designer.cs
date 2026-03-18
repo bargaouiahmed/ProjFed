@@ -3,6 +3,7 @@ using System;
 using Backend.Database.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318011855_AddedExtraFieldsForInstituteAndPendingJoinRequest")]
+    partial class AddedExtraFieldsForInstituteAndPendingJoinRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,9 +36,6 @@ namespace Backend.Migrations
                         .HasColumnType("text");
 
                     b.Property<Guid>("IdentityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("IdentityReviewedBy")
                         .HasColumnType("uuid");
 
                     b.Property<string>("InstituteCity")
@@ -70,8 +70,6 @@ namespace Backend.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IdentityId");
-
-                    b.HasIndex("IdentityReviewedBy");
 
                     b.ToTable("PendingJoinRequests");
                 });
@@ -394,14 +392,7 @@ namespace Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Auth.Entities.AuthIdentity", "ReviewedBy")
-                        .WithMany()
-                        .HasForeignKey("IdentityReviewedBy")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("Identity");
-
-                    b.Navigation("ReviewedBy");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.AdminUser", b =>

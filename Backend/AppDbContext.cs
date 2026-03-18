@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
+using Backend.Admin.Entities;
 using Backend.Auth.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProfessorUniClass> ProfessorUniClasses { get; set; } = null!;
     public DbSet<UniClass> UniClasses { get; set; } = null!;
 
-
+    public DbSet<PendingJoinRequest> PendingJoinRequests { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -25,7 +27,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<AuthIdentity>(identity =>
         {
             identity.HasIndex(i => i.Email).IsUnique();
-            identity.HasIndex(i=>i.RefreshToken).IsUnique();
+            identity.HasIndex(i => i.RefreshToken).IsUnique();
         });
         modelBuilder.Entity<AdminUser>(admin =>
         {
@@ -40,7 +42,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne()
                 .HasForeignKey<Professor>(p => p.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
         });
         modelBuilder.Entity<Student>(student =>
         {
@@ -48,7 +50,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne()
                 .HasForeignKey<Student>(s => s.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             student.HasOne(s => s.UniClass)
                 .WithMany(c => c.Students)
                 .HasForeignKey(s => s.UniClassId)
@@ -61,7 +63,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithOne()
                 .HasForeignKey<UniUser>(u => u.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
-     
+
             uniUser.HasOne(u => u.Institute)
                 .WithMany(i => i.Admins)
                 .HasForeignKey(u => u.InstutiteId)
@@ -73,7 +75,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany(p => p.Classes)
                 .HasForeignKey(puc => puc.ProfId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             profUniClass.HasOne(puc => puc.UniClass)
                 .WithMany(c => c.Professors)
                 .HasForeignKey(puc => puc.UniClassId)
@@ -86,21 +88,33 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(spc => spc.ClassMetadataId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-            modelBuilder.Entity<ClassMetadata>(classMetadata =>
-            {
-                classMetadata.HasOne(cm => cm.Institute)
-                    .WithMany(i => i.AvailableClassSelection)
-                    .HasForeignKey(cm => cm.InstituteId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+        modelBuilder.Entity<ClassMetadata>(classMetadata =>
+        {
+            classMetadata.HasOne(cm => cm.Institute)
+                .WithMany(i => i.AvailableClassSelection)
+                .HasForeignKey(cm => cm.InstituteId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
-            modelBuilder.Entity<UniClass>(uniClass =>
-            {
-                uniClass.HasOne(uc => uc.Metadata)
-                    .WithMany(cm => cm.Classes)
-                    .HasForeignKey(uc => uc.MetadataId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
+        modelBuilder.Entity<UniClass>(uniClass =>
+        {
+            uniClass.HasOne(uc => uc.Metadata)
+                .WithMany(cm => cm.Classes)
+                .HasForeignKey(uc => uc.MetadataId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PendingJoinRequest>(pendingJoinRequest =>
+        {
+            pendingJoinRequest.HasOne(pjr => pjr.Identity)
+                .WithMany()
+                .HasForeignKey(pjr => pjr.IdentityId)
+                .OnDelete(DeleteBehavior.Cascade);
+            pendingJoinRequest.HasOne(pjr => pjr.ReviewedBy)
+                .WithMany()
+                .HasForeignKey(pjr => pjr.IdentityReviewedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
 
 
     }

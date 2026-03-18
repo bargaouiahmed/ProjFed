@@ -19,7 +19,22 @@ namespace Backend.Auth.Controllers
                 await authService.RegisterStudent(request);
 
                 return Ok("Registration successful, check your email for activation link");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error:{ex.Message}");
+            }
+        }
+        [HttpPost("institute/auth/admin/register")]
+        public async Task<ActionResult<string>> RegisterInstituteAdmin([FromForm] RegisterNewInstituteRequest request)
+        {
+            try
+            {
+                await authService.RegisterNewInstituteHead(request);
+
+                return Ok("Your registration request has been submitted successfully. We will review your application and get back to you shortly.");
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }
@@ -34,7 +49,8 @@ namespace Backend.Auth.Controllers
                 var tokens = await authService.Login(request);
 
                 return Ok(tokens);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }
@@ -47,7 +63,8 @@ namespace Backend.Auth.Controllers
             {
                 await authService.ActivateAccount(identityId, token);
                 return Ok("Account activated successfully");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }
@@ -60,7 +77,8 @@ namespace Backend.Auth.Controllers
             {
                 await authService.RequestPasswordReset(email);
                 return Ok("Password reset email sent successfully");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }
@@ -73,7 +91,8 @@ namespace Backend.Auth.Controllers
             {
                 await authService.ResetPassword(request);
                 return Ok("Password reset successfully");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }
@@ -86,7 +105,8 @@ namespace Backend.Auth.Controllers
             {
                 await authService.ResendActivationEmail(email);
                 return Ok("Activation email resent successfully");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }
@@ -99,7 +119,8 @@ namespace Backend.Auth.Controllers
             {
                 var newTokens = await authService.RefreshToken(request);
                 return Ok(newTokens);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest($"Error:{ex.Message}");
             }

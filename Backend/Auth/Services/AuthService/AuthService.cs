@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using Backend.Admin.Entities;
 using Backend.Auth.DataTransferObjects.Requests;
 using Backend.Auth.DataTransferObjects.Responses;
 using Backend.Auth.Entities;
@@ -45,8 +46,79 @@ public class AuthService(AppDbContext db, IEmailService emailService) :IAuthServ
 
 
 
+    public async Task RegisterNewInstituteHead(RegisterNewInstituteRequest request)
+    {
+        if(await db.Identities.AnyAsync(i=>i.Email == request.AdminEmail))throw new InvalidOperationException("This email already exists");
+        if(await db.Institutes.AnyAsync(i=>i.Name.ToLower() == request.Name.ToLower()))throw new InvalidOperationException("It appears this institute is already registered");
+        
+        
+        //first we upload the documents
+        var identityDocumentPath=string.Empty;
+         var proofDocumentPath   =string.Empty;
+        try
+        {
+             identityDocumentPath+= await UploadDocument(request.IdentityDocument,request.Name);
+              proofDocumentPath+= await UploadDocument(request.ProofDocument,request.Name);
+
+        }catch(Exception Ex)
+        {
+            throw new InvalidDataException(Ex.Message);
+        }
+        //initialize the identity and the join request
+        AuthIdentity identity = new()
+        {
+            Email=request.AdminEmail,
+            Role="uni_admin",
+            Status="pending",
+            IsActive=false
+        };
+        if(!identity.HashPassword(request.AdminPassword))throw new InvalidOperationException("An error occured trying to create your account");
+        PendingJoinRequest joinRequest = new()
+        {
+            Identity=identity,
+            Message="",
+            ProofDocumentUrl=proofDocumentPath,
+            IdentityDocumentUrl=identityDocumentPath,
+            InstituteName=request.Name,
+            InstituteCountry=request.Country,
+            InstituteCity=request.City,
+            InstitutePostalCode=request.PostalCode
+        };
+        //then we create the UniUser user and save everything to the database
+        UniUser uniAdmin = new()
+        {
+            Identity = identity,
+            Firstname = request.AdminFirstname,
+            Lastname = request.AdminLastname
+        };
+        db.Add(identity);
+        db.Add(joinRequest);
+        db.Add(uniAdmin);
+        await db.SaveChangesAsync();
+    }
 
 
+    //helper for file uploads
+    private async Task<string> UploadDocument(IFormFile document, string instituteName)
+    {
+        var allowedExtensions=new[] {".jpg",".jpeg",".png",".pdf"};
+        var fileExtension = Path.GetExtension(document.FileName).ToLowerInvariant();
+        if(!allowedExtensions.Contains(fileExtension))throw new InvalidDataException("Unsupported file type");
+        if(document.Length>25 *1024 *1024) throw new InvalidDataException("Document size limit exceeded, make sure the uploaded document is less than 25 mbs");
+        var uploadDir = Path.Combine("uploads","institutes", instituteName,"admindocuments","proofdocuments");
+        if (!Directory.Exists(uploadDir))
+        {
+            Directory.CreateDirectory(uploadDir);
+        }
+        var filename = Guid.NewGuid().ToString()+fileExtension;
+        var filePath = Path.Combine(uploadDir, filename);
+        using(var stream=new FileStream(filePath, FileMode.Create))
+        {
+            await document.CopyToAsync(stream);
+        }
+        return filePath;
+        
+    }
     public async Task RegisterStudent(RegisterStudentRequest request)
     {
         if(await db.Identities.AnyAsync(i=>i.Email==request.Email))throw new InvalidOperationException("This email is already associated with a different account");

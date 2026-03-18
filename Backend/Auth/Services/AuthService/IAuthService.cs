@@ -18,4 +18,5 @@ public interface IAuthService
     public Task ResetPassword(ResetPasswordRequest request);
     public Task ResendActivationEmail(string email);
     public Task<RefreshTokenResponse> RefreshToken(RefreshTokenRequest request);
+    public Task RegisterNewInstituteHead(RegisterNewInstituteRequest request);
 }

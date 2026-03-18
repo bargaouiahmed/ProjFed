@@ -18,44 +18,46 @@ public class EmailService : IEmailService
 
     public async Task<bool> SendEmail(string to, string subject, string message)
     {
-        using(var client= new SmtpClient(SmtpHost, SmtpPort))
+        using (var client = new SmtpClient(SmtpHost, SmtpPort))
         {
-            client.EnableSsl=SmtpSecure;
+            client.EnableSsl = SmtpSecure;
             client.Timeout = 10000;
             client.Credentials = new NetworkCredential(SmtpUser, SmtpPass);
 
-        var fromAddress = new MailAddress(SmtpUser);
-        var toAddress = new MailAddress(to);
+            var fromAddress = new MailAddress(SmtpUser);
+            var toAddress = new MailAddress(to);
 
-        MailMessage mailMessage = new();
-        mailMessage.From = fromAddress;
-        mailMessage.To.Add(toAddress);
-        mailMessage.Subject=subject;
-        mailMessage.Body=message;
+            MailMessage mailMessage = new();
+            mailMessage.From = fromAddress;
+            mailMessage.To.Add(toAddress);
+            mailMessage.Subject = subject;
+            mailMessage.Body = message;
 
-    
-        try{
 
-        await client.SendMailAsync(mailMessage);
-        return true;
-        }catch(Exception ex)
+            try
+            {
+
+                await client.SendMailAsync(mailMessage);
+                return true;
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
             }
 
 
-            
-            
-        }
-        
 
-        
+
+        }
+
+
+
     }
 
 
-    
 
-    
+
+
 
 }

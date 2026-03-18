@@ -45,7 +45,7 @@ public class AuthIdentity
     }
     public bool CompareHash(string password)
     {
-        return new PasswordHasher<AuthIdentity>().VerifyHashedPassword(this, HashedPassword, password)==PasswordVerificationResult.Success;
+        return new PasswordHasher<AuthIdentity>().VerifyHashedPassword(this, HashedPassword, password) == PasswordVerificationResult.Success;
     }
 
 
@@ -71,7 +71,7 @@ public class AuthIdentity
     }
 
 
-    public string GeneratePasswordResetToken(int length=6)
+    public string GeneratePasswordResetToken(int length = 6)
     {
         var randomBytes = new byte[length];
         using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
@@ -79,7 +79,7 @@ public class AuthIdentity
             rng.GetBytes(randomBytes);
         }
 
-        PasswordResetToken = Convert.ToBase64String(randomBytes).Substring(0, length).Replace("+", "A").Replace("/", "B").Replace("=", "C"); 
+        PasswordResetToken = Convert.ToBase64String(randomBytes).Substring(0, length).Replace("+", "A").Replace("/", "B").Replace("=", "C");
         PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
         return PasswordResetToken;
     }
