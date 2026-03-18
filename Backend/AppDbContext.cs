@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<AuthIdentity>(identity =>
         {
             identity.HasIndex(i => i.Email).IsUnique();
+            identity.HasIndex(i=>i.RefreshToken).IsUnique();
         });
         modelBuilder.Entity<AdminUser>(admin =>
         {

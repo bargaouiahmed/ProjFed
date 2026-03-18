@@ -1,4 +1,5 @@
 using System;
+using Backend.Auth.DataTransferObjects.Requests;
 using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Auth.Entities;
@@ -25,7 +26,7 @@ public class AuthIdentity
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
 
-    public string Status { get; set; } = "pending"; //["pending","accepted","rejected"]
+    public string? Status { get; set; } = "pending"; //["pending","accepted","rejected"]
 
     public DateTime CreatedAt = DateTime.UtcNow;
     public DateTime UpdatedAt = DateTime.UtcNow;
@@ -46,6 +47,44 @@ public class AuthIdentity
     {
         return new PasswordHasher<AuthIdentity>().VerifyHashedPassword(this, HashedPassword, password)==PasswordVerificationResult.Success;
     }
+
+
+
+    public string GenerateActivateAccountToken()
+    {
+        ActivateAccountToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        ActivateAccountTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
+        return ActivateAccountToken;
+    }
+
+    public string GenerateRefreshToken(int length = 64)
+    {
+        var randomBytes = new byte[length];
+        using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+
+        RefreshToken = Convert.ToBase64String(randomBytes).Substring(0, length).Replace("+", "A").Replace("/", "B").Replace("=", "C");
+        RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        return RefreshToken;
+    }
+
+
+    public string GeneratePasswordResetToken(int length=6)
+    {
+        var randomBytes = new byte[length];
+        using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+
+        PasswordResetToken = Convert.ToBase64String(randomBytes).Substring(0, length).Replace("+", "A").Replace("/", "B").Replace("=", "C"); 
+        PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(15);
+        return PasswordResetToken;
+    }
+
+
 
 
 }

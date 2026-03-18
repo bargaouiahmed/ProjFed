@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
+        DOTNET_ENVIRONMENT: ${DOTNET_ENVIRONMENT:-Production}
+        APP_PORT: ${APP_PORT:-8080}
+    container_name: projfed-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DOTNET_ENVIRONMENT: ${DOTNET_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:${APP_PORT:-8080}
+      DB_CONN_URL: ${DB_CONN_URL}
+    ports:
+      - "${APP_PORT:-8080}:${APP_PORT:-8080}"
