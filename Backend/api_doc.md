@@ -2,7 +2,7 @@
 
 ## Base URL
 
-`http://localhost:8080/api/v0 or http://localhost:5193`
+`http://localhost:8080/api/v0 if using docker or http://localhost:5193/api/v0 if not`
 
 ---
 
@@ -110,16 +110,14 @@
 
 ---
 
-> All endpoints return errors in the format:
->
-> ```json
-> {
->   "type": "...",
->   "title": "One or more validation errors occurred.",
->   "status": 400,
->   "errors": {
->     "FieldName": ["Error message"]
->   },
->   "traceId": "..."
-> }
-> ```
+I only tested Register student, login and register uni admin
+
+more testing to follow tomorrow
+
+i'll document errors tomorrow as well
+
+
+```json
+
+
+```
