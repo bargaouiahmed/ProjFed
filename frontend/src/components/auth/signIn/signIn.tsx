@@ -13,7 +13,7 @@ import useLogin from "@/querys/useLogin";
 export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
   const { mutate: login, isPending } = useLogin();
 
-  const [showPassword, setShowPasswod] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <main className="flex-1 flex flex-col justify-center items-center px-6 py-12 md:px-20 shadow-md dark:shadow-xl">
       <div className="w-full max-w-112.5 flex flex-col gap-8">
@@ -46,7 +46,7 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
                 rightElement={
                   <button
                     type="button"
-                    onClick={() => setShowPasswod((p) => !p)}
+                    onClick={() => setShowPassword((p) => !p)}
                   >
                     {showPassword ? (
                       <IconEyeOff size={18} />
@@ -57,7 +57,7 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
                 }
               />
               <Link
-                to="/"
+                to="/forget-password"
                 className="text-sm underline text-indigo-400 hover:text-indigo-600 self-start"
               >
                 forgot password?

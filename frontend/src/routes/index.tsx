@@ -1,4 +1,3 @@
-import Example from "@/components/examples/example";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
@@ -6,10 +5,5 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-  return (
-    <main>
-      home
-      <Example />
-    </main>
-  );
+  return <main>home</main>;
 }
