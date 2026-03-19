@@ -15,9 +15,11 @@ import { validation } from "./validation";
 import { Heading } from "../heading";
 
 import { FormikInput } from "@/components/formikInput";
+import useRegisterStudent from "@/querys/useRegisterStudent";
 
 export default function SignIn({ goToSignIn }: { goToSignIn: () => void }) {
   const [showPassword, setShowPasswod] = useState(false);
+  const { mutate: registerStudent, isPending } = useRegisterStudent();
   return (
     <main className="flex-1 flex flex-col justify-center items-center px-6 py-6 md:px-20 shadow-md dark:shadow-xl">
       <div className="w-full max-w-112.5 flex flex-col gap-8">
@@ -26,17 +28,18 @@ export default function SignIn({ goToSignIn }: { goToSignIn: () => void }) {
           <Heading title="Create your account" />
         </header>
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{
+            email: "",
+            password: "",
+            firstname: "",
+            lastname: "",
+          }}
           validate={validation}
-          onSubmit={(values, { setSubmitting }) => {
-            setSubmitting(true);
-            setTimeout(() => {
-              console.log(values);
-              setSubmitting(false);
-            }, 1500);
+          onSubmit={(values) => {
+            registerStudent({ ...values });
           }}
         >
-          {({ isSubmitting }) => (
+          {() => (
             <Form className="flex flex-col gap-3">
               <div className="flex  justify-center gap-2 ">
                 <Button variant={"outline"} className="w-1/2" type="button">
@@ -48,14 +51,14 @@ export default function SignIn({ goToSignIn }: { goToSignIn: () => void }) {
               </div>
 
               <FormikInput
-                name="firstName"
+                name="firstname"
                 label="firstName"
                 type="text"
                 placeholder="abdelkodous"
                 icon={<IconUser />}
               />
               <FormikInput
-                name="lastName"
+                name="lastname"
                 label="lastName"
                 type="text"
                 placeholder="ben younes"
@@ -98,10 +101,10 @@ export default function SignIn({ goToSignIn }: { goToSignIn: () => void }) {
               </p>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isPending}
                 className="w-full mt-2"
               >
-                {isSubmitting ? (
+                {isPending ? (
                   <IconLoader className="animate-spin" />
                 ) : (
                   "Sign Up"

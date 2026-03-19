@@ -2,14 +2,19 @@ import type { FormikValues } from "formik";
 
 export const validation = (values: FormikValues) => {
   function isValidPassword(password: string) {
-    return /[A-Z]/.test(password) && /[^A-Za-z0-9]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+
+    return hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
   }
 
   const errors: {
     email?: string;
     password?: string;
-    firstName?: string;
-    lastName?: string;
+    firstname?: string;
+    lastname?: string;
   } = {};
 
   if (!values.email) {
@@ -26,12 +31,12 @@ export const validation = (values: FormikValues) => {
     errors.password = "Must include 1 uppercase & 1 special character";
   }
 
-  if (!values.firstName) {
-    errors.firstName = "firstName is required";
+  if (!values.firstname) {
+    errors.firstname = "firstName is required";
   }
 
-  if (!values.lastName) {
-    errors.lastName = "lastName is required";
+  if (!values.lastname) {
+    errors.lastname = "lastName is required";
   }
   return errors;
 };
