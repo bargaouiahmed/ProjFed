@@ -8,7 +8,7 @@ public class SubjectPerClass
     public string Subject = string.Empty;
     public Guid ClassMetadataId { get; set; }
     public ClassMetadata ClassMetadata { get; set; } = new();
-    public int Semester { get; set; }
+    public int Term { get; set; }
     public bool IsOptional { get; set; }
 
 

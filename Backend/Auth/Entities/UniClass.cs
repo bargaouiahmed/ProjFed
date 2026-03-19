@@ -12,8 +12,8 @@ public class UniClass
 
     public int Number { get; set; }
 
-    public int Semester { get; set; }
-    public ICollection<ProfessorUniClass> Professors { get; set; } = [];
+    public int Term { get; set; }
+    public ICollection<ProfessorUniClassSubject> Professors { get; set; } = [];
     public ICollection<Student> Students { get; set; } = [];
     public string ClassCode { get; set; } = string.Empty;
 }

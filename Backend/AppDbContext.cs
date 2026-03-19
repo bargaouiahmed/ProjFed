@@ -16,7 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ClassMetadata> ClassMetadata { get; set; } = null!;
     public DbSet<SubjectPerClass> SubjectPerClasses { get; set; } = null!;
     public DbSet<UniUser> UniUsers { get; set; } = null!;
-    public DbSet<ProfessorUniClass> ProfessorUniClasses { get; set; } = null!;
+    public DbSet<ProfessorUniClassSubject> ProfessorUniClassSubjects { get; set; } = null!;
     public DbSet<UniClass> UniClasses { get; set; } = null!;
 
     public DbSet<PendingJoinRequest> PendingJoinRequests { get; set; } = null!;
@@ -70,16 +70,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(u => u.InstutiteId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        modelBuilder.Entity<ProfessorUniClass>(profUniClass =>
+        modelBuilder.Entity<ProfessorUniClassSubject>(profUniClass =>
         {
-            profUniClass.HasOne(puc => puc.Prof)
-                .WithMany(p => p.Classes)
-                .HasForeignKey(puc => puc.ProfId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            profUniClass.HasOne(puc=>puc.Prof)
+            .WithMany(p=>p.Classes)
+            .HasForeignKey(puc=>puc.ProfId)
+            .OnDelete(DeleteBehavior.Cascade);
             profUniClass.HasOne(puc => puc.UniClass)
                 .WithMany(c => c.Professors)
                 .HasForeignKey(puc => puc.UniClassId)
+                .OnDelete(DeleteBehavior.Cascade);
+            profUniClass.HasOne(puc => puc.SubjectPerClass)
+                .WithMany()
+                .HasForeignKey(puc => puc.SubjectPerClassId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<SubjectPerClass>(subjectPerClass =>

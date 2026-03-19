@@ -12,7 +12,7 @@ public class Professor
     public string Lastname { get; set; } = string.Empty;
     public string? PfpUrl { get; set; }
 
-    public ICollection<ProfessorUniClass> Classes { get; set; } = [];
+    public ICollection<ProfessorUniClassSubject> Classes { get; set; } = [];
 
 
 }
