@@ -233,7 +233,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         identity.UpdatedAt = DateTime.UtcNow;
 
         string subject = "Password Reset Request";
-        string message = $"A password reset request has been initiated for your account. To reset your password, please visit the following link: {Environment.GetEnvironmentVariable("FRONTEND_BASE_URL")}/reset-password?token={resetToken}&id={identity.Id}";
+        string message = $"A password reset request has been initiated for your account. To reset your password, please visit the following link: {Environment.GetEnvironmentVariable("CLIENT_URL")}/reset-password?token={resetToken}&id={identity.Id}";
 
         var result = await emailService.SendEmail(email, subject, message);
         if (!result) throw new InvalidOperationException("An error occured trying to send the password reset email, please try again later");
@@ -246,7 +246,10 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
     public async Task ResetPassword(ResetPasswordRequest request)
     {        var identity = await db.Identities.FirstOrDefaultAsync(i => i.Id == request.IdentityId); 
         if (identity == null || identity.PasswordResetToken != request.ResetToken || identity.PasswordResetTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Invalid password reset token or token expired");
-        identity.HashPassword(request.NewPassword);
+        if(!identity.HashPassword(request.NewPassword))
+        {
+            throw new InvalidOperationException("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+        }
         identity.PasswordResetToken = null;
         identity.PasswordResetTokenExpiresAt = null;
         identity.UpdatedAt = DateTime.UtcNow;
