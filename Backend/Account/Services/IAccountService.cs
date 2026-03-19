@@ -8,4 +8,5 @@ public interface IAccountService
 {
 
 public Task<SerializedUser> GetUserByIdAsync(GetUserByIdRequest request);
+public Task<SerializedUser> UpdateAccountAsync(UpdateAccountRequest request, Guid identityId, string role);
 }

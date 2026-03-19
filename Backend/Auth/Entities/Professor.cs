@@ -9,7 +9,7 @@ public class Professor
     public AuthIdentity Identity { get; set; } = new();
 
     public string Firstname { get; set; } = string.Empty;
-    public string Lasttname { get; set; } = string.Empty;
+    public string Lastname { get; set; } = string.Empty;
     public string? PfpUrl { get; set; }
 
     public ICollection<ProfessorUniClass> Classes { get; set; } = [];
