@@ -62,13 +62,14 @@ namespace Backend.Admin.Controllers
         }
 
         
-         [HttpPut("users")]
+         [HttpPut("users/{userId}/reset-password")]
 
-         public async Task <ActionResult> ResetUserPassword ([FromBody] ResetPasswordForUserRequest request)
+         public async Task <ActionResult> ResetUserPassword ([FromRoute] string userId, [FromBody] ResetPasswordForUserRequest request)
         {
             try
             {
-                await adminService.ResetPasswordForUserAsync(request);
+
+                await adminService.ResetPasswordForUserAsync(request, Guid.Parse(userId));
                 return Ok ("password reset successful");
             }
             catch(InvalidOperationException ex)

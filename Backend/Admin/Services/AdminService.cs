@@ -142,10 +142,10 @@ public class AdminService(AppDbContext db): IAdminService
     }
 
 
-    public async Task ResetPasswordForUserAsync(ResetPasswordForUserRequest request)
+    public async Task ResetPasswordForUserAsync(ResetPasswordForUserRequest request, Guid id)
     {
         var user = await db.Identities
-        .FirstOrDefaultAsync(i=>i.Id==request.IdentityId && i.Role!= "super_admin" && i.Role!="admin")??throw new InvalidOperationException ("invalid request");
+        .FirstOrDefaultAsync(i=>i.Id==id && i.Role!= "super_admin" && i.Role!="admin")??throw new InvalidOperationException ("invalid request");
         
         if (!user.HashPassword(request.NewPassword)) throw new InvalidOperationException("An error occured trying to create your account");
         await db.SaveChangesAsync();
