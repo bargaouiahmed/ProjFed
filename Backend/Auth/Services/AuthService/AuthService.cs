@@ -319,7 +319,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role),
             }),
-            Expires = DateTime.UtcNow.AddMinutes(15),
+            Expires = DateTime.UtcNow.AddMinutes(1),
             Issuer = issuer,
             Audience = audience,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

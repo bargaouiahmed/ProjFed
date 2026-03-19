@@ -8,8 +8,11 @@ import { validation } from "./validation";
 import { Heading } from "../heading";
 import { OrSeparator } from "../orSeparator";
 import { FormikInput } from "@/components/formikInput";
+import useLogin from "@/querys/useLogin";
 
 export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
+  const { mutate: login, isPending } = useLogin();
+
   const [showPassword, setShowPasswod] = useState(false);
   return (
     <main className="flex-1 flex flex-col justify-center items-center px-6 py-12 md:px-20 shadow-md dark:shadow-xl">
@@ -21,15 +24,11 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
         <Formik
           initialValues={{ email: "", password: "" }}
           validate={validation}
-          onSubmit={(values, { setSubmitting }) => {
-            setSubmitting(true);
-            setTimeout(() => {
-              console.log(values);
-              setSubmitting(false);
-            }, 1500);
+          onSubmit={(values) => {
+            login(values);
           }}
         >
-          {({ isSubmitting }) => (
+          {() => (
             <Form className="flex flex-col gap-4">
               <FormikInput
                 name="email"
@@ -65,10 +64,10 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
               </Link>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isPending}
                 className="w-full mt-2"
               >
-                {isSubmitting ? (
+                {isPending ? (
                   <IconLoader className="animate-spin" />
                 ) : (
                   "Sign In"

@@ -9,6 +9,8 @@
 
 ## 1. Register Student
 
+## done
+
 - **Endpoint:** `POST /student/auth/register`
 - **Auth:** None
 - **Request Body:** JSON
@@ -67,6 +69,8 @@
 ---
 
 ## 4. Activate Account
+
+## done
 
 - **Endpoint:** `GET /student/auth/activate-account`
 - **Auth:** None
