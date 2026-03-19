@@ -52,8 +52,8 @@ namespace Backend.Admin.Controllers
             var reviewerIdentityId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("Invalid token: missing user ID claim."));
             try
             {
-                var request = await adminService.RejectPendingRequest(requestId, reviewerIdentityId, rejectBody?.Message);
-                return Ok(request);
+                var response = await adminService.RejectPendingRequest(requestId, reviewerIdentityId, rejectBody?.Message);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -61,5 +61,20 @@ namespace Backend.Admin.Controllers
             }
         }
 
+        
+         [HttpPut("users")]
+
+         public async Task <ActionResult> ResetUserPassword ([FromBody] ResetPasswordForUserRequest request)
+        {
+            try
+            {
+                await adminService.ResetPasswordForUserAsync(request);
+                return Ok ("password reset successful");
+            }
+            catch(InvalidOperationException ex)
+            {
+                return BadRequest(ex);
+            }
+        } 
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using Backend.Admin.DataTransferObjects.Requests;
 using Backend.Admin.DataTransferObjects.Responses;
 using Backend.Auth.Entities;
 using Backend.Database.Auth;
@@ -137,6 +138,17 @@ public class AdminService(AppDbContext db): IAdminService
             TotalRequestsCount = 1
             
         };
+
+    }
+
+
+    public async Task ResetPasswordForUserAsync(ResetPasswordForUserRequest request)
+    {
+        var user = await db.Identities
+        .FirstOrDefaultAsync(i=>i.Id==request.IdentityId && i.Role!= "super_admin" && i.Role!="admin")??throw new InvalidOperationException ("invalid request");
+        
+        if (!user.HashPassword(request.NewPassword)) throw new InvalidOperationException("An error occured trying to create your account");
+        await db.SaveChangesAsync();
 
     }
 
