@@ -41,7 +41,7 @@ namespace Backend.Auth.Controllers
         }
 
 
-        [HttpPost("student/auth/login")]
+        [HttpPost("auth/login")]
         public async Task<ActionResult<TokenPairResponse>> Login([FromBody] LoginRequest request)
         {
             try

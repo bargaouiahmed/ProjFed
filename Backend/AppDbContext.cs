@@ -28,11 +28,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             identity.HasIndex(i => i.Email).IsUnique();
             identity.HasIndex(i => i.RefreshToken).IsUnique();
+        
         });
         modelBuilder.Entity<AdminUser>(admin =>
         {
             admin.HasOne(a => a.Identity)
-                .WithOne()
+                .WithOne(i=>i.AdminUser)
                 .HasForeignKey<AdminUser>(a => a.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -47,7 +48,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Student>(student =>
         {
             student.HasOne(s => s.Identity)
-                .WithOne()
+                .WithOne(i=>i.Student)
                 .HasForeignKey<Student>(s => s.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -60,7 +61,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<UniUser>(uniUser =>
         {
             uniUser.HasOne(u => u.Identity)
-                .WithOne()
+                .WithOne(i=>i.UniUser)
                 .HasForeignKey<UniUser>(u => u.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
