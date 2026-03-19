@@ -3,6 +3,7 @@ using System;
 using Backend.Database.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260319031724_NavPropsOnAuthId")]
+    partial class NavPropsOnAuthId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,6 +119,9 @@ namespace Backend.Migrations
                     b.Property<DateTime?>("ActivateAccountTokenExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("AdminUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -155,7 +161,15 @@ namespace Backend.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UniUserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -164,6 +178,10 @@ namespace Backend.Migrations
 
                     b.HasIndex("RefreshToken")
                         .IsUnique();
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("UniUserId");
 
                     b.ToTable("Identities");
                 });
@@ -412,7 +430,7 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Auth.Entities.AdminUser", b =>
                 {
                     b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
-                        .WithOne("AdminUser")
+                        .WithOne()
                         .HasForeignKey("Backend.Auth.Entities.AdminUser", "IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -422,11 +440,29 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Auth.Entities.AuthIdentity", b =>
                 {
+                    b.HasOne("Backend.Auth.Entities.AdminUser", "AdminUser")
+                        .WithMany()
+                        .HasForeignKey("AdminUserId");
+
                     b.HasOne("Backend.Auth.Entities.Professor", "Professor")
                         .WithMany()
                         .HasForeignKey("ProfessorId");
 
+                    b.HasOne("Backend.Auth.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId");
+
+                    b.HasOne("Backend.Auth.Entities.UniUser", "UniUser")
+                        .WithMany()
+                        .HasForeignKey("UniUserId");
+
+                    b.Navigation("AdminUser");
+
                     b.Navigation("Professor");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("UniUser");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.ClassMetadata", b =>
@@ -473,7 +509,7 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Auth.Entities.Student", b =>
                 {
                     b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
-                        .WithOne("Student")
+                        .WithOne()
                         .HasForeignKey("Backend.Auth.Entities.Student", "IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -514,7 +550,7 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Auth.Entities.UniUser", b =>
                 {
                     b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
-                        .WithOne("UniUser")
+                        .WithOne()
                         .HasForeignKey("Backend.Auth.Entities.UniUser", "IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -528,15 +564,6 @@ namespace Backend.Migrations
                     b.Navigation("Identity");
 
                     b.Navigation("Institute");
-                });
-
-            modelBuilder.Entity("Backend.Auth.Entities.AuthIdentity", b =>
-                {
-                    b.Navigation("AdminUser");
-
-                    b.Navigation("Student");
-
-                    b.Navigation("UniUser");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.ClassMetadata", b =>

@@ -30,6 +30,10 @@ public class AuthIdentity
 
     public DateTime CreatedAt = DateTime.UtcNow;
     public DateTime UpdatedAt = DateTime.UtcNow;
+    public Student? Student { get; set; }
+    public UniUser? UniUser { get; set; }
+    public AdminUser? AdminUser { get; set; }
+    public Professor? Professor { get; set; }
 
 
 

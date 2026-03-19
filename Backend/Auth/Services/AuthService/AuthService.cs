@@ -167,6 +167,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         if (identity.IsActive) throw new InvalidOperationException("This account is already active");
 
         var activationCode = identity.GenerateActivateAccountToken();
+        identity.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
         string subject = "Account Activation";
@@ -188,6 +189,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         //Generate tokens
         var accessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role);
         var refreshToken = identity.GenerateRefreshToken(128);
+        identity.UpdatedAt = DateTime.UtcNow;
 
         
 
@@ -212,6 +214,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         identity.IsActive = true;
         identity.ActivateAccountToken = null;
         identity.ActivateAccountTokenExpiresAt = null;
+        identity.UpdatedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync();
     }
@@ -227,6 +230,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         if (identity == null || identity.IsDeleted) throw new InvalidOperationException("No account associated with this email");
 
         var resetToken = identity.GeneratePasswordResetToken();
+        identity.UpdatedAt = DateTime.UtcNow;
 
         string subject = "Password Reset Request";
         string message = $"A password reset request has been initiated for your account. To reset your password, please visit the following link: {Environment.GetEnvironmentVariable("FRONTEND_BASE_URL")}/reset-password?token={resetToken}&id={identity.Id}";
@@ -245,6 +249,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         identity.HashPassword(request.NewPassword);
         identity.PasswordResetToken = null;
         identity.PasswordResetTokenExpiresAt = null;
+        identity.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
     }
 
@@ -259,6 +264,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
 
         var newAccessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role);
         var newRefreshToken = identity.GenerateRefreshToken(128);
+        identity.UpdatedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync();
 
