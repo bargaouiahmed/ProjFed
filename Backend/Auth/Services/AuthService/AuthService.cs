@@ -274,35 +274,6 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         };
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
         private string GenerateJwtToken(Guid identityId, string email, string role)
     {
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? throw new InvalidOperationException("jwt_secret_key not found in environment variables.");

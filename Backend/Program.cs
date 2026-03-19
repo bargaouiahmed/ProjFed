@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Backend.Account.Services;
 using Backend.Admin.Services;
 using Backend.Auth.Services;
@@ -44,6 +45,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? throw new InvalidOperationException("JWT_ISSUER not found in environment variables."),
             ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? throw new InvalidOperationException("JWT_AUDIENCE not found in environment variables."),
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret))
+        };
+options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                // suppress the default 401 response
+                context.HandleResponse();
+
+                var error = context.AuthenticateFailure;
+                string message;
+
+                if (error is SecurityTokenExpiredException)
+                    message = "Token has expired. Please log in again.";
+                else if (error is SecurityTokenInvalidSignatureException)
+                    message = "Invalid token signature.";
+                else if (context.Request.Headers.ContainsKey("Authorization"))
+                    message = "Token is invalid.";
+                else
+                    message = "Authentication required.";
+
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+
+                var body = JsonSerializer.Serialize(new { 
+                    status = 401, 
+                    message 
+                });
+
+                await context.Response.WriteAsync(body);
+            }
         };
     });
 

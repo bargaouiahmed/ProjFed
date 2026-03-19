@@ -5,6 +5,7 @@ using Backend.Account.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Backend.Account.Controllers
 {
@@ -40,6 +41,90 @@ namespace Backend.Account.Controllers
         }
 
 
+        [Authorize]
+        [HttpPut]
+        public async Task<ActionResult<SerializedUser>> UpdateUserAsync([FromForm] UpdateAccountRequest request)
+        {
+            var userId = GetClaim("id");
+            var role = GetClaim("role");
+            if(string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(role))return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                var id = Guid.Parse(userId);
+                return Ok(await accountService.UpdateAccountAsync(request, id,role));
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex);
+            }
 
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //key could also be role 
+        private string? GetClaim(string key="id")
+        {
+            if(key=="id")return User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if(key=="role")return User.FindFirstValue(ClaimTypes.Role);
+            return null;
+        }
     }
 }
