@@ -7,23 +7,10 @@
 
 ---
 
-## Common Request Headers
-
-- `Accept: application/json` (recommended for all endpoints)
-- `Authorization: Bearer <accessToken>` (required only on protected endpoints)
-- `Content-Type` depends on endpoint body type:
-  - `application/json` for JSON bodies
-  - `multipart/form-data` for file upload forms
-
----
-
 ## 1. Register Student
 
 - **Endpoint:** `POST /student/auth/register`
 - **Auth:** None
-- **Headers:**
-  - `Content-Type: application/json`
-  - `Accept: application/json`
 - **Request Body:** JSON
   - `firstname` (string, required)
   - `lastname` (string, required)
@@ -43,9 +30,6 @@
 
 - **Endpoint:** `POST /institute/auth/admin/register`
 - **Auth:** None
-- **Headers:**
-  - `Content-Type: multipart/form-data`
-  - `Accept: application/json`
 - **Request Body:** Form Data (`multipart/form-data`)
   - `adminFirstname` (string, required)
   - `adminLastname` (string, required)
@@ -61,8 +45,7 @@
   - 200 OK: Request submitted successfully
   - 400 Bad Request: Error message
 - **Side Effects:**
-  - Uploads and stores the 2 documents under `wwwroot/uploads/institutes/{instituteName}/admindocuments/proofdocuments/...`
-  - Creates upload directories on disk if they do not already exist
+  - Uploads and stores the 2 documents under `wwwroot/uploads/...`
   - Creates a pending `AuthIdentity` (`uni_admin`), `UniUser`, and `PendingJoinRequest`
   - No institute is created at this stage
 
@@ -72,9 +55,6 @@
 
 - **Endpoint:** `POST /auth/login`
 - **Auth:** None
-- **Headers:**
-  - `Content-Type: application/json`
-  - `Accept: application/json`
 - **Request Body:** JSON
   - `email` (string, required)
   - `password` (string, required)
@@ -90,8 +70,6 @@
 
 - **Endpoint:** `GET /student/auth/activate-account`
 - **Auth:** None
-- **Headers:**
-  - `Accept: application/json`
 - **Query Parameters:**
   - `id` (GUID, required)
   - `token` (string, required)
@@ -108,8 +86,6 @@
 
 - **Endpoint:** `POST /auth/request-password-reset`
 - **Auth:** None
-- **Headers:**
-  - `Accept: application/json`
 - **Query Parameters:**
   - `email` (string, required)
 - **Response:**
@@ -125,9 +101,6 @@
 
 - **Endpoint:** `POST /auth/reset-password`
 - **Auth:** None
-- **Headers:**
-  - `Content-Type: application/json`
-  - `Accept: application/json`
 - **Request Body:** JSON
   - `identityId` (GUID, required)
   - `resetToken` (string, required)
@@ -145,8 +118,6 @@
 
 - **Endpoint:** `POST /auth/resend-activation-email`
 - **Auth:** None
-- **Headers:**
-  - `Accept: application/json`
 - **Query Parameters:**
   - `email` (string, required)
 - **Response:**
@@ -162,9 +133,6 @@
 
 - **Endpoint:** `POST /auth/refresh-token`
 - **Auth:** None
-- **Headers:**
-  - `Content-Type: application/json`
-  - `Accept: application/json`
 - **Request Body:** JSON
   - `refreshToken` (string, required)
 - **Response:**
@@ -180,9 +148,6 @@
 
 - **Endpoint:** `GET /accounts`
 - **Auth:** Bearer token required
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: application/json`
 - **Request Body:** None
 - **Response:**
   - 200 OK: `SerializedUser`
@@ -194,13 +159,10 @@
 
 ---
 
-## 10. List Institute Join Requests
+## 10. List Pending Institute Join Requests
 
 - **Endpoint:** `GET /admin/requests`
 - **Auth:** Bearer token required, role `admin` or `super_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: application/json`
 - **Query Parameters:**
   - `pageNumber` (int, optional, default `1`)
   - `pageSize` (int, optional, default `10`)
@@ -211,7 +173,6 @@
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - None (read-only)
-  - Note: current implementation does not filter by `status = pending`; it returns paginated join requests with their current status
 
 ---
 
@@ -219,9 +180,6 @@
 
 - **Endpoint:** `PUT /admin/requests/{requestId}/accept`
 - **Auth:** Bearer token required, role `admin` or `super_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: application/json`
 - **Route Parameters:**
   - `requestId` (GUID, required)
 - **Response:**
@@ -233,27 +191,3 @@
   - Sets `ReviewedAt` and `ReviewedBy`
   - Creates a new `Institute`
   - Assigns the requesting `UniUser` to the created institute
-
----
-
-## 12. Reject Pending Institute Join Request
-
-- **Endpoint:** `PUT /admin/requests/{requestId}/reject`
-- **Auth:** Bearer token required, role `admin` or `super_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Content-Type: application/json` (required only if sending body)
-  - `Accept: application/json`
-- **Route Parameters:**
-  - `requestId` (GUID, required)
-- **Request Body:** JSON (optional)
-  - `message` (string, optional)
-- **Response:**
-  - 200 OK: Rejected `PendingRequestResponse`
-  - 400 Bad Request: Error message
-  - 401/403: Unauthorized or forbidden by role policy
-- **Side Effects:**
-  - Marks request/identity as rejected
-  - Sets `ReviewedAt` and `ReviewedBy`
-  - Stores rejection message (if provided) in request `Message`
-  - Soft-deletes/deactivates related identity (`IsDeleted=true`, `DeletedAt` set, `IsActive=false`)
