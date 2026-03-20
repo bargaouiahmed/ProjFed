@@ -12,13 +12,14 @@ public class ClassMetadata
     public Institute Institute { get; set; } = new();
 
     public string LevelOfStudies { get; set; } = string.Empty; //Ex: mastére, license, cycle ingenieur etc..
-    public string Specialty { get; set; } = string.Empty;
+    public string Specialty { get; set; } = string.Empty; //Ex: Informatique, gestion etc
     public int MaxYears { get; set; }
     public int Level { get; set; }
+    public int MaxTerms{get;set;}
+    public int CurrentTerm{get;set;}
 
     public ICollection<UniClass> Classes { get; set; } = [];
 
-    public ICollection<SubjectPerClass> AvailableSubjects { get; set; } = [];
 
 
 }

@@ -110,6 +110,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         {
             webRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
         }
+ 
 
         var relativeUploadDir = Path.Combine("uploads", "institutes", instituteName, "admindocuments", "proofdocuments");
         var uploadDir = Path.Combine(webRootPath, relativeUploadDir);

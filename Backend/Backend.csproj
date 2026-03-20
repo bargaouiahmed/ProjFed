@@ -19,11 +19,20 @@
     <Folder Include="Account\Controllers\" />
     <Folder Include="Account\DataTransferObjects\Responses\" />
     <Folder Include="Account\Services\" />
+    <Folder Include="Administration\" />
+    <Folder Include="Administration\DataTransferObjects\" />
+    <Folder Include="Administration\DataTransferObjects\Requests\" />
+    <Folder Include="Administration\DataTransferObjects\Responses\" />
+    <Folder Include="Administration\Services\" />
     <Folder Include="Admin\Controllers\" />
     <Folder Include="Admin\Entities\" />
     <Folder Include="Admin\Services\" />
     <Folder Include="Auth\Controllers\" />
     <Folder Include="Auth\DataTransferObjects\Responses\" />
+    <Folder Include="StudentSpace\" />
+    <Folder Include="StudentSpace\DataTransferObjects\" />
+    <Folder Include="StudentSpace\DataTransferObjects\Requests\" />
+    <Folder Include="StudentSpace\DataTransferObjects\Responses\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

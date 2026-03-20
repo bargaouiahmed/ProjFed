@@ -2,6 +2,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using Backend.Admin.Entities;
 using Backend.Auth.Entities;
+using Backend.StudentSpace.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Database.Auth;
@@ -14,11 +15,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AuthIdentity> Identities { get; set; } = null!;
     public DbSet<Institute> Institutes { get; set; } = null!;
     public DbSet<ClassMetadata> ClassMetadata { get; set; } = null!;
-    public DbSet<SubjectPerClass> SubjectPerClasses { get; set; } = null!;
     public DbSet<UniUser> UniUsers { get; set; } = null!;
-    public DbSet<ProfessorUniClassSubject> ProfessorUniClassSubjects { get; set; } = null!;
     public DbSet<UniClass> UniClasses { get; set; } = null!;
 
+    public DbSet<Course> Courses { get; set; } = null!;
     public DbSet<PendingJoinRequest> PendingJoinRequests { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -57,8 +57,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(s => s.UniClassId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-
-        modelBuilder.Entity<UniUser>(uniUser =>
+        modelBuilder.Entity<Course>(course=>{
+            course.HasOne(c=>c.Professor)
+            .WithMany(p=>p.Course)
+            .HasForeignKey(c=>c.ProfessorId)
+            .OnDelete(DeleteBehavior.Cascade);
+            course.HasOne(c=>c.UniClass)
+            .WithMany(uc=>uc.Courses)
+            .HasForeignKey(c=>c.UniClassId)
+            .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<UniUser>(uniUser => 
         {
             uniUser.HasOne(u => u.Identity)
                 .WithOne(i=>i.UniUser)
@@ -70,28 +79,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(u => u.InstutiteId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        modelBuilder.Entity<ProfessorUniClassSubject>(profUniClass =>
-        {
-            profUniClass.HasOne(puc=>puc.Prof)
-            .WithMany(p=>p.Classes)
-            .HasForeignKey(puc=>puc.ProfId)
-            .OnDelete(DeleteBehavior.Cascade);
-            profUniClass.HasOne(puc => puc.UniClass)
-                .WithMany(c => c.Professors)
-                .HasForeignKey(puc => puc.UniClassId)
-                .OnDelete(DeleteBehavior.Cascade);
-            profUniClass.HasOne(puc => puc.SubjectPerClass)
-                .WithMany()
-                .HasForeignKey(puc => puc.SubjectPerClassId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-        modelBuilder.Entity<SubjectPerClass>(subjectPerClass =>
-        {
-            subjectPerClass.HasOne(spc => spc.ClassMetadata)
-                .WithMany(cm => cm.AvailableSubjects)
-                .HasForeignKey(spc => spc.ClassMetadataId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+       
         modelBuilder.Entity<ClassMetadata>(classMetadata =>
         {
             classMetadata.HasOne(cm => cm.Institute)

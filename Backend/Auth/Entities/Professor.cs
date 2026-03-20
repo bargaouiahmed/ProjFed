@@ -1,4 +1,5 @@
 using System;
+using Backend.StudentSpace.Entities;
 
 namespace Backend.Auth.Entities;
 
@@ -12,7 +13,7 @@ public class Professor
     public string Lastname { get; set; } = string.Empty;
     public string? PfpUrl { get; set; }
 
-    public ICollection<ProfessorUniClassSubject> Classes { get; set; } = [];
+    public ICollection<Course> Course { get; set; } = [];
 
 
 }
