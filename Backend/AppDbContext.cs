@@ -59,7 +59,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
         modelBuilder.Entity<Course>(course=>{
             course.HasOne(c=>c.Professor)
-            .WithMany(p=>p.Course)
+            .WithMany(p=>p.Courses)
             .HasForeignKey(c=>c.ProfessorId)
             .OnDelete(DeleteBehavior.Cascade);
             course.HasOne(c=>c.UniClass)
@@ -94,6 +94,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany(cm => cm.Classes)
                 .HasForeignKey(uc => uc.MetadataId)
                 .OnDelete(DeleteBehavior.Cascade);
+            uniClass.HasIndex(uc => uc.ClassCode).IsUnique();
+            uniClass.HasIndex(uc => new { uc.MetadataId, uc.Number }).IsUnique();
         });
 
         modelBuilder.Entity<PendingJoinRequest>(pendingJoinRequest =>

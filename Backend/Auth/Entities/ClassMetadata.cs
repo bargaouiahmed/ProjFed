@@ -16,7 +16,7 @@ public class ClassMetadata
     public int MaxYears { get; set; }
     public int Level { get; set; }
     public int MaxTerms{get;set;}
-    public int CurrentTerm{get;set;}
+    public int CurrentTerm { get; set; } = 1;
 
     public ICollection<UniClass> Classes { get; set; } = [];
 

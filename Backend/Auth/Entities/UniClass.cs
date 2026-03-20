@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using Backend.StudentSpace.Entities;
 using Humanizer;
 
@@ -21,11 +22,10 @@ public class UniClass
     public string CreateClassCode(int length =6)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random();
         var token = new char[length];
         for (int i = 0; i < length; i++)
         {
-            token[i] = chars[random.Next(chars.Length)];
+            token[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
         }
         
         ClassCode=new string(token);

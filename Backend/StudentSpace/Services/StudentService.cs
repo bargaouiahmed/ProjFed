@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.StudentSpace.Services;
 
-public class StudentService(AppDbContext db)
+public class StudentService(AppDbContext db) : IStudentService
 {
 
     //implement a method to get all courses of a student

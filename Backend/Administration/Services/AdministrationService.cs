@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Administration.Services;
 
-public class AdministrationService(AppDbContext db)
+public class AdministrationService(AppDbContext db) : IAdministrationService
 {
 
 
@@ -28,6 +28,7 @@ public class AdministrationService(AppDbContext db)
             Specialty = request.Specialty,
             MaxYears = request.MaxYears,
             MaxTerms=request.DefaultMaxTerms,
+            CurrentTerm=1,
             Level=i
         };
         classes.Add(newClassMetaData);
@@ -58,15 +59,38 @@ public class AdministrationService(AppDbContext db)
     }
     public async Task<ClassPrettyName> AddClassToMetadataType(Guid uniAdminIdentityId, Guid metadataId)
     {
-        var metadata = await db.ClassMetadata.Include(cm=>cm.Institute).ThenInclude(i=>i.Admins).FirstOrDefaultAsync(cm=>cm.Id == metadataId && cm.Institute.Admins.Any(a=>a.IdentityId == uniAdminIdentityId))??throw new InvalidOperationException("Invalid ClassMetaData or UnauthorizedAccessAttempt");
-        UniClass newClass = new()
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        var metadata = await db.ClassMetadata
+            .Include(cm=>cm.Institute)
+            .ThenInclude(i=>i.Admins)
+            .FirstOrDefaultAsync(cm=>cm.Id == metadataId && cm.Institute.Admins.Any(a=>a.IdentityId == uniAdminIdentityId))
+            ?? throw new InvalidOperationException("Invalid ClassMetaData or UnauthorizedAccessAttempt");
+
+        var lockKey = BitConverter.ToInt64(metadataId.ToByteArray(), 0);
+        await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock({lockKey})");
+
+        var nextClassNumber = (await db.UniClasses
+            .Where(uc => uc.MetadataId == metadataId)
+            .Select(uc => (int?)uc.Number)
+            .MaxAsync() ?? 0) + 1;
+
+        var newClass = new UniClass
         {
-            Number=await db.UniClasses.CountAsync(uc=>uc.MetadataId==metadataId)+1,
+            Number=nextClassNumber,
             MetadataId=metadataId
         };
+
         newClass.CreateClassCode();
-        db.Add(newClass);
+        while (await db.UniClasses.AnyAsync(uc => uc.ClassCode == newClass.ClassCode))
+        {
+            newClass.CreateClassCode();
+        }
+
+        db.UniClasses.Add(newClass);
         await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+
         var number = newClass.Number.ToString();
         var speciality = metadata.Specialty;
         var year = metadata.Level.ToString();
@@ -83,7 +107,6 @@ public class AdministrationService(AppDbContext db)
         
         response.Level=request.Level;
         response.LevelOfStudies=request.LevelOfStudies;
-        response.MaxYears=request.MaxYears;
         response.MaxTerms=request.MaxTerms;
         response.Specialty=request.Specialty;
         await db.SaveChangesAsync();
@@ -91,7 +114,7 @@ public class AdministrationService(AppDbContext db)
         
     }
 
-    
+
     
 
 
