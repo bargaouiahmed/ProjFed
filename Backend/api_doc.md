@@ -1,4 +1,3 @@
-
 # API Documentation
 
 ## Base URL
@@ -73,6 +72,8 @@
 
 ## 3. Login
 
+## done
+
 - **Endpoint:** `POST /auth/login`
 - **Auth:** None
 - **Headers:**
@@ -111,6 +112,8 @@
 
 ## 5. Request Password Reset
 
+## done
+
 - **Endpoint:** `POST /auth/request-password-reset`
 - **Auth:** None
 - **Headers:**
@@ -145,6 +148,8 @@
   - Clears password reset token and expiry
 
 ---
+
+## kaliha felekr
 
 ## 7. Resend Activation Email
 

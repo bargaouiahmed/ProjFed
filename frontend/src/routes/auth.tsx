@@ -4,7 +4,7 @@ import ThemeToggler from "@/components/ThemeToggler";
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-
+import bg from "@/assets/bg.png";
 export const Route = createFileRoute("/auth")({
   component: RouteComponent,
 });
@@ -27,7 +27,9 @@ function RouteComponent() {
       ) : (
         <SignUp goToSignIn={goToSignIn} />
       )}
-      <section className="hidden md:block md:basis-5/12 lg:basis-7/12 bg-red-500"></section>
+      <section className="hidden md:block md:basis-5/12 lg:basis-7/12 bg-red-500">
+        <img src={bg} className="h-full w-full block bg-cover" />
+      </section>
     </div>
   );
 }
