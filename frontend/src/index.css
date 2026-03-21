@@ -127,3 +127,51 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .bg-grain {
+    position: relative;
+    background: #0f0f0f;
+  }
+
+  .bg-grain::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .bg-light-grain {
+    min-height: 100vh;
+
+    background: radial-gradient(
+      circle at 20% 20%,
+      #ffffff,
+      #f1f1f1 60%,
+      #e9e9e9
+    );
+    position: relative;
+  }
+
+  .bg-light-grain::before {
+    content: "";
+    position: fixed;
+
+    inset: 0;
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    opacity: 0.05;
+    pointer-events: none;
+  }
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 120, 255, 0.04);
+  pointer-events: none;
+  z-index: 1;
+}

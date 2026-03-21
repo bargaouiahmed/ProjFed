@@ -27,14 +27,14 @@ export default function useResetPassword() {
     },
 
     onSuccess: (message) => {
-      toast.success(
-        message || "your password has changed you can login with it now",
-      );
+      toast.success("your password has changed you can login with it now");
+      console.log(message);
       navigate({ to: "/password-reset-success" });
     },
 
     onError: (error) => {
-      toast.error(error.message || "something went wrong please try again");
+      console.log(error);
+      toast.error("something went wrong please try again");
     },
   });
 }

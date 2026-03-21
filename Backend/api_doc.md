@@ -131,6 +131,8 @@
 
 ## 6. Reset Password
 
+## done
+
 - **Endpoint:** `POST /auth/reset-password`
 - **Auth:** None
 - **Headers:**
@@ -169,6 +171,8 @@
 ---
 
 ## 8. Refresh Token
+
+## done
 
 - **Endpoint:** `POST /auth/refresh-token`
 - **Auth:** None

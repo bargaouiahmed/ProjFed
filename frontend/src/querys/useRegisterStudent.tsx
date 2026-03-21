@@ -19,11 +19,11 @@ export default function useRegisterStudent() {
       return response.data;
     },
     onError: (error) => {
-      toast.error(error.message || "registration failed");
+      toast.error("wrong password or email already used");
       console.log(error);
     },
     onSuccess: (message) => {
-      toast.success(message || "registration succesed");
+      toast.success("registration succesed check your email for verification");
       console.log(message);
     },
   });
