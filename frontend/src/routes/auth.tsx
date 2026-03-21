@@ -6,6 +6,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useTheme } from "@/components/theme-provider";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import Shapes from "../components/shapes.jsx";
+
 export const Route = createFileRoute("/auth")({
   component: RouteComponent,
 });
@@ -31,10 +33,12 @@ function RouteComponent() {
       )}
       <section
         className={cn(
-          "hidden md:block md:basis-5/12 lg:basis-7/12  ",
+          "hidden md:block md:basis-5/12 lg:basis-7/12 overflow-hidden  ",
           theme === "dark" ? "bg-grain" : "bg-light-grain",
         )}
-      ></section>
+      >
+        <Shapes />
+      </section>
     </div>
   );
 }
