@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useField } from "formik";
+import { useField, useFormikContext } from "formik";
 
 interface BaseInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -66,13 +66,35 @@ interface FormikInputProps {
   rightElement?: React.ReactNode;
 }
 
-export const FormikInput = ({ name, ...props }: FormikInputProps) => {
+export const FormikInput = ({
+  name,
+  type = "text",
+
+  ...props
+}: FormikInputProps) => {
   const [field, meta] = useField(name);
+  const { setFieldValue } = useFormikContext();
+
+  if (type === "file") {
+    return (
+      <BaseInput
+        {...props}
+        name={name}
+        type="file"
+        onChange={(e) => {
+          const file = e.currentTarget.files?.[0];
+          setFieldValue(name, file);
+        }}
+        error={meta.touched && meta.error ? meta.error : ""}
+      />
+    );
+  }
 
   return (
     <BaseInput
       {...field}
       {...props}
+      type={type}
       error={meta.touched && meta.error ? meta.error : ""}
     />
   );

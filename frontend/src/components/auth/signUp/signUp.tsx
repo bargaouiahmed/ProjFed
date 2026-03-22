@@ -14,7 +14,7 @@ import Logo from "../../Logo";
 import { validation } from "./validation";
 import { Heading } from "../heading";
 
-import { FormikInput } from "@/components/formikInput";
+import { FormikInput } from "@/components/form/formikInput";
 import useRegisterStudent from "@/querys/useRegisterStudent";
 
 export default function SignIn({ goToSignIn }: { goToSignIn: () => void }) {

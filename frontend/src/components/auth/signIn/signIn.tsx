@@ -7,7 +7,7 @@ import Logo from "../../Logo";
 import { validation } from "./validation";
 import { Heading } from "../heading";
 import { OrSeparator } from "../orSeparator";
-import { FormikInput } from "@/components/formikInput";
+import { FormikInput } from "@/components/form/formikInput";
 import useLogin from "@/querys/useLogin";
 
 export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
@@ -87,9 +87,11 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
               </p>
 
               <OrSeparator />
-              <Button variant="ghost" type="button" className="w-full">
-                request a business plan
-              </Button>
+              <Link to="/admin/register">
+                <Button variant="ghost" type="button" className="w-full">
+                  request a business plan
+                </Button>
+              </Link>
             </Form>
           )}
         </Formik>
