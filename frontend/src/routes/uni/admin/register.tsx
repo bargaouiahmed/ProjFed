@@ -7,7 +7,7 @@ import { IconLoader } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import * as yup from "yup";
 
-export const Route = createFileRoute("/admin/register")({
+export const Route = createFileRoute("/uni/admin/register")({
   component: RouteComponent,
 });
 
@@ -150,5 +150,5 @@ function RouteComponent() {
         </FormikStep>
       </FormikStepper>
     </div>
-  );
+  )
 }
