@@ -9,6 +9,7 @@ import {
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
 import { IconSchool } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 export default function AdminDashboardSideBar() {
   const { open } = useSidebar();
@@ -19,10 +20,12 @@ export default function AdminDashboardSideBar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <Button variant={"ghost"} className="text-accent-foreground">
-            {open && "university admins requests"}
-            <IconSchool />
-          </Button>
+          <Link to="/admin/dashboard/request/$page" params={{ page: "1" }}>
+            <Button variant={"ghost"} className="text-accent-foreground">
+              {open && "university admins requests"}
+              <IconSchool />
+            </Button>
+          </Link>
         </SidebarGroup>
         <SidebarGroup />
       </SidebarContent>

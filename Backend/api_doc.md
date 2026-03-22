@@ -153,7 +153,7 @@
 
 ---
 
-## kaliha felekr
+## done
 
 ## 7. Resend Activation Email
 

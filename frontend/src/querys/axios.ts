@@ -4,6 +4,10 @@ export const api = axios.create({
   baseURL: "/api/v0",
 });
 
+const authApi = axios.create({
+  baseURL: "/api/v0",
+});
+
 api.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -20,8 +24,9 @@ api.interceptors.response.use(
       error.config._retry = true;
       try {
         const refreshToken = localStorage.getItem("refreshToken");
-        const refreshResponse = await axios.post<{ accessToken: string }>(
-          "http://localhost:5193/api/v0/auth/refresh-token",
+        console.log(refreshToken);
+        const refreshResponse = await authApi.post<{ accessToken: string }>(
+          "/auth/refresh-token",
           {
             refreshToken,
           },
@@ -35,7 +40,6 @@ api.interceptors.response.use(
         return api.request(error.config);
       } catch {
         localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
       }
     }
     return Promise.reject(error);
