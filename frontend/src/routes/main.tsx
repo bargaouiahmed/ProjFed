@@ -11,10 +11,12 @@ const queryClient = new QueryClient();
 // Import the generated route tree
 import { routeTree } from "@/routeTree.gen";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Create a new router instance
 const router = createRouter({ routeTree });
 
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
   interface Register {
@@ -29,7 +31,10 @@ if (!rootElement.innerHTML) {
   root.render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <TooltipProvider>
+          <RouterProvider router={router} />
+          <TanStackRouterDevtools position="top-left" router={router} />
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>,
   );

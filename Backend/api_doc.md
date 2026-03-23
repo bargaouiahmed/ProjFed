@@ -70,6 +70,8 @@
 
 ---
 
+## done
+
 ## 3. Login
 
 ## done
@@ -151,7 +153,7 @@
 
 ---
 
-## kaliha felekr
+## done
 
 ## 7. Resend Activation Email
 

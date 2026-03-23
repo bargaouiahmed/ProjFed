@@ -1,4 +1,4 @@
-import { FormikInput } from "@/components/formikInput";
+import { FormikInput } from "@/components/form/formikInput";
 import { Button } from "@/components/ui/button";
 import useRequestPasswordReset from "@/querys/useRequestPasswordReset";
 import { IconLoader, IconMail } from "@tabler/icons-react";
