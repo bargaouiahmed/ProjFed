@@ -20,6 +20,7 @@
     <Folder Include="Account\DataTransferObjects\Responses\" />
     <Folder Include="Account\Services\" />
     <Folder Include="Administration\" />
+    <Folder Include="Administration\Controllers\" />
     <Folder Include="Administration\DataTransferObjects\" />
     <Folder Include="Administration\DataTransferObjects\Requests\" />
     <Folder Include="Administration\DataTransferObjects\Responses\" />
@@ -29,7 +30,6 @@
     <Folder Include="Admin\Services\" />
     <Folder Include="Auth\Controllers\" />
     <Folder Include="Auth\DataTransferObjects\Responses\" />
-    <Folder Include="StudentSpace\" />
     <Folder Include="StudentSpace\DataTransferObjects\" />
     <Folder Include="StudentSpace\DataTransferObjects\Requests\" />
     <Folder Include="StudentSpace\DataTransferObjects\Responses\" />
