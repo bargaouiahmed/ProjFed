@@ -189,10 +189,11 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
 
         //Generate tokens
         var accessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role);
-        var refreshToken = identity.GenerateRefreshToken(128);
-        identity.UpdatedAt = DateTime.UtcNow;
-
-        
+        if(identity.RefreshToken == null || identity.RefreshTokenExpiresAt < DateTime.UtcNow)
+        {
+            var refreshToken = identity.GenerateRefreshToken(128);
+            identity.UpdatedAt = DateTime.UtcNow;
+        }
 
         await db.SaveChangesAsync();
 
