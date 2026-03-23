@@ -267,8 +267,8 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         if (identity == null || identity.RefreshTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Invalid refresh token or token expired");
 
         var newAccessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role);
-        var newRefreshToken = identity.GenerateRefreshToken(128);
-        identity.UpdatedAt = DateTime.UtcNow;
+        // var newRefreshToken = identity.GenerateRefreshToken(128);
+        // identity.UpdatedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync();
 
