@@ -1,4 +1,5 @@
 using System;
+using Backend.Administration.Entities;
 using Backend.Auth.DataTransferObjects.Requests;
 using Microsoft.AspNetCore.Identity;
 
@@ -27,7 +28,7 @@ public class AuthIdentity
     public DateTime? DeletedAt { get; set; }
 
     public string? Status { get; set; } = "pending"; //["pending","accepted","rejected"]
-
+    public bool HasChangedAutoAssignedPassword = false;
     public DateTime CreatedAt = DateTime.UtcNow;
     public DateTime UpdatedAt = DateTime.UtcNow;
     public Student? Student { get; set; }
@@ -35,8 +36,9 @@ public class AuthIdentity
     public AdminUser? AdminUser { get; set; }
     public Professor? Professor { get; set; }
 
-
-
+    public ICollection<UniStaffInvitation>? UniStaffInvitations{get;set;}
+    public ICollection<ProfessorInvitation>? ProfessorInvitations{get;set;}
+    public ICollection<Notification> Notifications{get;set;}=[];
 
     public bool HashPassword(string password)
     {

@@ -24,6 +24,7 @@
     <Folder Include="Administration\DataTransferObjects\" />
     <Folder Include="Administration\DataTransferObjects\Requests\" />
     <Folder Include="Administration\DataTransferObjects\Responses\" />
+    <Folder Include="Administration\Entities\" />
     <Folder Include="Administration\Services\" />
     <Folder Include="Admin\Controllers\" />
     <Folder Include="Admin\Entities\" />

@@ -11,12 +11,12 @@ namespace Backend.Admin.Controllers
     [Authorize(Roles = "admin,super_admin")]
     [Route("api/v0/admin")]
     [ApiController]
-    
+
     public class AdminController(IAdminService adminService) : ControllerBase
     {
 
         [HttpGet("requests")]
-        public async Task<ActionResult<List<PendingRequestResponse>>> GetAllPendingRequests([FromQuery] int pageNumber=1, [FromQuery] int pageSize=10)
+        public async Task<ActionResult<List<PendingRequestResponse>>> GetAllPendingRequests([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
@@ -61,21 +61,21 @@ namespace Backend.Admin.Controllers
             }
         }
 
-        
-         [HttpPut("users/{userId}/reset-password")]
 
-         public async Task <ActionResult> ResetUserPassword ([FromRoute] string userId, [FromBody] ResetPasswordForUserRequest request)
+        [HttpPut("users/{userId}/reset-password")]
+
+        public async Task<ActionResult> ResetUserPassword([FromRoute] string userId, [FromBody] ResetPasswordForUserRequest request)
         {
             try
             {
 
                 await adminService.ResetPasswordForUserAsync(request, Guid.Parse(userId));
-                return Ok ("password reset successful");
+                return Ok("password reset successful");
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 return BadRequest(ex);
             }
-        } 
+        }
     }
 }

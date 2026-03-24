@@ -4,7 +4,7 @@ namespace Backend.Admin.DataTransferObjects.Responses;
 
 public class PendingRequestResponse
 {
-        public Guid RequestId { get; set; }
+    public Guid RequestId { get; set; }
 
     public string Firstname { get; set; } = string.Empty;
     public string Lastname { get; set; } = string.Empty;

@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Auth.Services;
 
-public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEnvironment env) :IAuthService
+public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEnvironment env) : IAuthService
 {
     public async Task EnsureSuperAdminExistsAsync()
     {
@@ -18,20 +18,21 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         var superAdminPassword = Environment.GetEnvironmentVariable("SUPER_ADMIN_PASSWORD") ?? throw new InvalidOperationException("SUPER_ADMIN_PASSWORD not defined");
 
 
-        var identity = await db.AdminUsers.Include(a=>a.Identity).AnyAsync(a=>a.Identity.Email==superAdminEmail && a.Identity.Role=="super_admin");
+        var identity = await db.AdminUsers.Include(a => a.Identity).AnyAsync(a => a.Identity.Email == superAdminEmail && a.Identity.Role == "super_admin");
 
         if (!identity)
         {
             var newIdentity = new AuthIdentity()
             {
-                Email=superAdminEmail,
-                Role="super_admin",
-                Status ="active"
+                Email = superAdminEmail,
+                Role = "super_admin",
+                Status = "active",
+                HasChangedAutoAssignedPassword = true
             };
             newIdentity.HashPassword(superAdminPassword);
             var newSuperAdmin = new AdminUser()
             {
-                Identity=newIdentity
+                Identity = newIdentity
             };
 
 
@@ -48,41 +49,43 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
 
     public async Task RegisterNewInstituteHead(RegisterNewInstituteRequest request)
     {
-        if(await db.Identities.AnyAsync(i=>i.Email == request.AdminEmail))throw new InvalidOperationException("This email already exists");
-        if(await db.Institutes.AnyAsync(i=>i.Name.ToLower() == request.Name.ToLower()))throw new InvalidOperationException("It appears this institute is already registered");
-        
-        
+        if (await db.Identities.AnyAsync(i => i.Email == request.AdminEmail)) throw new InvalidOperationException("This email already exists");
+        if (await db.Institutes.AnyAsync(i => i.Name.ToLower() == request.Name.ToLower())) throw new InvalidOperationException("It appears this institute is already registered");
+
+
         //first we upload the documents
-        var identityDocumentPath=string.Empty;
-         var proofDocumentPath   =string.Empty;
+        var identityDocumentPath = string.Empty;
+        var proofDocumentPath = string.Empty;
         try
         {
-             identityDocumentPath+= await UploadDocument(request.IdentityDocument,request.Name);
-              proofDocumentPath+= await UploadDocument(request.ProofDocument,request.Name);
+            identityDocumentPath += await UploadDocument(request.IdentityDocument, request.Name);
+            proofDocumentPath += await UploadDocument(request.ProofDocument, request.Name);
 
-        }catch(Exception Ex)
+        }
+        catch (Exception Ex)
         {
             throw new InvalidDataException(Ex.Message);
         }
         //initialize the identity and the join request
         AuthIdentity identity = new()
         {
-            Email=request.AdminEmail,
-            Role="uni_admin",
-            Status="pending",
-            IsActive=false
+            Email = request.AdminEmail,
+            Role = "uni_admin",
+            Status = "pending",
+            IsActive = false,
+            HasChangedAutoAssignedPassword = true
         };
-        if(!identity.HashPassword(request.AdminPassword))throw new InvalidOperationException("An error occured trying to create your account");
+        if (!identity.HashPassword(request.AdminPassword)) throw new InvalidOperationException("An error occured trying to create your account");
         PendingJoinRequest joinRequest = new()
         {
-            Identity=identity,
-            Message="",
-            ProofDocumentUrl=proofDocumentPath,
-            IdentityDocumentUrl=identityDocumentPath,
-            InstituteName=request.Name,
-            InstituteCountry=request.Country,
-            InstituteCity=request.City,
-            InstitutePostalCode=request.PostalCode
+            Identity = identity,
+            Message = "",
+            ProofDocumentUrl = proofDocumentPath,
+            IdentityDocumentUrl = identityDocumentPath,
+            InstituteName = request.Name,
+            InstituteCountry = request.Country,
+            InstituteCity = request.City,
+            InstitutePostalCode = request.PostalCode
         };
         //then we create the UniUser user and save everything to the database
         UniUser uniAdmin = new()
@@ -101,42 +104,43 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
     //helper for file uploads
     private async Task<string> UploadDocument(IFormFile document, string instituteName)
     {
-        var allowedExtensions=new[] {".jpg",".jpeg",".png",".pdf"};
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
         var fileExtension = Path.GetExtension(document.FileName).ToLowerInvariant();
-        if(!allowedExtensions.Contains(fileExtension))throw new InvalidDataException("Unsupported file type");
-        if(document.Length>25 *1024 *1024) throw new InvalidDataException("Document size limit exceeded, make sure the uploaded document is less than 25 mbs");
+        if (!allowedExtensions.Contains(fileExtension)) throw new InvalidDataException("Unsupported file type");
+        if (document.Length > 25 * 1024 * 1024) throw new InvalidDataException("Document size limit exceeded, make sure the uploaded document is less than 25 mbs");
         var webRootPath = env.WebRootPath;
         if (string.IsNullOrWhiteSpace(webRootPath))
         {
             webRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
         }
- 
+
 
         var relativeUploadDir = Path.Combine("uploads", "institutes", instituteName, "admindocuments", "proofdocuments");
         var uploadDir = Path.Combine(webRootPath, relativeUploadDir);
         Directory.CreateDirectory(uploadDir);
 
-        var filename = Guid.NewGuid().ToString()+fileExtension;
+        var filename = Guid.NewGuid().ToString() + fileExtension;
         var filePath = Path.Combine(uploadDir, filename);
-        using(var stream=new FileStream(filePath, FileMode.Create))
+        using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await document.CopyToAsync(stream);
         }
         return "/" + Path.Combine(relativeUploadDir, filename).Replace("\\", "/");
-        
+
     }
     public async Task RegisterStudent(RegisterStudentRequest request)
     {
-        if(await db.Identities.AnyAsync(i=>i.Email==request.Email))throw new InvalidOperationException("This email is already associated with a different account");
+        if (await db.Identities.AnyAsync(i => i.Email == request.Email)) throw new InvalidOperationException("This email is already associated with a different account");
 
         AuthIdentity identity = new()
         {
-            Email=request.Email,
-            Role="student",
-            Status="active",
-            IsActive=false
+            Email = request.Email,
+            Role = "student",
+            Status = "active",
+            IsActive = false,
+            HasChangedAutoAssignedPassword = true
         };
-        if(!identity.HashPassword(request.Password))throw new InvalidOperationException("An error occured trying to create your account");
+        if (!identity.HashPassword(request.Password)) throw new InvalidOperationException("An error occured trying to create your account");
         Student student = new()
         {
             Firstname = request.Firstname,
@@ -145,19 +149,20 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         };
 
         var activationCode = identity.GenerateActivateAccountToken();
-      
+
         db.Add(identity);
         db.Add(student);
         await db.SaveChangesAsync();
-          string email = request.Email;
+        string email = request.Email;
         string subject = "Account Activation";
         string message = $"Your account has been successfully created, to activate it, visit the following link: {Environment.GetEnvironmentVariable("CLIENT_URL")}/activate-account?token={activationCode}&id={identity.Id.ToString()}";
-        var result =await emailService.SendEmail(email, subject, message);
-        if (!result) {
-            throw new InvalidOperationException("An error occured trying to send the activation email, please try again later");       
+        var result = await emailService.SendEmail(email, subject, message);
+        if (!result)
+        {
+            throw new InvalidOperationException("An error occured trying to send the activation email, please try again later");
         }
     }
-    
+
 
 
 
@@ -173,9 +178,10 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
 
         string subject = "Account Activation";
         string message = $"Your account has been successfully created, to activate it, visit the following link: {Environment.GetEnvironmentVariable("CLIENT_URL")}/activate-account?token={activationCode}&id={identity.Id.ToString()}";
-        var result =await emailService.SendEmail(email, subject, message);
-        if (!result) {
-            throw new InvalidOperationException("An error occured trying to send the activation email, please try again later");       
+        var result = await emailService.SendEmail(email, subject, message);
+        if (!result)
+        {
+            throw new InvalidOperationException("An error occured trying to send the activation email, please try again later");
         }
     }
 
@@ -183,21 +189,21 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
     public async Task<TokenPairResponse> Login(LoginRequest request)
     {
         var identity = await db.Identities.FirstOrDefaultAsync(i => i.Email == request.Email);
-        
- 
-        if (identity == null || !identity.CompareHash(request.Password) || identity.Status!="active" || !identity.IsActive || identity.IsDeleted) throw new InvalidOperationException("Invalid credentials or account not active or deleted");
+
+
+        if (identity == null || !identity.CompareHash(request.Password) || identity.Status != "active" || !identity.IsActive || identity.IsDeleted) throw new InvalidOperationException("Invalid credentials or account not active or deleted");
 
         //Generate tokens
-        var accessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role);
+        var accessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role, identity.HasChangedAutoAssignedPassword);
         var refreshToken = string.Empty;
-        if(identity.RefreshToken == null || identity.RefreshTokenExpiresAt < DateTime.UtcNow)
+        if (identity.RefreshToken == null || identity.RefreshTokenExpiresAt < DateTime.UtcNow)
         {
-             refreshToken += identity.GenerateRefreshToken(128);
+            refreshToken += identity.GenerateRefreshToken(128);
             identity.UpdatedAt = DateTime.UtcNow;
         }
         else
         {
-             refreshToken = identity.RefreshToken;
+            refreshToken = identity.RefreshToken;
         }
 
         await db.SaveChangesAsync();
@@ -208,15 +214,15 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
             RefreshToken = refreshToken
         };
     }
-    
+
 
     public async Task ActivateAccount(Guid identityId, string activationToken)
     {
         Console.WriteLine($"Activating account for IdentityId: {identityId}, ActivationToken: {activationToken}");
         var identity = await db.Identities.FirstOrDefaultAsync(i => i.Id == identityId);
-        if(identity==null) throw new InvalidOperationException("Invalid activation link");
-        if(identity.IsActive) throw new InvalidOperationException("This account is already active");
-        if(identity.ActivateAccountToken != activationToken || identity.ActivateAccountTokenExpiresAt <DateTime.UtcNow) throw new InvalidOperationException("Invalid activation token or token expired");
+        if (identity == null) throw new InvalidOperationException("Invalid activation link");
+        if (identity.IsActive) throw new InvalidOperationException("This account is already active");
+        if (identity.ActivateAccountToken != activationToken || identity.ActivateAccountTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Invalid activation token or token expired");
 
         identity.IsActive = true;
         identity.ActivateAccountToken = null;
@@ -247,13 +253,14 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
 
         await db.SaveChangesAsync();
     }
-    
+
 
 
     public async Task ResetPassword(ResetPasswordRequest request)
-    {        var identity = await db.Identities.FirstOrDefaultAsync(i => i.Id == request.IdentityId); 
+    {
+        var identity = await db.Identities.FirstOrDefaultAsync(i => i.Id == request.IdentityId);
         if (identity == null || identity.PasswordResetToken != request.ResetToken || identity.PasswordResetTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Invalid password reset token or token expired");
-        if(!identity.HashPassword(request.NewPassword))
+        if (!identity.HashPassword(request.NewPassword))
         {
             throw new InvalidOperationException("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");
         }
@@ -272,7 +279,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         var identity = await db.Identities.FirstOrDefaultAsync(i => i.RefreshToken == request.RefreshToken);
         if (identity == null || identity.RefreshTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Invalid refresh token or token expired");
 
-        var newAccessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role);
+        var newAccessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role, identity.HasChangedAutoAssignedPassword);
         // var newRefreshToken = identity.GenerateRefreshToken(128);
         // identity.UpdatedAt = DateTime.UtcNow;
 
@@ -284,7 +291,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         };
     }
 
-        private string GenerateJwtToken(Guid identityId, string email, string role)
+    private string GenerateJwtToken(Guid identityId, string email, string role, bool hasChangedAutoAssignedPassword)
     {
         var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? throw new InvalidOperationException("jwt_secret_key not found in environment variables.");
         var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? throw new InvalidOperationException("jwt_issuer not found in environment variables.");
@@ -299,6 +306,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
                 new Claim(ClaimTypes.NameIdentifier, identityId.ToString()),
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role),
+                new Claim("autoPassChanged", hasChangedAutoAssignedPassword.ToString())
             }),
             Expires = DateTime.UtcNow.AddMinutes(1),
             Issuer = issuer,
@@ -309,37 +317,37 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    }  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
 
 

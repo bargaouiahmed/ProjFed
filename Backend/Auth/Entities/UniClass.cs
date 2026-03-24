@@ -15,11 +15,11 @@ public class UniClass
     public int Number { get; set; }
 
     public ICollection<Student> Students { get; set; } = [];
-    public ICollection<Course> Courses {get;set;} = [];
+    public ICollection<Course> Courses { get; set; } = [];
     public string ClassCode { get; set; } = string.Empty;
 
 
-    public string CreateClassCode(int length =6)
+    public string CreateClassCode(int length = 6)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var token = new char[length];
@@ -27,8 +27,8 @@ public class UniClass
         {
             token[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
         }
-        
-        ClassCode=new string(token);
+
+        ClassCode = new string(token);
         return ClassCode;
 
     }

@@ -13,14 +13,14 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 
-var connStr=string.Empty;
-if(builder.Environment.IsDevelopment())
+var connStr = string.Empty;
+if (builder.Environment.IsDevelopment())
 {
-    connStr=Environment.GetEnvironmentVariable("DB_CONN_URL_DEV") ?? throw new InvalidOperationException("DB_CONN_URL_DEV not found in environment variables.");
+    connStr = Environment.GetEnvironmentVariable("DB_CONN_URL_DEV") ?? throw new InvalidOperationException("DB_CONN_URL_DEV not found in environment variables.");
 }
 else
 {
-    connStr=Environment.GetEnvironmentVariable("DB_CONN_URL") ?? throw new InvalidOperationException("DB_CONN_URL not found in environment variables.");
+    connStr = Environment.GetEnvironmentVariable("DB_CONN_URL") ?? throw new InvalidOperationException("DB_CONN_URL not found in environment variables.");
 }
 // Add services to the container.
 
@@ -50,8 +50,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? throw new InvalidOperationException("JWT_AUDIENCE not found in environment variables."),
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secret))
         };
-options.Events = new JwtBearerEvents
+        options.Events = new JwtBearerEvents
         {
+            OnTokenValidated = context =>
+{
+    var autoPassChanged = context.Principal?.FindFirst("autoPassChanged")?.Value;
+
+    if (autoPassChanged == "false")
+    {
+        context.Fail("Password change required.");
+    }
+
+    return Task.CompletedTask;
+},
             OnChallenge = async context =>
             {
                 // suppress the default 401 response
@@ -72,9 +83,10 @@ options.Events = new JwtBearerEvents
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
 
-                var body = JsonSerializer.Serialize(new { 
-                    status = 401, 
-                    message 
+                var body = JsonSerializer.Serialize(new
+                {
+                    status = 401,
+                    message
                 });
 
                 await context.Response.WriteAsync(body);

@@ -4,11 +4,11 @@ namespace Backend.Administration.DataTransferObjects.Requests;
 
 public class NewClassMetaDataRequest
 {
-    public required string Specialty{get;set;}
-    public Guid InstituteId{get;set;}
-    public required string LevelOfStudies{get;set;}
-    public required int MaxYears{get;set;}
-    public required int DefaultMaxTerms{get;set;}
+    public required string Specialty { get; set; }
+    public Guid InstituteId { get; set; }
+    public required string LevelOfStudies { get; set; }
+    public required int MaxYears { get; set; }
+    public required int DefaultMaxTerms { get; set; }
 
 }
 

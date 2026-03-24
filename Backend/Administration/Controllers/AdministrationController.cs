@@ -11,7 +11,7 @@ namespace Backend.Administration.Controllers
 {
     [Route("api/v0/administration")]
     [ApiController]
-    [Authorize(Roles = "uni_admin,uni_user")]
+    [Authorize(Roles = "uni_admin,uni_staff")]
     public class AdministrationController(IAdministrationService admservice) : ControllerBase
     {
         [HttpPost("metadata")]
@@ -33,7 +33,7 @@ namespace Backend.Administration.Controllers
             }
         }
 
-         [HttpGet("metadata")]
+        [HttpGet("metadata")]
 
         public async Task<ActionResult<List<SerializedClassMetaData>>> GetAllClassMetaData([FromQuery] string instituteId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -71,7 +71,7 @@ namespace Backend.Administration.Controllers
             }
         }
         [HttpPut("metadata")]
-         public async Task<ActionResult<SerializedClassMetaData>> UpdateClassMetaData([FromBody] SerializedClassMetaData request)
+        public async Task<ActionResult<SerializedClassMetaData>> UpdateClassMetaData([FromBody] SerializedClassMetaData request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -82,6 +82,86 @@ namespace Backend.Administration.Controllers
             {
                 var result = await admservice.UpdateClassMetaData(request, Guid.Parse(userId));
                 return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "uni_admin")]
+        [HttpPost("staff/register")]
+        public async Task<ActionResult> RegisterUniStaff([FromBody] RegisterUniStaffRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                await admservice.RegisterUniStaff(Guid.Parse(userId), request);
+                return Ok("Staff invitation created successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "uni_admin")]
+        [HttpPost("staff/add-existing")]
+        public async Task<ActionResult> AddExistingUniStaff([FromBody] AddExistingUniStaffRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                await admservice.AddExistingUniStaff(Guid.Parse(userId), request);
+                return Ok("Staff member added successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "uni_admin,uni_staff")]
+        [HttpPost("courses/{courseId}/professors")]
+        public async Task<ActionResult> AddNewProfessor([FromRoute] Guid courseId, [FromBody] AddNewProfessorRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                await admservice.AddNewProfessor(Guid.Parse(userId), courseId, request);
+                return Ok("Professor invitation created successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "uni_admin,uni_staff")]
+        [HttpPost("courses/{courseId}/professors/add-existing")]
+        public async Task<ActionResult> AddExistingProfessor([FromRoute] Guid courseId, [FromBody] AddExistingProfessorRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                await admservice.AddExistingProfessor(Guid.Parse(userId), courseId, request);
+                return Ok("Professor assignment processed successfully.");
             }
             catch (InvalidOperationException ex)
             {

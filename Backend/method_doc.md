@@ -136,6 +136,10 @@ This document lists newly added methods and related DTOs/entities so implementat
 - `Task<List<SerializedClassMetaData>> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10)`
 - `Task<ClassPrettyName> AddClassToMetadataType(Guid uniAdminIdentityId, Guid metadataId)`
 - `Task<SerializedClassMetaData> UpdateClassMetaData(SerializedClassMetaData request, Guid uniAdminIdentityId)`
+- `Task AddNewProfessor(Guid uniStaffIdentityId, Guid courseId, AddNewProfessorRequest request)`
+- `Task RegisterUniStaff(Guid uniAdminIdentityId, RegisterUniStaffRequest request)`
+- `Task AddExistingProfessor(Guid uniStaffIdentityId, Guid courseId, AddExistingProfessorRequest request)`
+- `Task AddExistingUniStaff(Guid uniAdminIdentityId, AddExistingUniStaffRequest request)`
 
 ### `IStudentService` (`Backend/StudentSpace/Services/IStudentService.cs`)
 
@@ -146,6 +150,40 @@ This document lists newly added methods and related DTOs/entities so implementat
 
 - `AdministrationService : IAdministrationService`
 - `StudentService : IStudentService`
+
+## New Methods (This Update)
+
+### `AdministrationService.AddExistingProfessor(Guid uniStaffIdentityId, Guid courseId, AddExistingProfessorRequest request)`
+
+- Location: `Backend/Administration/Services/AdministrationService.cs`
+- Purpose: Assign an existing professor to a course or create an invitation if they are from another institute.
+- Input DTOs:
+  - `AddExistingProfessorRequest`
+    - `Email`
+- Return type: `Task`
+- Side effects:
+  - Reads `UniUsers`, `Courses`, `Professors`, and related institute metadata.
+  - Creates a `Notification` when the professor belongs to the same institute.
+  - Creates a `ProfessorInvitation` when the professor is from another institute.
+  - Persists changes via `SaveChangesAsync`.
+
+### `AdministrationService.AddExistingUniStaff(Guid uniAdminIdentityId, AddExistingUniStaffRequest request)`
+
+- Location: `Backend/Administration/Services/AdministrationService.cs`
+- Purpose: Attach an existing staff member to the admin’s institute.
+- Input DTOs:
+  - `AddExistingUniStaffRequest`
+    - `Email`
+- Return type: `Task`
+- Side effects:
+  - Reads `Identities` and `UniUsers`.
+  - Updates `UniUser.InstituteId` when unset.
+  - Persists changes via `SaveChangesAsync`.
+
+## DTO Reference (Added)
+
+- `Backend/Administration/DataTransferObjects/Requests/AddExistingProfessorRequest.cs`
+- `Backend/Administration/DataTransferObjects/Requests/AddExistingUniStaffRequest.cs`
 
 ## DI Registration
 

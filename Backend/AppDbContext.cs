@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using Backend.Admin.Entities;
+using Backend.Administration.Entities;
 using Backend.Auth.Entities;
 using Backend.StudentSpace.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,17 +10,19 @@ namespace Backend.Database.Auth;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<AdminUser> AdminUsers { get; set; } = null!;
-    public DbSet<Professor> Professors { get; set; } = null!;
-    public DbSet<Student> Students { get; set; } = null!;
-    public DbSet<AuthIdentity> Identities { get; set; } = null!;
-    public DbSet<Institute> Institutes { get; set; } = null!;
-    public DbSet<ClassMetadata> ClassMetadata { get; set; } = null!;
-    public DbSet<UniUser> UniUsers { get; set; } = null!;
-    public DbSet<UniClass> UniClasses { get; set; } = null!;
-
-    public DbSet<Course> Courses { get; set; } = null!;
-    public DbSet<PendingJoinRequest> PendingJoinRequests { get; set; } = null!;
+    public DbSet<AdminUser> AdminUsers { get; set; }
+    public DbSet<Professor> Professors { get; set; }
+    public DbSet<Student> Students { get; set; }
+    public DbSet<AuthIdentity> Identities { get; set; }
+    public DbSet<Institute> Institutes { get; set; }
+    public DbSet<ClassMetadata> ClassMetadata { get; set; }
+    public DbSet<UniUser> UniUsers { get; set; }
+    public DbSet<Notification> Notifications{get;set;}
+    public DbSet<UniClass> UniClasses { get; set; }
+    public DbSet<UniStaffInvitation> UniStaffInvitations {get;set;}
+    public DbSet<ProfessorInvitation> ProfessorInvitations{get;set;}
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<PendingJoinRequest> PendingJoinRequests { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -28,12 +31,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             identity.HasIndex(i => i.Email).IsUnique();
             identity.HasIndex(i => i.RefreshToken).IsUnique();
-        
+
         });
         modelBuilder.Entity<AdminUser>(admin =>
         {
             admin.HasOne(a => a.Identity)
-                .WithOne(i=>i.AdminUser)
+                .WithOne(i => i.AdminUser)
                 .HasForeignKey<AdminUser>(a => a.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -48,7 +51,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Student>(student =>
         {
             student.HasOne(s => s.Identity)
-                .WithOne(i=>i.Student)
+                .WithOne(i => i.Student)
                 .HasForeignKey<Student>(s => s.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -57,29 +60,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(s => s.UniClassId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        modelBuilder.Entity<Course>(course=>{
-            course.HasOne(c=>c.Professor)
-            .WithMany(p=>p.Courses)
-            .HasForeignKey(c=>c.ProfessorId)
+        modelBuilder.Entity<Course>(course =>
+        {
+            course.HasOne(c => c.Professor)
+            .WithMany(p => p.Courses)
+            .HasForeignKey(c => c.ProfessorId)
             .OnDelete(DeleteBehavior.Cascade);
-            course.HasOne(c=>c.UniClass)
-            .WithMany(uc=>uc.Courses)
-            .HasForeignKey(c=>c.UniClassId)
+            course.HasOne(c => c.UniClass)
+            .WithMany(uc => uc.Courses)
+            .HasForeignKey(c => c.UniClassId)
             .OnDelete(DeleteBehavior.Cascade);
         });
-        modelBuilder.Entity<UniUser>(uniUser => 
+        modelBuilder.Entity<UniUser>(uniUser =>
         {
             uniUser.HasOne(u => u.Identity)
-                .WithOne(i=>i.UniUser)
+                .WithOne(i => i.UniUser)
                 .HasForeignKey<UniUser>(u => u.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             uniUser.HasOne(u => u.Institute)
                 .WithMany(i => i.Admins)
-                .HasForeignKey(u => u.InstutiteId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(u => u.InstituteId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
-       
+
         modelBuilder.Entity<ClassMetadata>(classMetadata =>
         {
             classMetadata.HasOne(cm => cm.Institute)
@@ -108,6 +112,33 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(pjr => pjr.IdentityReviewedBy)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+
+        modelBuilder.Entity<UniStaffInvitation>(invitation =>
+        {
+            invitation.HasOne(i=>i.Identity)
+            .WithMany(ai=>ai.UniStaffInvitations)
+            .HasForeignKey(i=>i.IdentityId)
+            .OnDelete(DeleteBehavior.Cascade);
+            invitation.HasOne(i=>i.Institute)
+            .WithMany()
+            .HasForeignKey(i=>i.InstituteId)
+            .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProfessorInvitation>(invitation =>
+        {
+            invitation.HasOne(i=>i.Identity).WithMany(au=>au.ProfessorInvitations).HasForeignKey(i=>i.IdentityId).OnDelete(DeleteBehavior.Cascade);
+            invitation.HasOne(i=>i.Course).WithMany().HasForeignKey(i=>i.CourseId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Notification>(n =>
+        {
+            n.HasOne(n=>n.Identity)
+            .WithMany(i=>i.Notifications)
+            .HasForeignKey(n=>n.IdentityId)
+            .OnDelete(DeleteBehavior.Cascade);
         });
 
 

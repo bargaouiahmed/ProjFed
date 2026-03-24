@@ -11,7 +11,7 @@ namespace Backend.StudentSpace.controllers
     [ApiController]
     [Authorize(Roles = "student")]
 
-    public class StudentSpaceController (IStudentService isService): ControllerBase
+    public class StudentSpaceController(IStudentService isService) : ControllerBase
     {
         [HttpPost]
         public async Task<ActionResult<List<SerializedCourse>>> GetAllStudentCourses()
@@ -19,10 +19,10 @@ namespace Backend.StudentSpace.controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
-              return Forbid("You're not authorized to access this resource.");
+                return Forbid("You're not authorized to access this resource.");
             }
-            try         
-              {
+            try
+            {
                 return Ok(await isService.GetAllStudentCourses(Guid.Parse(userId)));
             }
             catch (InvalidOperationException ex)
@@ -33,7 +33,7 @@ namespace Backend.StudentSpace.controllers
 
 
         [HttpPost("course/add")]
-        public async Task <ActionResult> AddStudentToClass([FromQuery] string classCode)
+        public async Task<ActionResult> AddStudentToClass([FromQuery] string classCode)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)

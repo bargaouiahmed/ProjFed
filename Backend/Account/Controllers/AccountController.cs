@@ -13,14 +13,14 @@ namespace Backend.Account.Controllers
     [ApiController]
     public class AccountController(IAccountService accountService) : ControllerBase
     {
-        
+
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<SerializedUser>> GetUserById()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var role = User.FindFirstValue(ClaimTypes.Role);
-            if (userId==null || role == null)
+            if (userId == null || role == null)
             {
                 return Unauthorized("Invalid token: missing user ID or role claim.");
             }
@@ -47,13 +47,13 @@ namespace Backend.Account.Controllers
         {
             var userId = GetClaim("id");
             var role = GetClaim("role");
-            if(string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(role))return Unauthorized("You are not authorized to do this action");
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(role)) return Unauthorized("You are not authorized to do this action");
             try
             {
                 var id = Guid.Parse(userId);
-                return Ok(await accountService.UpdateAccountAsync(request, id,role));
+                return Ok(await accountService.UpdateAccountAsync(request, id, role));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex);
             }
@@ -120,10 +120,10 @@ namespace Backend.Account.Controllers
 
 
         //key could also be role 
-        private string? GetClaim(string key="id")
+        private string? GetClaim(string key = "id")
         {
-            if(key=="id")return User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(key=="role")return User.FindFirstValue(ClaimTypes.Role);
+            if (key == "id") return User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (key == "role") return User.FindFirstValue(ClaimTypes.Role);
             return null;
         }
     }
