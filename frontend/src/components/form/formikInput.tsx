@@ -17,7 +17,12 @@ export const BaseInput = ({
   ...props
 }: BaseInputProps) => {
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      className={cn(
+        "flex flex-col gap-2",
+        className?.includes("hidden") && "hidden",
+      )}
+    >
       <label
         className={cn("text-sm font-medium pl-1", error && "text-red-400")}
       >
@@ -64,12 +69,16 @@ interface FormikInputProps {
   placeholder?: string;
   icon?: React.ReactNode;
   rightElement?: React.ReactNode;
+  className?: string;
+
+  setLocalPreview?: (file: File) => void;
 }
 
 export const FormikInput = ({
   name,
   type = "text",
-
+  className,
+  setLocalPreview,
   ...props
 }: FormikInputProps) => {
   const [field, meta] = useField(name);
@@ -78,12 +87,16 @@ export const FormikInput = ({
   if (type === "file") {
     return (
       <BaseInput
+        className={className}
         {...props}
         name={name}
         type="file"
         onChange={(e) => {
           const file = e.currentTarget.files?.[0];
           setFieldValue(name, file);
+          if (setLocalPreview) {
+            setLocalPreview(file!);
+          }
         }}
         error={meta.touched && meta.error ? meta.error : ""}
       />

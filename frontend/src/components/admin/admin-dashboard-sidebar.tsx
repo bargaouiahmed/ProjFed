@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import logout from "@/querys/logout";
+import Profile from "../profile";
 
 export default function AdminDashboardSideBar() {
   const naviagate = useNavigate();
@@ -60,8 +61,9 @@ export default function AdminDashboardSideBar() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+
+            <Profile />
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-500"
