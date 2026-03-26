@@ -7,6 +7,11 @@ namespace Backend.Auth.Entities;
 
 public class UniClass
 {
+    public UniClass()
+    {
+        ClassCode = GenerateClassCode();
+    }
+
     public Guid Id { get; set; }
 
     public Guid MetadataId { get; set; }
@@ -16,10 +21,17 @@ public class UniClass
 
     public ICollection<Student> Students { get; set; } = [];
     public ICollection<Course> Courses { get; set; } = [];
-    public string ClassCode { get; set; } = string.Empty;
+    public string ClassCode { get; private set; } = string.Empty;
 
 
     public string CreateClassCode(int length = 6)
+    {
+        ClassCode = GenerateClassCode(length);
+        return ClassCode;
+
+    }
+
+    private static string GenerateClassCode(int length = 6)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var token = new char[length];
@@ -28,8 +40,6 @@ public class UniClass
             token[i] = chars[RandomNumberGenerator.GetInt32(chars.Length)];
         }
 
-        ClassCode = new string(token);
-        return ClassCode;
-
+        return new string(token);
     }
 }

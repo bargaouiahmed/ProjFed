@@ -6,9 +6,9 @@ using Backend.Auth.Entities;
 using Backend.Auth.Services;
 using Backend.Database.Auth;
 using Backend.StudentSpace.Entities;
-using Humanizer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace Backend.Administration.Services;
 
@@ -244,7 +244,8 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             db.Add(identity);
             db.Add(professor);
             db.Add(invitation);
-            List<Task> tasks = [db.SaveChangesAsync(), smtp.SendEmail(identity.Email, "Invitation to join EduAdmin", $"You've been invited to join EduAdmin by {uniStaffMember.Lastname} {uniStaffMember.Firstname}")];
+            List<Task> tasks = [smtp.SendEmail(identity.Email, "Invitation to join EduAdmin", $"You've been invited to join EduAdmin by {uniStaffMember.Lastname} {uniStaffMember.Firstname}")];
+            await db.SaveChangesAsync();
             await Task.WhenAll(tasks);
         }
 

@@ -16,7 +16,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
     {
         var superAdminEmail = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL") ?? throw new InvalidOperationException("SUPER_ADMIN_EMAIL not defined");
         var superAdminPassword = Environment.GetEnvironmentVariable("SUPER_ADMIN_PASSWORD") ?? throw new InvalidOperationException("SUPER_ADMIN_PASSWORD not defined");
-
+        
 
         var identity = await db.AdminUsers.Include(a => a.Identity).AnyAsync(a => a.Identity.Email == superAdminEmail && a.Identity.Role == "super_admin");
 

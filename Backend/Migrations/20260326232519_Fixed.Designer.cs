@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260318021111_MakePendingJoinReviewedByNullable")]
-    partial class MakePendingJoinReviewedByNullable
+    [Migration("20260326232519_Fixed")]
+    partial class Fixed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -79,6 +79,92 @@ namespace Backend.Migrations
                     b.ToTable("PendingJoinRequests");
                 });
 
+            modelBuilder.Entity("Backend.Administration.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("IdentityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Seen")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdentityId");
+
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("Backend.Administration.Entities.ProfessorInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClassPrettyName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdentityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("InvitedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("IdentityId");
+
+                    b.ToTable("ProfessorInvitations");
+                });
+
+            modelBuilder.Entity("Backend.Administration.Entities.UniStaffInvitation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("IdentityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InstituteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("InvitedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdentityId");
+
+                    b.HasIndex("InstituteId");
+
+                    b.ToTable("UniStaffInvitations");
+                });
+
             modelBuilder.Entity("Backend.Auth.Entities.AdminUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -142,6 +228,9 @@ namespace Backend.Migrations
                     b.Property<DateTime?>("PasswordResetTokenExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("ProfessorId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("text");
 
@@ -160,6 +249,8 @@ namespace Backend.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("ProfessorId");
+
                     b.HasIndex("RefreshToken")
                         .IsUnique();
 
@@ -172,6 +263,9 @@ namespace Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("CurrentTerm")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("InstituteId")
                         .HasColumnType("uuid");
 
@@ -181,6 +275,9 @@ namespace Backend.Migrations
                     b.Property<string>("LevelOfStudies")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("MaxTerms")
+                        .HasColumnType("integer");
 
                     b.Property<int>("MaxYears")
                         .HasColumnType("integer");
@@ -236,7 +333,7 @@ namespace Backend.Migrations
                     b.Property<Guid>("IdentityId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Lasttname")
+                    b.Property<string>("Lastname")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -249,30 +346,6 @@ namespace Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Professors");
-                });
-
-            modelBuilder.Entity("Backend.Auth.Entities.ProfessorUniClass", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProfId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Semester")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UniClassId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfId");
-
-                    b.HasIndex("UniClassId");
-
-                    b.ToTable("ProfessorUniClasses");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.Student", b =>
@@ -308,28 +381,6 @@ namespace Backend.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("Backend.Auth.Entities.SubjectPerClass", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ClassMetadataId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsOptional")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Semester")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClassMetadataId");
-
-                    b.ToTable("SubjectPerClasses");
-                });
-
             modelBuilder.Entity("Backend.Auth.Entities.UniClass", b =>
                 {
                     b.Property<Guid>("Id")
@@ -346,12 +397,13 @@ namespace Backend.Migrations
                     b.Property<int>("Number")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Semester")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("MetadataId");
+                    b.HasIndex("ClassCode")
+                        .IsUnique();
+
+                    b.HasIndex("MetadataId", "Number")
+                        .IsUnique();
 
                     b.ToTable("UniClasses");
                 });
@@ -369,7 +421,7 @@ namespace Backend.Migrations
                     b.Property<Guid>("IdentityId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("InstutiteId")
+                    b.Property<Guid?>("InstituteId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Lastname")
@@ -384,9 +436,40 @@ namespace Backend.Migrations
                     b.HasIndex("IdentityId")
                         .IsUnique();
 
-                    b.HasIndex("InstutiteId");
+                    b.HasIndex("InstituteId");
 
                     b.ToTable("UniUsers");
+                });
+
+            modelBuilder.Entity("Backend.StudentSpace.Entities.Course", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProfessorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Term")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UniClassId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfessorId");
+
+                    b.HasIndex("UniClassId");
+
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("Backend.Admin.Entities.PendingJoinRequest", b =>
@@ -407,15 +490,73 @@ namespace Backend.Migrations
                     b.Navigation("ReviewedBy");
                 });
 
+            modelBuilder.Entity("Backend.Administration.Entities.Notification", b =>
+                {
+                    b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
+                        .WithMany("Notifications")
+                        .HasForeignKey("IdentityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Identity");
+                });
+
+            modelBuilder.Entity("Backend.Administration.Entities.ProfessorInvitation", b =>
+                {
+                    b.HasOne("Backend.StudentSpace.Entities.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
+                        .WithMany("ProfessorInvitations")
+                        .HasForeignKey("IdentityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Identity");
+                });
+
+            modelBuilder.Entity("Backend.Administration.Entities.UniStaffInvitation", b =>
+                {
+                    b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
+                        .WithMany("UniStaffInvitations")
+                        .HasForeignKey("IdentityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Auth.Entities.Institute", "Institute")
+                        .WithMany()
+                        .HasForeignKey("InstituteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Identity");
+
+                    b.Navigation("Institute");
+                });
+
             modelBuilder.Entity("Backend.Auth.Entities.AdminUser", b =>
                 {
                     b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
-                        .WithOne()
+                        .WithOne("AdminUser")
                         .HasForeignKey("Backend.Auth.Entities.AdminUser", "IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Identity");
+                });
+
+            modelBuilder.Entity("Backend.Auth.Entities.AuthIdentity", b =>
+                {
+                    b.HasOne("Backend.Auth.Entities.Professor", "Professor")
+                        .WithMany()
+                        .HasForeignKey("ProfessorId");
+
+                    b.Navigation("Professor");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.ClassMetadata", b =>
@@ -440,29 +581,10 @@ namespace Backend.Migrations
                     b.Navigation("Identity");
                 });
 
-            modelBuilder.Entity("Backend.Auth.Entities.ProfessorUniClass", b =>
-                {
-                    b.HasOne("Backend.Auth.Entities.Professor", "Prof")
-                        .WithMany("Classes")
-                        .HasForeignKey("ProfId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Backend.Auth.Entities.UniClass", "UniClass")
-                        .WithMany("Professors")
-                        .HasForeignKey("UniClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Prof");
-
-                    b.Navigation("UniClass");
-                });
-
             modelBuilder.Entity("Backend.Auth.Entities.Student", b =>
                 {
                     b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
-                        .WithOne()
+                        .WithOne("Student")
                         .HasForeignKey("Backend.Auth.Entities.Student", "IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -476,17 +598,6 @@ namespace Backend.Migrations
                     b.Navigation("Identity");
 
                     b.Navigation("UniClass");
-                });
-
-            modelBuilder.Entity("Backend.Auth.Entities.SubjectPerClass", b =>
-                {
-                    b.HasOne("Backend.Auth.Entities.ClassMetadata", "ClassMetadata")
-                        .WithMany("AvailableSubjects")
-                        .HasForeignKey("ClassMetadataId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ClassMetadata");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.UniClass", b =>
@@ -503,26 +614,57 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Auth.Entities.UniUser", b =>
                 {
                     b.HasOne("Backend.Auth.Entities.AuthIdentity", "Identity")
-                        .WithOne()
+                        .WithOne("UniUser")
                         .HasForeignKey("Backend.Auth.Entities.UniUser", "IdentityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Backend.Auth.Entities.Institute", "Institute")
                         .WithMany("Admins")
-                        .HasForeignKey("InstutiteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("InstituteId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Identity");
 
                     b.Navigation("Institute");
                 });
 
+            modelBuilder.Entity("Backend.StudentSpace.Entities.Course", b =>
+                {
+                    b.HasOne("Backend.Auth.Entities.Professor", "Professor")
+                        .WithMany("Courses")
+                        .HasForeignKey("ProfessorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Auth.Entities.UniClass", "UniClass")
+                        .WithMany("Courses")
+                        .HasForeignKey("UniClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Professor");
+
+                    b.Navigation("UniClass");
+                });
+
+            modelBuilder.Entity("Backend.Auth.Entities.AuthIdentity", b =>
+                {
+                    b.Navigation("AdminUser");
+
+                    b.Navigation("Notifications");
+
+                    b.Navigation("ProfessorInvitations");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("UniStaffInvitations");
+
+                    b.Navigation("UniUser");
+                });
+
             modelBuilder.Entity("Backend.Auth.Entities.ClassMetadata", b =>
                 {
-                    b.Navigation("AvailableSubjects");
-
                     b.Navigation("Classes");
                 });
 
@@ -535,12 +677,12 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Auth.Entities.Professor", b =>
                 {
-                    b.Navigation("Classes");
+                    b.Navigation("Courses");
                 });
 
             modelBuilder.Entity("Backend.Auth.Entities.UniClass", b =>
                 {
-                    b.Navigation("Professors");
+                    b.Navigation("Courses");
 
                     b.Navigation("Students");
                 });
