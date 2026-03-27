@@ -13,29 +13,6 @@
   - `application/json` for JSON bodies
   - `multipart/form-data` for file upload forms
 
-## 13. Update Current Account
-
-- **Endpoint:** `PUT /accounts`
-- **Auth:** Bearer token required
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Content-Type: multipart/form-data`
-  - `Accept: application/json`
-- **Request Body:** Form Data (`multipart/form-data`)
-  - `firstname` (string, optional)
-  - `lastname` (string, optional)
-  - `email` (string, optional)
-  - `pfp` (file, optional; allowed: `.jpg`, `.jpeg`, `.png`, `.webp`, `.svg`; max 5MB)
-- **Response:**
-  - 200 OK: Updated `SerializedUser`
-  - 400 Bad Request: Error message
-  - 401 Unauthorized: Missing/invalid token claims
-- **Side Effects:**
-  - Updates the account profile (names/email)
-  - If `pfp` is provided, stores the file under `wwwroot/uploads/users/<role>/...` and updates `pfpUrl`
-
----
-
 ## 14. Reset User Password (Admin)
 
 - **Endpoint:** `PUT /admin/users/{userId}/reset-password`
