@@ -43,7 +43,6 @@ export default function Profile() {
             </DialogDescription>
           </DialogHeader>
           <Formik
-            enableReinitialize:true
             initialValues={{
               firstname: account?.firstname || "",
               lastname: account?.lastname || "",
@@ -57,6 +56,7 @@ export default function Profile() {
               pfp: yup.mixed(),
             })}
             onSubmit={(values) => {
+              console.log(values);
               const formData = new FormData();
 
               formData.append("firstname", values.firstname);
@@ -75,7 +75,7 @@ export default function Profile() {
             {() => (
               <Form className="flex flex-col" encType="multipart/form-data">
                 <section className="flex flex-col items-center gap-3">
-                  <ImageUpload name="pfpUrl" preview={account?.pfpUrl} />
+                  <ImageUpload name="pfp" preview={account?.pfpUrl} />
 
                   <h1>
                     {account?.firstname} {account?.lastname}

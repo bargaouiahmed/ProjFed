@@ -19,7 +19,7 @@ export default function ImageUpload({
     <label className="relative cursor-pointer group">
       {preview || localPreview ? (
         <img
-          src={preview || localPreview}
+          src={localPreview ? localPreview : preview}
           className="w-24 h-24 rounded-full object-cover border"
         />
       ) : (

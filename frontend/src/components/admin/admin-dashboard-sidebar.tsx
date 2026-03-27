@@ -34,7 +34,7 @@ export default function AdminDashboardSideBar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <Link to="/admin/dashboard/requests/$page" params={{ page: "1" }}>
+          <Link to="/admin/dashboard/requests">
             <Button variant={"ghost"}>
               {open && "university admins requests"}
               <IconSchool />
