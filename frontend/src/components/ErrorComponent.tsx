@@ -2,8 +2,10 @@ import { Link } from "@tanstack/react-router";
 import ThemeToggler from "./ThemeToggler";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
-
+import { useLocation } from "@tanstack/react-router";
 export default function ErrorComponent() {
+  const { pathname } = useLocation();
+  console.log(pathname);
   const { theme } = useTheme();
   return (
     <main
@@ -21,7 +23,7 @@ export default function ErrorComponent() {
         <div className="w-16 h-1 bg-primary mx-auto mb-8 rounded-full"></div>
 
         <h2 className="text-2xl font-bold mb-3 tracking-wide text-red-300">
-          Page Not Found
+          {pathname.slice(1)} Not Found
         </h2>
 
         <p className="text-muted-foreground text-sm mb-10 leading-relaxed">
