@@ -1,0 +1,3 @@
+[install]
+# Only install packages released at least 1 day ago (86400 seconds)
+minimumReleaseAge = 86400
