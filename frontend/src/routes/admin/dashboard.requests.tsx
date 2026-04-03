@@ -106,6 +106,7 @@ function RouteComponent() {
                         <Button
                           variant={"outline"}
                           size={"sm"}
+                          asChild
                           className="w-34"
                         >
                           proof document
@@ -116,6 +117,7 @@ function RouteComponent() {
                         <Button
                           variant={"outline"}
                           size={"sm"}
+                          asChild
                           className="w-34"
                         >
                           identity document
