@@ -7,10 +7,12 @@ using Backend.Auth.Services;
 using Backend.Database.Auth;
 using Backend.StudentSpace.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Backend.Administration.Services;
+    public record UniId(Guid Id);
 
 public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdministrationService
 {
@@ -43,6 +45,13 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
 
         await db.SaveChangesAsync();
 
+    }
+
+    public async Task<UniId> GetInstituteIdForStaffMember(Guid uniStaffIdentityId)
+    {
+        var uniStaffMember = await db.UniUsers.Include(uu => uu.Identity).FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        if (!uniStaffMember.InstituteId.HasValue) throw new InvalidOperationException("This staff member does not belong to any institute");
+        return new UniId(uniStaffMember.InstituteId.Value);
     }
     public async Task<List<SerializedClassMetaData>> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10)
     {

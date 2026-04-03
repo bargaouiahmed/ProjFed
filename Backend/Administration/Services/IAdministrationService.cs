@@ -14,6 +14,7 @@ public interface IAdministrationService
     public  Task RegisterUniStaff(Guid uniAdminIdentityId, RegisterUniStaffRequest request);
     public Task AddExistingProfessor(Guid uniStaffIdentityId, Guid courseId, AddExistingProfessorRequest request);
     public Task AddExistingUniStaff(Guid uniAdminIdentityId, AddExistingUniStaffRequest request);
+    public Task<UniId> GetInstituteIdForStaffMember(Guid uniStaffIdentityId);
 
 
 }

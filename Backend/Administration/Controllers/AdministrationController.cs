@@ -32,7 +32,7 @@ namespace Backend.Administration.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        
         [HttpGet("metadata")]
 
         public async Task<ActionResult<List<SerializedClassMetaData>>> GetAllClassMetaData([FromQuery] string instituteId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -165,6 +165,21 @@ namespace Backend.Administration.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet("staff/institute")]
+        public async Task<ActionResult<UniId>> GetInstituteIdForStaffMember()
+        {
+            if(!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized("Invalid token: missing or invalid user ID claim.");
+            }
+            try
+            {                var result = await admservice.GetInstituteIdForStaffMember(userId);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)            {
                 return BadRequest(ex.Message);
             }
         }
