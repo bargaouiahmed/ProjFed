@@ -79,6 +79,7 @@ function RouteComponent() {
               <TableHead>City</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Requested At</TableHead>
+              <TableHead>Documents</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -94,87 +95,113 @@ function RouteComponent() {
                   <TableCell>{req.instituteCountry}</TableCell>
                   <TableCell>{req.instituteCity}</TableCell>
                   <TableCell>{req.status}</TableCell>
+
                   <TableCell>
                     {new Date(req.requestedAt).toLocaleDateString()}
                   </TableCell>
 
-                  <TableCell className="flex gap-2">
-                    {/* Accept */}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                  <TableCell>
+                    <div className="flex flex-col items-center gap-2">
+                      <Link to={req.proofDocumentUrl} target="_blank">
                         <Button
-                          variant={"success"}
-                          disabled={req.status === "accepted"}
+                          variant={"outline"}
+                          size={"sm"}
+                          className="w-34"
                         >
-                          Accept
+                          proof document
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader className="text-xl">
-                          Are you sure you want to accept {req.instituteName}{" "}
-                          institute?
-                          <AlertDialogDescription />
-                        </AlertDialogHeader>
+                      </Link>
 
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
+                      <Link to={req.identityDocumentUrl} target="_blank">
+                        <Button
+                          variant={"outline"}
+                          size={"sm"}
+                          className="w-34"
+                        >
+                          identity document
+                        </Button>
+                      </Link>
+                    </div>
+                  </TableCell>
+                  <TableCell className="flex gap-2">
+                    <div className="flex flex-col gap-2">
+                      {/* Accept */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
                             variant={"success"}
-                            onClick={() => {
-                              acceptRequest({ requestId: req.requestId });
-                            }}
+                            disabled={req.status === "accepted"}
                           >
                             Accept
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader className="text-xl">
+                            Are you sure you want to accept {req.instituteName}{" "}
+                            institute?
+                            <AlertDialogDescription />
+                          </AlertDialogHeader>
 
-                    {/* Reject */}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant={"destructive"}
-                          disabled={req.status === "rejected"}
-                        >
-                          Reject
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader className="text-xl">
-                          Are you sure you want to reject {req.instituteName}{" "}
-                          institute?
-                          <AlertDialogDescription />
-                        </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant={"success"}
+                              onClick={() => {
+                                acceptRequest({ requestId: req.requestId });
+                              }}
+                            >
+                              Accept
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
 
-                        <form
-                          className="flex flex-col gap-2"
-                          onSubmit={(e) => e.preventDefault()}
-                        >
-                          <label>Rejection message:</label>
-                          <Textarea
-                            value={rejectMessage}
-                            onChange={(e) => setRejectMessage(e.target.value)}
-                          />
-                        </form>
-
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
+                      {/* Reject */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
                             variant={"destructive"}
-                            onClick={() => {
-                              rejectRequest({
-                                requestId: req.requestId,
-                                message: rejectMessage,
-                              });
-                              setRejectMessage("");
-                            }}
+                            disabled={req.status === "rejected"}
                           >
                             Reject
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader className="text-xl">
+                            Are you sure you want to reject {req.instituteName}{" "}
+                            institute?
+                            <AlertDialogDescription />
+                          </AlertDialogHeader>
+
+                          <form
+                            className="flex flex-col gap-2"
+                            onSubmit={(e) => e.preventDefault()}
+                          >
+                            <label>Rejection message:</label>
+                            <Textarea
+                              value={rejectMessage}
+                              onChange={(e) => setRejectMessage(e.target.value)}
+                            />
+                          </form>
+
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant={"destructive"}
+                              onClick={() => {
+                                rejectRequest({
+                                  requestId: req.requestId,
+                                  message: rejectMessage,
+                                });
+                                setRejectMessage("");
+                              }}
+                            >
+                              Reject
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
