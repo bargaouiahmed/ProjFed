@@ -33,14 +33,7 @@ export default function AdminDashboardSideBar() {
         <ThemeToggler />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <Link to="/admin/dashboard/requests">
-            <Button variant={"ghost"}>
-              {open && "university admins requests"}
-              <IconSchool />
-            </Button>
-          </Link>
-        </SidebarGroup>
+        <SidebarGroup></SidebarGroup>
         <SidebarGroup />
       </SidebarContent>
       <SidebarFooter>
