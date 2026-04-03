@@ -102,27 +102,25 @@ function RouteComponent() {
 
                   <TableCell>
                     <div className="flex flex-col items-center gap-2">
-                      <Link to={req.proofDocumentUrl} target="_blank">
-                        <Button
-                          variant={"outline"}
-                          size={"sm"}
-                          asChild
+                      <Button variant={"outline"} size={"sm"} asChild>
+                        <Link
+                          to={req.proofDocumentUrl}
+                          target="_blank"
                           className="w-34"
                         >
                           proof document
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
 
-                      <Link to={req.identityDocumentUrl} target="_blank">
-                        <Button
-                          variant={"outline"}
-                          size={"sm"}
-                          asChild
+                      <Button variant={"outline"} size={"sm"} asChild>
+                        <Link
+                          to={req.identityDocumentUrl}
+                          target="_blank"
                           className="w-34"
                         >
                           identity document
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                   </TableCell>
                   <TableCell className="flex gap-2">
