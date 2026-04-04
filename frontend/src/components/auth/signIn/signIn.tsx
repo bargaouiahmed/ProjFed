@@ -15,7 +15,7 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
 
   const [showPassword, setShowPassword] = useState(false);
   return (
-    <main className="flex-1 flex flex-col justify-center items-center px-6 py-12 md:px-20 shadow-md dark:shadow-xl">
+    <main className="flex-1 flex flex-col justify-center items-center px-6 py-12 md:px-20 shadow-md dark:shadow-xl bg-background">
       <div className="w-full max-w-112.5 flex flex-col gap-8">
         <header className="flex flex-col gap-6 text-center md:text-left">
           <Logo />
@@ -87,7 +87,7 @@ export default function SignIn({ goToSignUp }: { goToSignUp: () => void }) {
               </p>
 
               <OrSeparator />
-              <Link to="/admin/register">
+              <Link to="/uni/admin/register">
                 <Button variant="ghost" type="button" className="w-full">
                   request a business plan
                 </Button>

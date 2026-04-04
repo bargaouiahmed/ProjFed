@@ -11,6 +11,7 @@ export interface Account {
   pfpUrl: string;
   role: string;
   updatedAt: string;
+  instituteId?: string;
 }
 
 export default function useAccount() {

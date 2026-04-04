@@ -15,11 +15,12 @@ export default function useRegisterStudent() {
       const response = await api.post<string>("/student/auth/register", {
         ...formData,
       });
+      console.log(formData);
 
       return response.data;
     },
     onError: (error) => {
-      toast.error("wrong password or email already used");
+      toast.error(" email already used or invalid data");
       console.log(error);
     },
     onSuccess: (message) => {

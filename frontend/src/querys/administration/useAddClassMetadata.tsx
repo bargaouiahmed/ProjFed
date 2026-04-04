@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 import { toast } from "sonner";
 
@@ -11,14 +11,16 @@ interface ClassMetadata {
 }
 
 export default function useAddClassMetadata() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: ClassMetadata) => {
-      const response = await api.post("/administration/metadata", data);
+      const response = await api.post("/administration/metadata", { ...data });
       return response.data;
     },
 
     onSuccess: () => {
       toast.success("Class metadata added successfully!");
+      queryClient.invalidateQueries({ queryKey: ["classMetadata"] });
     },
 
     onError: () => {
