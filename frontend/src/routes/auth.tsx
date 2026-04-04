@@ -22,7 +22,7 @@ function RouteComponent() {
     setAuthTab("signIn");
   }
   return (
-    <div className="flex flex-col md:flex-row min-h-screen w-full bg-background ">
+    <div className="flex flex-col md:flex-row min-h-screen w-full   ">
       <div className="absolute top-4 left-4 z-90">
         <ThemeToggler />
       </div>
@@ -33,8 +33,9 @@ function RouteComponent() {
       )}
       <section
         className={cn(
-          "hidden md:block md:basis-5/12 lg:basis-7/12 overflow-hidden  ",
-          theme === "dark" ? "bg-grain" : "bg-light-grain",
+          "hidden md:block md:basis-5/12 lg:basis-7/12 overflow-hidden bg-background",
+          theme === "dark" && "bg-grain",
+          theme === "light" && "bg-light-grain",
         )}
       >
         <Shapes />

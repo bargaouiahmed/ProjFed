@@ -63,7 +63,7 @@ function RouteComponent() {
 
   return (
     <div className="h-full flex items-center justify-center p-2">
-      <div className="w-full max-w-6xl">
+      <div className="w-full ">
         <p className="text-xl font-semibold mb-4">Requests</p>
 
         <Table>

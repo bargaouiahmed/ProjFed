@@ -4,12 +4,15 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import { IconSchool, IconUserCircle } from "@tabler/icons-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { IconUserCircle, IconSchool, IconUsers } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
   DropdownMenu,
@@ -23,7 +26,7 @@ import logout from "@/querys/logout";
 import Profile from "../profile";
 
 export default function AdminDashboardSideBar() {
-  const naviagate = useNavigate();
+  const navigate = useNavigate();
   const { data: account } = useAccount();
   console.log(account);
   const { open } = useSidebar();
@@ -33,8 +36,30 @@ export default function AdminDashboardSideBar() {
         <ThemeToggler />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup></SidebarGroup>
-        <SidebarGroup />
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() =>
+                  navigate({ to: "/administration/dashboard/classes" })
+                }
+              >
+                <IconSchool />
+                {open && <span>Classes</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() =>
+                  navigate({ to: "/administration/dashboard/staff" })
+                }
+              >
+                <IconUsers />
+                {open && <span>Staff</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <DropdownMenu>
@@ -62,7 +87,7 @@ export default function AdminDashboardSideBar() {
               className="text-red-500"
               onClick={() => {
                 logout();
-                naviagate({ to: "/auth" });
+                navigate({ to: "/auth" });
               }}
             >
               Logout

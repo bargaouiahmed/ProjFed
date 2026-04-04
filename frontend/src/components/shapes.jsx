@@ -6,14 +6,22 @@ import { ContactShadows, Float, Environment } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
+import { useTheme } from "./theme-provider";
+import { cn } from "../lib/utils";
 import hit1 from "../assets/sounds/hit1.ogg";
 import hit2 from "../assets/sounds/hit2.ogg";
 import hit3 from "../assets/sounds/hit3.ogg";
 
 export default function Shapes() {
+  const { theme } = useTheme();
+
   return (
     <Canvas
-      className="z-0"
+      className={cn(
+        "z-0 ",
+        theme === "dark" && "bg-grain",
+        theme === "light" && "bg-light-grain",
+      )}
       shadows
       gl={{ antialias: false }}
       dpr={[1, 1.5]}
