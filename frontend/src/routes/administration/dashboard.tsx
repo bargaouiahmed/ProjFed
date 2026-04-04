@@ -9,12 +9,10 @@ export const Route = createFileRoute("/administration/dashboard")({
 function RouteComponent() {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
-        <UniAdminDashboardSideBar />
-        <div>
-          <SidebarTrigger />
-          <Outlet />
-        </div>
+      <UniAdminDashboardSideBar />
+      <div className="flex-1 ">
+        <SidebarTrigger />
+        <Outlet />
       </div>
     </SidebarProvider>
   );

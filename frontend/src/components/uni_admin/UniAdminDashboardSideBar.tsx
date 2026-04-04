@@ -41,7 +41,13 @@ export default function AdminDashboardSideBar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
-                  navigate({ to: "/administration/dashboard/classes" })
+                  navigate({
+                    to: "/administration/dashboard/classes",
+                    search: {
+                      pageSize: 10,
+                      pageNumber: 1,
+                    },
+                  })
                 }
               >
                 <IconSchool />
