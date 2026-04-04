@@ -8,16 +8,33 @@ import {
   IconLogout,
   IconUserCheck,
 } from "@tabler/icons-react";
+import Profile from "@/components/profile";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useTheme } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
+import ThemeToggler from "@/components/ThemeToggler";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { data: account } = useAccount();
+  const { data: account, isPending } = useAccount();
+  const { theme } = useTheme();
+
   const navigate = Route.useNavigate();
+  if (isPending) return <div>Loading...</div>;
+  if (!account) return navigate({ to: "/auth" });
   return (
     <main className="min-h-screen flex items-center ">
+      <div className="absolute top-4 left-4">
+        <ThemeToggler />
+      </div>
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12">
@@ -37,7 +54,13 @@ function RouteComponent() {
             search={{ pageNumber: 1, pageSize: 10 }}
             className="block"
           >
-            <div className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary">
+            <div
+              className={cn(
+                "bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary",
+                theme === "dark" && "bg-dark-card",
+                theme === "light" && "bg-light-card",
+              )}
+            >
               <IconBuilding className="mx-auto mb-4 text-primary" size={48} />
               <h3 className="text-xl font-semibold text-card-foreground mb-2">
                 Staff/Admin Dashboard
@@ -50,7 +73,13 @@ function RouteComponent() {
 
           {/* University Admin Requests */}
           <Link to="/admin/dashboard/requests" className="block">
-            <div className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary">
+            <div
+              className={cn(
+                "bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary",
+                theme === "dark" && "bg-dark-card",
+                theme === "light" && "bg-light-card",
+              )}
+            >
               <IconClipboardList
                 className="mx-auto mb-4 text-primary"
                 size={48}
@@ -66,7 +95,13 @@ function RouteComponent() {
 
           {/* Register as University Admin */}
           <Link to="/uni/admin/register" className="block">
-            <div className="bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary">
+            <div
+              className={cn(
+                "bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary",
+                theme === "dark" && "bg-dark-card",
+                theme === "light" && "bg-light-card",
+              )}
+            >
               <IconUserCheck className="mx-auto mb-4 text-primary" size={48} />
               <h3 className="text-xl font-semibold text-card-foreground mb-2">
                 Register as Admin
@@ -79,19 +114,25 @@ function RouteComponent() {
         </div>
 
         {/* Logout Section */}
-        <div className="text-center">
-          <Button
-            variant="destructive"
-            size="lg"
-            onClick={() => {
-              logout();
-              navigate({ to: "/auth" });
-            }}
-            className="px-8 py-3"
-          >
-            <IconLogout className="mr-2" size={20} />
-            Logout
-          </Button>
+        <div className="absolute bottom-4 left-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant={"outline"}>settings</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <Profile />
+              <DropdownMenuItem
+                variant={"destructive"}
+                onClick={() => {
+                  logout();
+                  navigate({ to: "/auth" });
+                }}
+              >
+                <IconLogout className="mr-2" size={20} />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </main>
