@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { FormikInput } from "@/components/form/formikInput";
 import { Button } from "@/components/ui/button";
 import useAddClassMetadata from "@/querys/administration/useAddClassMetadata";
@@ -58,23 +57,12 @@ export const Route = createFileRoute("/administration/dashboard/classes")({
 
 function RouteComponent() {
   const { pageNumber, pageSize } = Route.useSearch();
-  const { data: institue, isLoading: isInstitueLoading } = useGetInstitue();
 
-  const { mutate: addClass } = useAddClass();
+  const { data: institue, isLoading: isInstitueLoading } = useGetInstitue();
+  const { mutate: addClass, isPending: isAddingToClass } = useAddClass();
   const { mutate: addClassMetadata, isPending } = useAddClassMetadata();
 
-  const [isMetadataDialogOpen, setIsMetadataDialogOpen] = useState(false);
-  const [selectedMetadataId, setSelectedMetadataId] = useState<string | null>(
-    null,
-  );
-
   const instituteId = institue?.id ?? "";
-
-  const handleConfirmAddClass = () => {
-    if (!selectedMetadataId) return;
-    addClass({ metadataId: selectedMetadataId });
-    setSelectedMetadataId(null);
-  };
 
   const { data: classMetadata, isLoading: isClassMetadataLoading } =
     useGetClassMetadata({
@@ -93,7 +81,7 @@ function RouteComponent() {
   if (isClassMetadataLoading) return <div>Loading...</div>;
 
   return (
-    <main className="p-8 flex flex-col mt-20">
+    <main className="p-8 flex flex-col ">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Class Metadata Management</h1>
@@ -102,10 +90,7 @@ function RouteComponent() {
           </p>
         </div>
 
-        <Dialog
-          open={isMetadataDialogOpen}
-          onOpenChange={setIsMetadataDialogOpen}
-        >
+        <Dialog>
           <DialogTrigger asChild>
             <Button disabled={!instituteId} variant="default">
               <IconPlus />
@@ -127,7 +112,6 @@ function RouteComponent() {
                   ...values,
                   instituteId: instituteId,
                 });
-                setIsMetadataDialogOpen(false);
               }}
               initialValues={{
                 specialty: "",
@@ -207,21 +191,9 @@ function RouteComponent() {
                 <TableCell>{metadata.numberOfClasses}</TableCell>
                 <TableCell>{metadata.level}</TableCell>
                 <TableCell>
-                  <AlertDialog
-                    onOpenChange={(open) => {
-                      if (!open) {
-                        setSelectedMetadataId(null);
-                      }
-                    }}
-                  >
+                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() =>
-                          setSelectedMetadataId(metadata.metadataId)
-                        }
-                      >
+                      <Button type="button" variant="outline">
                         Add class
                       </Button>
                     </AlertDialogTrigger>
@@ -236,7 +208,12 @@ function RouteComponent() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction asChild>
-                          <Button onClick={handleConfirmAddClass}>
+                          <Button
+                            disabled={isAddingToClass}
+                            onClick={() =>
+                              addClass({ metadataId: metadata.metadataId })
+                            }
+                          >
                             Confirm
                           </Button>
                         </AlertDialogAction>

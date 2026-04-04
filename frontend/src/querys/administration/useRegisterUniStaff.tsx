@@ -10,11 +10,8 @@ interface RegisterUniStaff {
 
 export default function useRegisterUniStaff() {
   return useMutation({
-    mutationFn: async (data) => {
-      const response = await api.post<RegisterUniStaff>(
-        "/administration/staff/register",
-        data,
-      );
+    mutationFn: async (data: RegisterUniStaff) => {
+      const response = await api.post("/administration/staff/register", data);
       return response.data;
     },
     onSuccess: () => {
