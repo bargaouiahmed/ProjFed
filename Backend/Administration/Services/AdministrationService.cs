@@ -77,8 +77,8 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
 
         var metadata = await db.ClassMetadata
             .Include(cm => cm.Institute)
-            .ThenInclude(i => i.Admins)
-            .FirstOrDefaultAsync(cm => cm.Id == metadataId && cm.Institute.Admins.Any(a => a.IdentityId == uniAdminIdentityId))
+            .ThenInclude(i => i!.Admins)
+            .FirstOrDefaultAsync(cm => cm.Id == metadataId && cm!.Institute!.Admins.Any(a => a.IdentityId == uniAdminIdentityId))
             ?? throw new InvalidOperationException("Invalid ClassMetaData or UnauthorizedAccessAttempt");
 
         var lockKey = BitConverter.ToInt64(metadataId.ToByteArray(), 0);
@@ -116,8 +116,8 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
     public async Task<SerializedClassMetaData> UpdateClassMetaData(SerializedClassMetaData request, Guid uniAdminIdentityId)
     {
 
-        var response = await db.ClassMetadata.Include(cm => cm.Institute).ThenInclude(i => i.Admins).FirstOrDefaultAsync(cm => cm.Id == request.MetadataId) ?? throw new InvalidOperationException("invalid metadata id");
-        if (!response.Institute.Admins.Any(a => a.IdentityId == uniAdminIdentityId)) throw new InvalidOperationException("unauthorized access");
+        var response = await db.ClassMetadata.Include(cm => cm.Institute).ThenInclude(i => i!.Admins).FirstOrDefaultAsync(cm => cm.Id == request.MetadataId) ?? throw new InvalidOperationException("invalid metadata id");
+        if (!response!.Institute!.Admins.Any(a => a.IdentityId == uniAdminIdentityId)) throw new InvalidOperationException("unauthorized access");
 
         response.Level = request.Level;
         response.LevelOfStudies = request.LevelOfStudies;

@@ -9,7 +9,7 @@ public class ClassMetadata
 {
     public Guid Id { get; set; }
     public Guid InstituteId { get; set; }
-    public Institute Institute { get; set; } = new();
+    public Institute? Institute { get; set; } 
 
     public string LevelOfStudies { get; set; } = string.Empty; //Ex: mastére, license, cycle ingenieur etc..
     public string Specialty { get; set; } = string.Empty; //Ex: Informatique, gestion etc
