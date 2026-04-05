@@ -2,7 +2,13 @@ import FormikStep from "@/components/form/FormikStep";
 import { FormikStepper } from "@/components/form/FormikStepper";
 import { FormikInput } from "@/components/form/formikInput";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Logo from "@/components/Logo";
 import useRegisterUniAdmin from "@/querys/useRegisterUniAdmin";
 import {
@@ -31,23 +37,30 @@ function RouteComponent() {
   const { mutate: register } = useRegisterUniAdmin();
 
   return (
-    <div className="min-h-screen flex items-center justify-center  px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center  px-4 py-8  ">
       <Card
         className={cn(
-          "w-full max-w-2xl shadow-lg relative",
+          "w-full max-w-lg shadow-lg relative rounded-lg",
           theme === "dark" ? "bg-grain" : "bg-card",
         )}
       >
-        <section className="absolute top-4 right-4">
+        <section className="absolute top-4 left-4">
           <ThemeToggler />
         </section>
-        <CardHeader className="text-center pb-6">
+        <CardHeader className="">
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            Register University Admin
-          </CardTitle>
+          <div className="flex flex-col gap-0.5">
+            <CardTitle className="text-2xl font-bold">
+              Register Your University
+            </CardTitle>
+            <CardDescription className="max-w-[48ch]">
+              register your university and become part of our academic
+              community. Fill out the form below to get started on your journey
+              with us.
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <FormikStepper

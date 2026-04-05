@@ -62,9 +62,9 @@ function RouteComponent() {
   const numberOfPages = Math.max(Math.ceil(totalCount / pageSize), 1);
 
   return (
-    <div className="h-full flex items-center justify-center p-2">
+    <div className="mt-8 px-6 ">
       <div className="w-full ">
-        <p className="text-xl font-semibold mb-4">Requests</p>
+        <p className="text-2xl font-bold "> University admins Requests </p>
 
         <Table>
           <TableCaption>Requests</TableCaption>
