@@ -413,6 +413,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
                 UniClassId = uniClassInstance.Id
                 
             };
+            db.Add(course);
         }
         await db.SaveChangesAsync();
     }
