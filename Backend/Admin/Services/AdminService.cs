@@ -2,12 +2,14 @@ using System;
 using Backend.Admin.DataTransferObjects.Requests;
 using Backend.Admin.DataTransferObjects.Responses;
 using Backend.Auth.Entities;
+using Backend.Auth.Services;
 using Backend.Database.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Admin.Services;
 
-public class AdminService(AppDbContext db) : IAdminService
+public class AdminService(AppDbContext db, IEmailService smtp) : IAdminService
 {
 
     public async Task<List<PendingRequestResponse>> GetAllPendingRequestsAsync(int pageNumber = 1, int pageSize = 10)
@@ -17,14 +19,14 @@ public class AdminService(AppDbContext db) : IAdminService
         int totalCount = await db.PendingJoinRequests.CountAsync();
         var pendingRequests = await db.PendingJoinRequests
         .Include(pr => pr.Identity)
-        .ThenInclude(i => i.UniUser)
+        .ThenInclude(i => i!.UniUser)
         .OrderBy(pr => pr.RequestedAt)
         .Skip(skip)
         .Take(take)
         .Select(pr => new PendingRequestResponse
         {
             RequestId = pr.Id,
-            Firstname = pr.Identity.UniUser!.Firstname,
+            Firstname = pr!.Identity!.UniUser!.Firstname,
             Lastname = pr.Identity.UniUser!.Lastname,
             Email = pr.Identity.Email,
 
@@ -47,10 +49,10 @@ public class AdminService(AppDbContext db) : IAdminService
     public async Task<PendingRequestResponse> AcceptPendingRequest(Guid requestId, Guid reviewerIdentityId)
     {
 
-        var pendingRequest = await db.PendingJoinRequests.Include(pr => pr.Identity).ThenInclude(i => i.UniUser)
+        var pendingRequest = await db.PendingJoinRequests.Include(pr => pr.Identity).ThenInclude(i => i!.UniUser)
         .FirstOrDefaultAsync(pr => pr.Id == requestId) ?? throw new InvalidOperationException("Pending request not found");
         pendingRequest.ReviewedAt = DateTime.UtcNow;
-        if (pendingRequest.Identity.Status == "accepted")
+        if (pendingRequest!.Identity!.Status == "accepted")
         {
             throw new InvalidOperationException("Request has already been accepted");
         }
@@ -71,6 +73,9 @@ public class AdminService(AppDbContext db) : IAdminService
         };
         db.Institutes.Add(institute);
         pendingRequest.Identity.UniUser!.Institute = institute;
+        pendingRequest.Identity.GenerateActivateAccountToken();
+        string activationLink = $"https://localhost:5173/activate-account?token={pendingRequest.Identity.ActivateAccountToken}";
+        await smtp.SendEmail(pendingRequest.Identity.Email, "Account Activation - Your Institute Join Request has been Accepted", $"Congratulations! Your request to join the institute has been accepted. Please click the following link to activate your account: {activationLink}. This link will expire in 15 minutes.");
         await db.SaveChangesAsync();
         return new PendingRequestResponse
         {
@@ -99,10 +104,10 @@ public class AdminService(AppDbContext db) : IAdminService
 
     public async Task<PendingRequestResponse> RejectPendingRequest(Guid requestId, Guid reviewerIdentityId, string? message = null)
     {
-        var pendingRequest = await db.PendingJoinRequests.Include(pr => pr.Identity).ThenInclude(i => i.UniUser)
+        var pendingRequest = await db.PendingJoinRequests.Include(pr => pr.Identity).ThenInclude(i => i!.UniUser)
         .FirstOrDefaultAsync(pr => pr.Id == requestId) ?? throw new InvalidOperationException("Pending request not found");
         pendingRequest.ReviewedAt = DateTime.UtcNow;
-        if (pendingRequest.Identity.Status == "rejected")
+        if (pendingRequest!.Identity!.Status == "rejected")
         {
             throw new InvalidOperationException("Request has already been rejected");
         }

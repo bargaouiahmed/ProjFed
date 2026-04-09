@@ -60,6 +60,72 @@ namespace Backend.Account.Controllers
 
         }
 
+        [Authorize]
+        [HttpGet("notifications")]
+        public async Task<ActionResult<List<SerializedNotification>>> GetNotifications()
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                return Ok(await accountService.GetNotificationsAsync(Guid.Parse(userId)));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "professor")]
+        [HttpGet("professor-invitations")]
+        public async Task<ActionResult<List<SerializedProfessorInvitation>>> GetProfessorInvitations()
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                return Ok(await accountService.GetProfessorInvitationsAsync(Guid.Parse(userId)));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "professor")]
+        [HttpPut("professor-invitations/{invitationId:guid}/accept")]
+        public async Task<ActionResult> AcceptProfessorInvitation([FromRoute] Guid invitationId)
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                await accountService.AcceptProfessorInvitationAsync(Guid.Parse(userId), invitationId);
+                return Ok("Professor invitation accepted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "professor")]
+        [HttpPut("professor-invitations/{invitationId:guid}/reject")]
+        public async Task<ActionResult> RejectProfessorInvitation([FromRoute] Guid invitationId)
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                await accountService.RejectProfessorInvitationAsync(Guid.Parse(userId), invitationId);
+                return Ok("Professor invitation rejected successfully.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
 
 

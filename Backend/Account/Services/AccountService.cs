@@ -1,6 +1,7 @@
 using System;
 using Backend.Account.DataTransferObjects.Requests;
 using Backend.Account.DataTransferObjects.Responses;
+using Backend.Administration.Entities;
 using Backend.Database.Auth;
 using Microsoft.EntityFrameworkCore;
 
@@ -193,6 +194,100 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         }
 
         return "/" + Path.Combine(relativeUploadDir, filename).Replace("\\", "/");
+    }
+
+    public async Task<List<SerializedNotification>> GetNotificationsAsync(Guid identityId)
+    {
+        var notifications = await db.Notifications
+            .Where(n => n.IdentityId == identityId)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+
+        foreach (var notification in notifications.Where(n => !n.Seen))
+        {
+            notification.Seen = true;
+        }
+
+        await db.SaveChangesAsync();
+
+        return [.. notifications.Select(n => new SerializedNotification
+        {
+            Id = n.Id,
+            Message = n.Message,
+            CreatedAt = n.CreatedAt,
+            Seen = true
+        })];
+    }
+
+    public async Task<List<SerializedProfessorInvitation>> GetProfessorInvitationsAsync(Guid identityId)
+    {
+        var invitations = await db.ProfessorInvitations
+            .Include(i => i.Course)
+            .Where(i => i.IdentityId == identityId)
+            .OrderByDescending(i => i.InvitedAt)
+            .ToListAsync();
+
+        return [.. invitations.Select(i => new SerializedProfessorInvitation
+        {
+            Id = i.Id,
+            CourseId = i.CourseId,
+            CourseName = i.Course?.Name ?? string.Empty,
+            ClassPrettyName = i.ClassPrettyName,
+            Status = i.Status,
+            InvitedAt = i.InvitedAt
+        })];
+    }
+
+    public async Task AcceptProfessorInvitationAsync(Guid identityId, Guid invitationId)
+    {
+        var invitation = await db.ProfessorInvitations
+            .Include(i => i.Course)
+            .Include(i => i.Identity)
+            .ThenInclude(identity => identity!.Professor)
+            .FirstOrDefaultAsync(i => i.Id == invitationId && i.IdentityId == identityId)
+            ?? throw new InvalidOperationException("Professor invitation not found.");
+
+        if (invitation.Status != "pending")
+        {
+            throw new InvalidOperationException("This professor invitation has already been processed.");
+        }
+
+        if (invitation.Identity?.Professor == null)
+        {
+            throw new InvalidOperationException("No professor account is associated with this invitation.");
+        }
+
+        invitation.Status = "accepted";
+        invitation.Course.ProfessorId = invitation.Identity.Professor.Id;
+        Notification notification = new()
+        {
+            IdentityId = identityId,
+            Message = $"You accepted the invitation to teach {invitation.Course.Name} for {invitation.ClassPrettyName}."
+        };
+        db.Notifications.Add(notification);
+        await db.SaveChangesAsync();
+    }
+
+    public async Task RejectProfessorInvitationAsync(Guid identityId, Guid invitationId)
+    {
+        var invitation = await db.ProfessorInvitations
+            .Include(i => i.Course)
+            .FirstOrDefaultAsync(i => i.Id == invitationId && i.IdentityId == identityId)
+            ?? throw new InvalidOperationException("Professor invitation not found.");
+
+        if (invitation.Status != "pending")
+        {
+            throw new InvalidOperationException("This professor invitation has already been processed.");
+        }
+
+        invitation.Status = "rejected";
+        Notification notification = new()
+        {
+            IdentityId = identityId,
+            Message = $"You rejected the invitation to teach {invitation.Course.Name} for {invitation.ClassPrettyName}."
+        };
+        db.Notifications.Add(notification);
+        await db.SaveChangesAsync();
     }
 
 

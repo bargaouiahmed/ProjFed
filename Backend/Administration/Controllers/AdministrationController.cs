@@ -52,6 +52,23 @@ namespace Backend.Administration.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("professor-invitations")]
+        public async Task<ActionResult<List<SerializedProfessorInvitationForAdministration>>> GetAllProfessorInvitations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                return Ok(await admservice.GetAllProfessorInvitations(Guid.Parse(userId)));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpPost("metadata/addClass")]
         public async Task<ActionResult<ClassPrettyName>> AddClassToMetadataType([FromQuery] Guid metadataId)
         {
@@ -130,7 +147,7 @@ namespace Backend.Administration.Controllers
         }
 
         [Authorize(Roles = "uni_admin,uni_staff")]
-        [HttpPost("courses/{courseId}/professors")]
+        [HttpPost("courses/{courseId:guid}/professors")]
         public async Task<ActionResult> AddNewProfessor([FromRoute] Guid courseId, [FromBody] AddNewProfessorRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -150,7 +167,7 @@ namespace Backend.Administration.Controllers
         }
 
         [Authorize(Roles = "uni_admin,uni_staff")]
-        [HttpPost("courses/{courseId}/professors/add-existing")]
+        [HttpPost("courses/{courseId:guid}/professors/add-existing")]
         public async Task<ActionResult> AddExistingProfessor([FromRoute] Guid courseId, [FromBody] AddExistingProfessorRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -183,5 +200,76 @@ namespace Backend.Administration.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost]
+        [HttpPost("classes/{classId:guid}/courses")]
+        public async Task<ActionResult> AddCourseToClass([FromRoute] Guid classId, [FromBody] AddNewCourseToClassMetadataInstance request)
+        {
+            if(!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized("Invalid token: missing or invalid user ID claim.");
+            }
+            try
+            {
+                await admservice.AddCourseToClass(userId, classId, request);
+                return Ok("Course added to class successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpDelete("courses/{courseId:guid}/professors")]
+        public async Task<ActionResult> RemoveProfessorFromCourse([FromRoute] Guid courseId)
+        {
+            if(!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized("Invalid token: missing or invalid user ID claim.");
+            }
+            try
+            {
+                await admservice.RemoveProfessorFromCourse(userId, courseId);
+                return Ok("Professor removed from course successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpDelete("classes/{classId:guid}/courses")]
+        public async Task<ActionResult> RemoveCourseFromClass([FromRoute] Guid classId)
+        {
+            if(!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized("Invalid token: missing or invalid user ID claim.");
+            }
+            try
+            {
+                await admservice.RemoveCourseFromClass(userId, classId);
+                return Ok("Course removed from class successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("metadata/{metadataId:guid}/increment-term")]
+        public async Task<ActionResult<int>> IncrementClassMetadataTerm([FromRoute] Guid metadataId)
+        {
+            if(!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized("Invalid token: missing or invalid user ID claim.");
+            }
+            try
+            {
+                var currentTerm = await admservice.IncrementClassMetadataTerm(userId, metadataId);
+                return Ok(currentTerm);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
     }
 }

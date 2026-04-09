@@ -7,8 +7,7 @@ public class PendingJoinRequest
 {
     public Guid Id { get; set; }
     public Guid IdentityId { get; set; }
-    public AuthIdentity Identity { get; set; } = new();
-
+    public AuthIdentity? Identity { get; set; } 
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     public string? Message { get; set; }
     public string ProofDocumentUrl { get; set; } = string.Empty;

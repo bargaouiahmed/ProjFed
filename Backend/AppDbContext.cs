@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using Backend.Admin.Entities;
 using Backend.Administration.Entities;
 using Backend.Auth.Entities;
+using Backend.ProfessorSpace.Entities;
 using Backend.StudentSpace.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ProfessorInvitation> ProfessorInvitations{get;set;}
     public DbSet<Course> Courses { get; set; }
     public DbSet<PendingJoinRequest> PendingJoinRequests { get; set; }
+    public DbSet<Chapter> Chapters { get; set; }
+    public DbSet<Exam> Exams { get; set; }
+    public DbSet<MCQ> MCQs { get; set; }
+    public DbSet<RedactionQuestion> RedactionQuestions { get; set; }
+    public DbSet<ResponseMCQ> ResponseMCQs { get; set; }
+    public DbSet<ResponseRedactionQuestion> ResponseRedactionQuestions { get; set; }
+    public DbSet<Test> Tests { get; set; }
+    public DbSet<TestMCQ> TestMCQs { get; set; }
+    public DbSet<TestRedactionQuestion> TestRedactionQuestions { get; set; }
+    public DbSet<ResponseTestMCQ> ResponseTestMCQs { get; set; }
+    public DbSet<ResponseTestRedactionQuestion> ResponseTestRedactionQuestions { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -139,6 +151,114 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(i=>i.Notifications)
             .HasForeignKey(n=>n.IdentityId)
             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Chapter>(chapter =>
+        {
+            chapter.HasOne(c => c.Course)
+                .WithMany()
+                .HasForeignKey(c => c.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Exam>(exam =>
+        {
+            exam.HasOne(e => e.Course)
+                .WithMany()
+                .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<MCQ>(mcq =>
+        {
+            mcq.HasOne(m => m.Exam)
+                .WithMany()
+                .HasForeignKey(m => m.ExamId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RedactionQuestion>(question =>
+        {
+            question.HasOne(r => r.Exam)
+                .WithMany()
+                .HasForeignKey(r => r.ExamId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ResponseMCQ>(response =>
+        {
+            response.HasOne(r => r.MCQ)
+                .WithMany()
+                .HasForeignKey(r => r.MCQId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            response.HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ResponseRedactionQuestion>(response =>
+        {
+            response.HasOne(r => r.RedactionQuestion)
+                .WithMany()
+                .HasForeignKey(r => r.RedactionQuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            response.HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Test>(test =>
+        {
+            test.HasOne(t => t.Course)
+                .WithMany()
+                .HasForeignKey(t => t.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TestMCQ>(mcq =>
+        {
+            mcq.HasOne(m => m.Test)
+                .WithMany()
+                .HasForeignKey(m => m.TestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TestRedactionQuestion>(question =>
+        {
+            question.HasOne(r => r.Test)
+                .WithMany()
+                .HasForeignKey(r => r.TestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ResponseTestMCQ>(response =>
+        {
+            response.HasOne(r => r.TestMCQ)
+                .WithMany()
+                .HasForeignKey(r => r.TestMCQId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            response.HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ResponseTestRedactionQuestion>(response =>
+        {
+            response.HasOne(r => r.TestRedactionQuestion)
+                .WithMany()
+                .HasForeignKey(r => r.TestRedactionQuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            response.HasOne(r => r.Student)
+                .WithMany()
+                .HasForeignKey(r => r.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
 

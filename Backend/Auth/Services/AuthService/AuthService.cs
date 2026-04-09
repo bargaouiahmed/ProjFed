@@ -26,7 +26,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
             {
                 Email = superAdminEmail,
                 Role = "super_admin",
-                Status = "active",
+                Status = "accepted",
                 HasChangedAutoAssignedPassword = true
             };
             newIdentity.HashPassword(superAdminPassword);
@@ -136,7 +136,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         {
             Email = request.Email,
             Role = "student",
-            Status = "active",
+            Status = "accepted",
             IsActive = false,
             HasChangedAutoAssignedPassword = true
         };
@@ -191,7 +191,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
         var identity = await db.Identities.FirstOrDefaultAsync(i => i.Email == request.Email);
 
 
-        if (identity == null || !identity.CompareHash(request.Password) || identity.Status != "active" || !identity.IsActive || identity.IsDeleted) throw new InvalidOperationException("Invalid credentials or account not active or deleted");
+        if (identity == null || !identity.CompareHash(request.Password) || identity.Status != "accepted" || !identity.IsActive || identity.IsDeleted) throw new InvalidOperationException("Invalid credentials or account not accepted or deleted");
 
         //Generate tokens
         var accessToken = GenerateJwtToken(identity.Id, identity.Email, identity.Role, identity.HasChangedAutoAssignedPassword);

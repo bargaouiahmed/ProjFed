@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
 using Backend.Administration.DataTransferObjects.Requests;
 using Backend.Administration.DataTransferObjects.Responses;
 using Backend.Administration.Entities;
@@ -70,6 +71,36 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         }).Skip(skip).Take(take).ToListAsync();
         return classMetaDatas;
 
+    }
+
+    public async Task<List<SerializedProfessorInvitationForAdministration>> GetAllProfessorInvitations(Guid uniStaffIdentityId)
+    {
+        var staffMember = await db.UniUsers.FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        if (!staffMember.InstituteId.HasValue)
+        {
+            throw new InvalidOperationException("This staff member does not belong to any institute");
+        }
+
+        var invitations = await db.ProfessorInvitations
+            .Include(i => i.Identity)
+            .Include(i => i.Course)
+            .ThenInclude(c => c!.UniClass)
+            .ThenInclude(uc => uc!.Metadata)
+            .Where(i => i.Course.UniClass != null && i.Course.UniClass.Metadata != null && i.Course.UniClass.Metadata.InstituteId == staffMember.InstituteId.Value)
+            .OrderByDescending(i => i.InvitedAt)
+            .ToListAsync();
+
+        return [.. invitations.Select(i => new SerializedProfessorInvitationForAdministration
+        {
+            Id = i.Id,
+            IdentityId = i.IdentityId,
+            ProfessorEmail = i.Identity?.Email ?? string.Empty,
+            CourseId = i.CourseId,
+            CourseName = i.Course?.Name ?? string.Empty,
+            ClassPrettyName = i.ClassPrettyName,
+            Status = i.Status,
+            InvitedAt = i.InvitedAt
+        })];
     }
     public async Task<ClassPrettyName> AddClassToMetadataType(Guid uniAdminIdentityId, Guid metadataId)
     {
@@ -192,14 +223,14 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         if(!request.Validate())throw new InvalidDataException("Invalid request");
 
         var uniStaffMember = await db.UniUsers.Include(uu=>uu.Identity).FirstOrDefaultAsync(u=>u.IdentityId == uniStaffIdentityId)??throw new InvalidOperationException("No staff member with given id found");
-        var course = await db.Courses.Include(c=>c.UniClass).ThenInclude(c=>c.Metadata).FirstOrDefaultAsync(c=>c.Id == courseId)??throw new InvalidOperationException("No course with given id found");
-        string courseClassPrettyName = $"{course.UniClass.Metadata.Level}{course.UniClass.Metadata.LevelOfStudies}{course.UniClass.Metadata.Specialty}{course.UniClass.Number}-term:{course.Term}";
+        var course = await db.Courses.Include(c=>c.UniClass).ThenInclude(c=>c!.Metadata).FirstOrDefaultAsync(c=>c.Id == courseId)??throw new InvalidOperationException("No course with given id found");
+        string courseClassPrettyName = $"{course!.UniClass!.Metadata!.Level}{course.UniClass.Metadata.LevelOfStudies}{course.UniClass.Metadata.Specialty}{course.UniClass.Number}-term:{course.Term}";
         if(course.UniClass.Metadata.InstituteId != uniStaffMember.InstituteId)throw new InvalidOperationException("You may assign only to classes that belong to the institute you administrate");
 
-        var existingProfessor = await db.Professors.Include(p=>p.Identity).Include(p=>p.Courses).ThenInclude(c=>c.UniClass).ThenInclude(uc=>uc.Metadata).FirstOrDefaultAsync(p=>p.Identity.Email==request.Email);
+        var existingProfessor = await db.Professors.Include(p=>p.Identity).Include(p=>p.Courses).ThenInclude(c=>c.UniClass).ThenInclude(uc=>uc!.Metadata).FirstOrDefaultAsync(p=>p.Identity.Email==request.Email);
         if (existingProfessor != null)
         {
-            if (existingProfessor.Courses.Any(c => c.UniClass.Metadata.InstituteId == uniStaffMember.InstituteId))
+            if (existingProfessor.Courses.Any(c => c!.UniClass!.Metadata!.InstituteId == uniStaffMember.InstituteId))
             {   
                 course.Professor = existingProfessor;
                 Notification notification = new()
@@ -208,6 +239,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
                   Message = $"You've been added as the professor in charge of {course.Name} for the class {courseClassPrettyName}"  
                 };
                 db.Add(notification);
+                course.Professor = existingProfessor;
                 await db.SaveChangesAsync();
                 return;
             }
@@ -244,6 +276,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             Lastname=request.Lastname,
             Identity=identity
         };
+        course.Professor = professor;
  ProfessorInvitation invitation = new()
                 {
                     Identity = identity,
@@ -263,12 +296,12 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
     public async Task AddExistingProfessor(Guid uniStaffIdentityId, Guid courseId, AddExistingProfessorRequest request)
     {
         var uniStaffMember = await db.UniUsers.Include(uu => uu.Identity).FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
-        var course = await db.Courses.Include(c => c.UniClass).ThenInclude(c => c.Metadata).FirstOrDefaultAsync(c => c.Id == courseId) ?? throw new InvalidOperationException("No course with given id found");
-        string courseClassPrettyName = $"{course.UniClass.Metadata.Level}{course.UniClass.Metadata.LevelOfStudies}{course.UniClass.Metadata.Specialty}{course.UniClass.Number}-term:{course.Term}";
+        var course = await db.Courses.Include(c => c.UniClass).ThenInclude(c => c!.Metadata).FirstOrDefaultAsync(c => c.Id == courseId) ?? throw new InvalidOperationException("No course with given id found");
+        string courseClassPrettyName = $"{course!.UniClass!.Metadata!.Level}{course.UniClass.Metadata.LevelOfStudies}{course.UniClass.Metadata.Specialty}{course.UniClass.Number}-term:{course.Term}";
         if (course.UniClass.Metadata.InstituteId != uniStaffMember.InstituteId) throw new InvalidOperationException("You may assign only to classes that belong to the institute you administrate");
 
-        var existingProfessor = await db.Professors.Include(p => p.Identity).Include(p => p.Courses).ThenInclude(c => c.UniClass).ThenInclude(uc => uc.Metadata).FirstOrDefaultAsync(p => p.Identity.Email == request.Email) ?? throw new InvalidOperationException("No professor with given email found");
-        if (existingProfessor.Courses.Any(c => c.UniClass.Metadata.InstituteId == uniStaffMember.InstituteId))
+        var existingProfessor = await db.Professors.Include(p => p.Identity).Include(p => p.Courses).ThenInclude(c => c.UniClass).ThenInclude(uc => uc!.Metadata).FirstOrDefaultAsync(p => p.Identity.Email == request.Email) ?? throw new InvalidOperationException("No professor with given email found");
+        if (existingProfessor.Courses.Any(c => c!.UniClass!.Metadata!.InstituteId == uniStaffMember.InstituteId))
         {
             course.Professor = existingProfessor;
             Notification notification = new()
@@ -321,5 +354,67 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         await db.SaveChangesAsync();
     }
 
+
+    public async Task RemoveProfessorFromCourse(Guid uniStaffIdentityId, Guid courseId)
+    {
+        var uniStaffMember = await db.UniUsers.Include(uu => uu.Identity).FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        var course = await db.Courses.Include(c => c.UniClass).ThenInclude(c => c!.Metadata).FirstOrDefaultAsync(c => c.Id == courseId) ?? throw new InvalidOperationException("No course with given id found");
+        if (course!.UniClass!.Metadata!.InstituteId != uniStaffMember.InstituteId) throw new InvalidOperationException("You may manipulate only classes that belong to the institute you administrate");
+        course.Professor = null;
+        await db.SaveChangesAsync();
+    }
+    public async Task RemoveCourseFromClass(Guid uniStaffIdentityId, Guid courseId)
+    {
+        var uniStaffMember = await db.UniUsers.Include(uu => uu.Identity).FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        var course = await db.Courses.Include(c => c.UniClass).ThenInclude(c => c!.Metadata).FirstOrDefaultAsync(c => c.Id == courseId) ?? throw new InvalidOperationException("No course with given id found");
+        if (course!.UniClass!.Metadata!.InstituteId != uniStaffMember.InstituteId) throw new InvalidOperationException("You may manipulate only classes that belong to the institute you administrate");
+        db.Courses.Remove(course);
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<int> IncrementClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId)
+    {
+        var staffMember = await db.UniUsers.FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        var metadata = await db.ClassMetadata.FirstOrDefaultAsync(cm => cm.Id == metadataId) ?? throw new InvalidOperationException("Invalid metadata id");
+        if (staffMember.InstituteId != metadata.InstituteId)
+        {
+            throw new InvalidOperationException("You are not authorized to manipulate this class metadata.");
+        }
+        if (metadata.CurrentTerm >= metadata.MaxTerms)
+        {
+            throw new InvalidOperationException("This class metadata is already at its maximum term.");
+        }
+
+        metadata.CurrentTerm += 1;
+        await db.SaveChangesAsync();
+        return metadata.CurrentTerm;
+    }
+
+
+    public async Task AddCourseToClass(Guid uniStaffIdentityId, Guid classId, AddNewCourseToClassMetadataInstance request )
+    {
+        if(!await db.UniUsers.AnyAsync(uu=>uu.IdentityId == uniStaffIdentityId &&
+         uu.InstituteId == db.UniClasses
+         .Where(uc=>uc.Id==classId)
+         .Select(uc=>uc!.Metadata!.InstituteId)
+         .First()))
+        {
+         throw new InvalidOperationException("You are not authorized to manipulate this resource");   
+        }
+        var uniClass = await db.UniClasses.FirstOrDefaultAsync(uc=>uc.Id == classId) ?? throw new InvalidOperationException("Invalid class id");
+        var uniClassesWithSameMetadata = await db.UniClasses.Where(uc=>uc.MetadataId==uniClass.MetadataId).ToListAsync();
+        foreach (var uniClassInstance in uniClassesWithSameMetadata)
+        {
+            var course = new Course
+            {
+                Name=request.CourseName,
+                Description=request.Description,
+                Term=request.Term,
+                UniClassId = uniClassInstance.Id
+                
+            };
+        }
+        await db.SaveChangesAsync();
+    }
 
 }

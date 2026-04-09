@@ -15,7 +15,7 @@ public class UniClass
     public Guid Id { get; set; }
 
     public Guid MetadataId { get; set; }
-    public ClassMetadata Metadata { get; set; } = new();
+    public ClassMetadata? Metadata { get; set; }
 
     public int Number { get; set; }
 

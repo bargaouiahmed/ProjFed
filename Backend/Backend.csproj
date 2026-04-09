@@ -31,6 +31,9 @@
     <Folder Include="Admin\Services\" />
     <Folder Include="Auth\Controllers\" />
     <Folder Include="Auth\DataTransferObjects\Responses\" />
+    <Folder Include="ProfessorSpace\" />
+    <Folder Include="ProfessorSpace\DataTransferObjects\" />
+    <Folder Include="ProfessorSpace\Entities\" />
     <Folder Include="StudentSpace\DataTransferObjects\" />
     <Folder Include="StudentSpace\DataTransferObjects\Requests\" />
     <Folder Include="StudentSpace\DataTransferObjects\Responses\" />

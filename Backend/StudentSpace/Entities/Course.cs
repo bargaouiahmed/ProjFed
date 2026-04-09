@@ -11,9 +11,8 @@ public class Course
 
     public int Term { get; set; }
     public Guid UniClassId { get; set; }
-    public Guid ProfessorId { get; set; }
-    public Professor Professor { get; set; } = new();
-    public UniClass UniClass { get; set; } = new();
-
+    public Guid? ProfessorId { get; set; }
+    public Professor? Professor { get; set; } 
+    public UniClass? UniClass { get; set; }
 
 }
