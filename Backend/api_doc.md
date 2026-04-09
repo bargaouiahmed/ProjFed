@@ -358,6 +358,7 @@
   - `pageSize` (int, optional, default `10`)
 - **Response:**
   - 200 OK: List of `SerializedClassMetaData`
+    - `metadataId`, `levelOfStudies`, `specialty`, `maxYears`, `level`, `maxTerms`, `currentTerm`, `numberOfClasses`
   - 400 Bad Request: Error message
   - 401 Unauthorized: Missing/invalid token claims
 - **Side Effects:**
@@ -497,7 +498,7 @@
 - **Side Effects:**
   - Creates a new `AuthIdentity` and `UniUser` (role `uni_staff`)
   - Creates a `UniStaffInvitation`
-  - Sends welcome email with auto-generated password
+  - Sends welcome email with auto-generated password and invitation guidance
 
 ---
 
@@ -605,7 +606,64 @@
 
 ---
 
-## 28. Get Professor Invitations
+## 28. Get Uni Staff Invitations
+
+- **Endpoint:** `GET /accounts/uni-staff-invitations`
+- **Auth:** Bearer token required, role `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Response:**
+  - 200 OK: List of uni staff invitations
+    - `id`, `instituteId`, `instituteName`, `status`, `invitedAt`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+
+---
+
+## 29. Accept Uni Staff Invitation
+
+- **Endpoint:** `PUT /accounts/uni-staff-invitations/{invitationId}/accept`
+- **Auth:** Bearer token required, role `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `invitationId` (GUID, required)
+- **Response:**
+  - 200 OK: Invitation accepted message
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - Sets invitation `Status = accepted`
+  - Assigns the invited staff member to the invitation's institute
+  - Creates a notification confirming acceptance
+
+---
+
+## 30. Reject Uni Staff Invitation
+
+- **Endpoint:** `PUT /accounts/uni-staff-invitations/{invitationId}/reject`
+- **Auth:** Bearer token required, role `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `invitationId` (GUID, required)
+- **Response:**
+  - 200 OK: Invitation rejected message
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - Sets invitation `Status = rejected`
+  - Does not assign the staff member to the institute
+  - Creates a notification confirming rejection
+
+---
+
+## 31. Get Professor Invitations
 
 - **Endpoint:** `GET /accounts/professor-invitations`
 - **Auth:** Bearer token required, role `professor`
@@ -622,7 +680,7 @@
 
 ---
 
-## 29. Accept Professor Invitation
+## 32. Accept Professor Invitation
 
 - **Endpoint:** `PUT /accounts/professor-invitations/{invitationId}/accept`
 - **Auth:** Bearer token required, role `professor`
@@ -642,7 +700,7 @@
 
 ---
 
-## 30. Reject Professor Invitation
+## 33. Reject Professor Invitation
 
 - **Endpoint:** `PUT /accounts/professor-invitations/{invitationId}/reject`
 - **Auth:** Bearer token required, role `professor`
@@ -662,7 +720,7 @@
 
 ---
 
-## 31. Initialize Empty Chapter
+## 34. Initialize Empty Chapter
 
 - **Endpoint:** `POST /professor/courses/{courseId}/chapters/init`
 - **Auth:** Bearer token required, role `professor`
@@ -680,7 +738,7 @@
 
 ---
 
-## 32. List Course Chapters
+## 35. List Course Chapters
 
 - **Endpoint:** `GET /professor/courses/{courseId}/chapters`
 - **Auth:** Bearer token required, role `professor`
@@ -690,7 +748,7 @@
 
 ---
 
-## 33. Get Chapter
+## 36. Get Chapter
 
 - **Endpoint:** `GET /professor/chapters/{chapterId}`
 - **Auth:** Bearer token required, role `professor`
@@ -700,7 +758,7 @@
 
 ---
 
-## 34. Update Chapter
+## 37. Update Chapter
 
 - **Endpoint:** `PUT /professor/chapters`
 - **Auth:** Bearer token required, role `professor`
@@ -721,7 +779,7 @@
 
 ---
 
-## 35. Delete Chapter
+## 38. Delete Chapter
 
 - **Endpoint:** `DELETE /professor/chapters/{chapterId}`
 - **Auth:** Bearer token required, role `professor`
@@ -731,7 +789,7 @@
 
 ---
 
-## 36. Initialize Empty Exam
+## 39. Initialize Empty Exam
 
 - **Endpoint:** `POST /professor/courses/{courseId}/exams/init`
 - **Auth:** Bearer token required, role `professor`
@@ -743,7 +801,7 @@
 
 ---
 
-## 37. List Course Exams
+## 40. List Course Exams
 
 - **Endpoint:** `GET /professor/courses/{courseId}/exams`
 - **Auth:** Bearer token required, role `professor`
@@ -753,7 +811,7 @@
 
 ---
 
-## 38. Get Exam
+## 41. Get Exam
 
 - **Endpoint:** `GET /professor/exams/{examId}`
 - **Auth:** Bearer token required, role `professor`
@@ -763,7 +821,7 @@
 
 ---
 
-## 39. Update Exam
+## 42. Update Exam
 
 - **Endpoint:** `PUT /professor/exams`
 - **Auth:** Bearer token required, role `professor`
@@ -780,14 +838,14 @@
 
 ---
 
-## 40. Delete Exam
+## 43. Delete Exam
 
 - **Endpoint:** `DELETE /professor/exams/{examId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 41. Add Exam MCQ
+## 44. Add Exam MCQ
 
 - **Endpoint:** `POST /professor/exams/{examId}/mcqs`
 - **Auth:** Bearer token required, role `professor`
@@ -806,7 +864,7 @@
 
 ---
 
-## 42. Update Exam MCQ
+## 45. Update Exam MCQ
 
 - **Endpoint:** `PUT /professor/exams/mcqs`
 - **Auth:** Bearer token required, role `professor`
@@ -822,14 +880,14 @@
 
 ---
 
-## 43. Delete Exam MCQ
+## 46. Delete Exam MCQ
 
 - **Endpoint:** `DELETE /professor/exams/mcqs/{mcqId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 44. Add Exam Redaction Question
+## 47. Add Exam Redaction Question
 
 - **Endpoint:** `POST /professor/exams/{examId}/redaction-questions`
 - **Auth:** Bearer token required, role `professor`
@@ -845,7 +903,7 @@
 
 ---
 
-## 45. Update Exam Redaction Question
+## 48. Update Exam Redaction Question
 
 - **Endpoint:** `PUT /professor/exams/redaction-questions`
 - **Auth:** Bearer token required, role `professor`
@@ -862,14 +920,14 @@
 
 ---
 
-## 46. Delete Exam Redaction Question
+## 49. Delete Exam Redaction Question
 
 - **Endpoint:** `DELETE /professor/exams/redaction-questions/{questionId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 47. Initialize Empty Test
+## 50. Initialize Empty Test
 
 - **Endpoint:** `POST /professor/courses/{courseId}/tests/init`
 - **Auth:** Bearer token required, role `professor`
@@ -881,21 +939,21 @@
 
 ---
 
-## 48. List Course Tests
+## 51. List Course Tests
 
 - **Endpoint:** `GET /professor/courses/{courseId}/tests`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 49. Get Test
+## 52. Get Test
 
 - **Endpoint:** `GET /professor/tests/{testId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 50. Update Test
+## 53. Update Test
 
 - **Endpoint:** `PUT /professor/tests`
 - **Auth:** Bearer token required, role `professor`
@@ -909,14 +967,14 @@
 
 ---
 
-## 51. Delete Test
+## 54. Delete Test
 
 - **Endpoint:** `DELETE /professor/tests/{testId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 52. Add Test MCQ
+## 55. Add Test MCQ
 
 - **Endpoint:** `POST /professor/tests/{testId}/mcqs`
 - **Auth:** Bearer token required, role `professor`
@@ -927,7 +985,7 @@
 
 ---
 
-## 53. Update Test MCQ
+## 56. Update Test MCQ
 
 - **Endpoint:** `PUT /professor/tests/mcqs`
 - **Auth:** Bearer token required, role `professor`
@@ -939,14 +997,14 @@
 
 ---
 
-## 54. Delete Test MCQ
+## 57. Delete Test MCQ
 
 - **Endpoint:** `DELETE /professor/tests/mcqs/{mcqId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 55. Add Test Redaction Question
+## 58. Add Test Redaction Question
 
 - **Endpoint:** `POST /professor/tests/{testId}/redaction-questions`
 - **Auth:** Bearer token required, role `professor`
@@ -955,7 +1013,7 @@
 
 ---
 
-## 56. Update Test Redaction Question
+## 59. Update Test Redaction Question
 
 - **Endpoint:** `PUT /professor/tests/redaction-questions`
 - **Auth:** Bearer token required, role `professor`
@@ -964,14 +1022,14 @@
 
 ---
 
-## 57. Delete Test Redaction Question
+## 60. Delete Test Redaction Question
 
 - **Endpoint:** `DELETE /professor/tests/redaction-questions/{questionId}`
 - **Auth:** Bearer token required, role `professor`
 
 ---
 
-## 58. Get Course Students And Grades
+## 61. Get Course Students And Grades
 
 - **Endpoint:** `GET /professor/courses/{courseId}/students/grades`
 - **Auth:** Bearer token required, role `professor`
@@ -985,7 +1043,7 @@
 
 ---
 
-## 59. Grade Exam MCQ Response
+## 62. Grade Exam MCQ Response
 
 - **Endpoint:** `PUT /professor/responses/exam-mcqs/{responseId}/grade`
 - **Auth:** Bearer token required, role `professor`
@@ -996,7 +1054,7 @@
 
 ---
 
-## 60. Grade Exam Redaction Response
+## 63. Grade Exam Redaction Response
 
 - **Endpoint:** `PUT /professor/responses/exam-redaction-questions/{responseId}/grade`
 - **Auth:** Bearer token required, role `professor`
@@ -1007,7 +1065,7 @@
 
 ---
 
-## 61. Grade Test MCQ Response
+## 64. Grade Test MCQ Response
 
 - **Endpoint:** `PUT /professor/responses/test-mcqs/{responseId}/grade`
 - **Auth:** Bearer token required, role `professor`
@@ -1018,7 +1076,7 @@
 
 ---
 
-## 62. Grade Test Redaction Response
+## 65. Grade Test Redaction Response
 
 - **Endpoint:** `PUT /professor/responses/test-redaction-questions/{responseId}/grade`
 - **Auth:** Bearer token required, role `professor`

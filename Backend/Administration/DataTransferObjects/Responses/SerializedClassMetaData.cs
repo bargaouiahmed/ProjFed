@@ -11,5 +11,6 @@ public class SerializedClassMetaData
     public int Level { get; set; }
 
     public int MaxTerms { get; set; }
+    public int CurrentTerm { get; set; }
     public int NumberOfClasses { get; set; }
 }

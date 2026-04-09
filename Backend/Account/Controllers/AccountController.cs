@@ -76,6 +76,56 @@ namespace Backend.Account.Controllers
             }
         }
 
+        [Authorize(Roles = "uni_staff")]
+        [HttpGet("uni-staff-invitations")]
+        public async Task<ActionResult<List<SerializedUniStaffInvitation>>> GetUniStaffInvitations()
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                return Ok(await accountService.GetUniStaffInvitationsAsync(Guid.Parse(userId)));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "uni_staff")]
+        [HttpPut("uni-staff-invitations/{invitationId:guid}/accept")]
+        public async Task<ActionResult> AcceptUniStaffInvitation([FromRoute] Guid invitationId)
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                await accountService.AcceptUniStaffInvitationAsync(Guid.Parse(userId), invitationId);
+                return Ok("Uni staff invitation accepted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "uni_staff")]
+        [HttpPut("uni-staff-invitations/{invitationId:guid}/reject")]
+        public async Task<ActionResult> RejectUniStaffInvitation([FromRoute] Guid invitationId)
+        {
+            var userId = GetClaim("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("You are not authorized to do this action");
+            try
+            {
+                await accountService.RejectUniStaffInvitationAsync(Guid.Parse(userId), invitationId);
+                return Ok("Uni staff invitation rejected successfully.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Authorize(Roles = "professor")]
         [HttpGet("professor-invitations")]
         public async Task<ActionResult<List<SerializedProfessorInvitation>>> GetProfessorInvitations()

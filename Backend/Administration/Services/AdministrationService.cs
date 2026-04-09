@@ -67,6 +67,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             Level = c.Level,
             Specialty = c.Specialty,
             MaxTerms = c.MaxTerms,
+            CurrentTerm = c.CurrentTerm,
             NumberOfClasses = c.Classes.Count()
         }).Skip(skip).Take(take).ToListAsync();
         return classMetaDatas;
@@ -286,7 +287,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             db.Add(identity);
             db.Add(professor);
             db.Add(invitation);
-            List<Task> tasks = [smtp.SendEmail(identity.Email, "Invitation to join EduAdmin", $"You've been invited to join EduAdmin by {uniStaffMember.Lastname} {uniStaffMember.Firstname}")];
+            List<Task> tasks = [smtp.SendEmail(identity.Email, "Invitation to join EduAdmin", $"You've been invited to join EduAdmin by {uniStaffMember.Lastname} {uniStaffMember.Firstname}. Your automatically generated password is {password}. Make sure to change it as soon as you sign in and then review your professor invitations to accept or reject them.")];
             await db.SaveChangesAsync();
             await Task.WhenAll(tasks);
         }

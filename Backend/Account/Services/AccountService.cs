@@ -219,6 +219,74 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         })];
     }
 
+    public async Task<List<SerializedUniStaffInvitation>> GetUniStaffInvitationsAsync(Guid identityId)
+    {
+        var invitations = await db.UniStaffInvitations
+            .Include(i => i.Institute)
+            .Where(i => i.IdentityId == identityId)
+            .OrderByDescending(i => i.InvitedAt)
+            .ToListAsync();
+
+        return [.. invitations.Select(i => new SerializedUniStaffInvitation
+        {
+            Id = i.Id,
+            InstituteId = i.InstituteId,
+            InstituteName = i.Institute?.Name ?? string.Empty,
+            Status = i.Status,
+            InvitedAt = i.InvitedAt
+        })];
+    }
+
+    public async Task AcceptUniStaffInvitationAsync(Guid identityId, Guid invitationId)
+    {
+        var invitation = await db.UniStaffInvitations
+            .Include(i => i.Institute)
+            .Include(i => i.Identity)
+            .ThenInclude(identity => identity!.UniUser)
+            .FirstOrDefaultAsync(i => i.Id == invitationId && i.IdentityId == identityId)
+            ?? throw new InvalidOperationException("Uni staff invitation not found.");
+
+        if (invitation.Status != "pending")
+        {
+            throw new InvalidOperationException("This uni staff invitation has already been processed.");
+        }
+
+        if (invitation.Identity?.UniUser == null)
+        {
+            throw new InvalidOperationException("No uni staff account is associated with this invitation.");
+        }
+
+        invitation.Status = "accepted";
+        invitation.Identity.UniUser.InstituteId = invitation.InstituteId;
+        db.Notifications.Add(new Notification
+        {
+            IdentityId = identityId,
+            Message = $"You accepted the invitation to join {invitation.Institute?.Name ?? "the institute"} as university staff."
+        });
+        await db.SaveChangesAsync();
+    }
+
+    public async Task RejectUniStaffInvitationAsync(Guid identityId, Guid invitationId)
+    {
+        var invitation = await db.UniStaffInvitations
+            .Include(i => i.Institute)
+            .FirstOrDefaultAsync(i => i.Id == invitationId && i.IdentityId == identityId)
+            ?? throw new InvalidOperationException("Uni staff invitation not found.");
+
+        if (invitation.Status != "pending")
+        {
+            throw new InvalidOperationException("This uni staff invitation has already been processed.");
+        }
+
+        invitation.Status = "rejected";
+        db.Notifications.Add(new Notification
+        {
+            IdentityId = identityId,
+            Message = $"You rejected the invitation to join {invitation.Institute?.Name ?? "the institute"} as university staff."
+        });
+        await db.SaveChangesAsync();
+    }
+
     public async Task<List<SerializedProfessorInvitation>> GetProfessorInvitationsAsync(Guid identityId)
     {
         var invitations = await db.ProfessorInvitations
