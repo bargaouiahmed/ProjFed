@@ -134,6 +134,7 @@ public class AuthService(AppDbContext db, IEmailService emailService, IWebHostEn
 
         AuthIdentity identity = new()
         {
+Id=Guid.NewGuid(),
             Email = request.Email,
             Role = "student",
             Status = "accepted",
