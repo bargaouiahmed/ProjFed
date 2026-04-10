@@ -1,5 +1,5 @@
 import useActivateStudentAcount from "@/querys/useActivateStudentAcount";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import {
   IconLoader,
@@ -12,6 +12,7 @@ import * as yup from "yup";
 import useResendEmailActivation from "@/querys/useResendEmailActivation";
 import { FormikInput } from "@/components/form/formikInput";
 import { Button } from "@/components/ui/button";
+
 const searchParams = z.object({
   id: z.string(),
   token: z.string(),
@@ -98,6 +99,9 @@ function RouteComponent() {
             <p className="text-muted-foreground text-sm">
               Your account has been successfully activated. You can now sign in.
             </p>
+            <Button asChild variant={"success"}>
+              <Link to="/auth">go to sign in</Link>
+            </Button>
           </>
         )}
       </div>

@@ -21,6 +21,7 @@ export default function useAccount() {
       const response = await api.get<Account>("/accounts");
       return response.data;
     },
+
     retry: false,
   });
 }

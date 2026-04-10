@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { api } from "./axios";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 export interface RegisterAdmin {
   adminFirstname?: string;
   adminLastname?: string;
@@ -15,6 +16,7 @@ export interface RegisterAdmin {
 }
 
 export default function useRegisterUniAdmin() {
+  const navigate = useNavigate();
   return useMutation({
     mutationKey: ["register admin"],
     mutationFn: async (formData: FormData) => {
@@ -32,6 +34,7 @@ export default function useRegisterUniAdmin() {
     },
 
     onSuccess: () => {
+      navigate({ to: "/auth" });
       toast.success("your request is submitted we will send you an email soon");
     },
 

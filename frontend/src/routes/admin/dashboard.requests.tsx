@@ -48,6 +48,7 @@ function RouteComponent() {
   const { mutate: acceptRequest } = useAcceptRequest();
   const { mutate: rejectRequest } = useRejectRequest();
 
+  console.log(requests);
   if (isPending)
     return <div className="text-center mt-10">Loading requests...</div>;
 

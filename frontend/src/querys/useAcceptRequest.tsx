@@ -13,7 +13,7 @@ export default function useAcceptRequest() {
 
     onSuccess: () => {
       toast.success("request accepted");
-      queryClient.invalidateQueries({ queryKey: ["accept-request"] });
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
     },
 
     onError: (error) => {

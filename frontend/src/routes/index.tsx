@@ -28,8 +28,9 @@ function RouteComponent() {
   const { theme } = useTheme();
 
   const navigate = Route.useNavigate();
+
   if (isPending) return <div>Loading...</div>;
-  if (!account) return navigate({ to: "/auth" });
+
   return (
     <main className="min-h-screen flex items-center ">
       <div className="absolute top-4 left-4">
