@@ -2,6 +2,7 @@ using System.Text.Json;
 using Backend.Account.Services;
 using Backend.Administration.Services;
 using Backend.Admin.Services;
+using Backend.FileSystem;
 using Backend.Auth.Services;
 using Backend.Database.Auth;
 using Backend.ProfessorSpace.Services;
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IAdministrationService, AdministrationService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();
+builder.Services.AddScoped<IFSService, FSService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
