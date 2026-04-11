@@ -48,6 +48,8 @@ import {
   IconPlus,
 } from "@tabler/icons-react";
 import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
+import useListMClasses from "@/querys/administration/useListMClasses";
+import { useState } from "react";
 
 export const Route = createFileRoute("/administration/dashboard/classes")({
   component: RouteComponent,
@@ -59,6 +61,10 @@ export const Route = createFileRoute("/administration/dashboard/classes")({
 
 function RouteComponent() {
   const { pageNumber, pageSize } = Route.useSearch();
+
+  const [selectedMetadataId, setSelectedMetadataId] = useState<string | null>(
+    null,
+  );
 
   const { data: institue, isLoading: isInstitueLoading } = useGetInstitue();
   const { mutate: addClass, isPending: isAddingToClass } = useAddClass();
@@ -76,17 +82,23 @@ function RouteComponent() {
 
   const { mutate: updateClassMetadata, isPending: isUpdatingClassMetadata } =
     useUpdateClassMetadata();
-  console.log(classMetadata);
+
+  const { data: classList, isLoading: isClassListLoading } = useListMClasses({
+    metadataId: selectedMetadataId!,
+    enabled: !!selectedMetadataId,
+  });
+
   const numberOfPages = Math.max(
     Math.ceil((classMetadata?.length || 0) / pageSize),
     1,
   );
-  if (isInstitueLoading) return <div>Loading...</div>;
 
+  if (isInstitueLoading) return <div>Loading...</div>;
   if (isClassMetadataLoading) return <div>Loading...</div>;
 
   return (
     <main className="p-8 flex flex-col ">
+      {/* HEADER */}
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Class Metadata Management</h1>
@@ -95,18 +107,20 @@ function RouteComponent() {
           </p>
         </div>
 
+        {/* ADD METADATA */}
         <Dialog>
           <DialogTrigger asChild>
-            <Button disabled={!instituteId} variant="default">
+            <Button disabled={!instituteId}>
               <IconPlus />
               Add class metadata
             </Button>
           </DialogTrigger>
+
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Class Metadata</DialogTitle>
               <DialogDescription>
-                Create a new class metadata structure for your institute.
+                Create a new class metadata structure.
               </DialogDescription>
             </DialogHeader>
 
@@ -115,7 +129,7 @@ function RouteComponent() {
                 if (!instituteId) return;
                 addClassMetadata({
                   ...values,
-                  instituteId: instituteId,
+                  instituteId,
                 });
               }}
               initialValues={{
@@ -125,26 +139,16 @@ function RouteComponent() {
                 defaultMaxTerms: 0,
               }}
               validationSchema={yup.object({
-                specialty: yup.string().required("Specialty is required"),
-                levelOfStudies: yup
-                  .string()
-                  .required("Level of studies is required"),
-                maxYears: yup
-                  .number()
-                  .required("Max years is required")
-                  .positive("Max years must be positive")
-                  .integer("Max years must be an integer"),
-                defaultMaxTerms: yup
-                  .number()
-                  .required("Default max terms is required")
-                  .positive("Default max terms must be positive")
-                  .integer("Default max terms must be an integer"),
+                specialty: yup.string().required(),
+                levelOfStudies: yup.string().required(),
+                maxYears: yup.number().positive().integer().required(),
+                defaultMaxTerms: yup.number().positive().integer().required(),
               })}
             >
               {() => (
                 <Form className="grid gap-4">
                   <FormikInput name="specialty" label="Specialty" />
-                  <FormikInput name="levelOfStudies" label="Level of Studies" />
+                  <FormikInput name="levelOfStudies" label="Diploma" />
                   <FormikInput
                     name="maxYears"
                     label="Max Years"
@@ -156,13 +160,13 @@ function RouteComponent() {
                     type="number"
                   />
 
-                  <DialogFooter className="mt-4">
+                  <DialogFooter>
                     <DialogClose asChild>
                       <Button variant="outline">Cancel</Button>
                     </DialogClose>
                     <Button type="submit" disabled={isPending}>
                       <IconDisc />
-                      Save metadata
+                      Save
                     </Button>
                   </DialogFooter>
                 </Form>
@@ -172,181 +176,211 @@ function RouteComponent() {
         </Dialog>
       </div>
 
-      <div>
-        <Table className="border">
-          <TableCaption>Class Metadata</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Specialty</TableHead>
-              <TableHead>Level of Studies</TableHead>
-              <TableHead>Max Years</TableHead>
-              <TableHead>Max Terms</TableHead>
-              <TableHead>Number of Classes</TableHead>
-              <TableHead>Level</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {classMetadata?.map((metadata) => (
-              <TableRow key={metadata.metadataId}>
-                <TableCell>{metadata.specialty}</TableCell>
-                <TableCell>{metadata.levelOfStudies}</TableCell>
-                <TableCell>{metadata.maxYears}</TableCell>
-                <TableCell>{metadata.maxTerms}</TableCell>
-                <TableCell>{metadata.numberOfClasses}</TableCell>
-                <TableCell>{metadata.level}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button type="button" variant="outline">
-                          Add class
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirm add class</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to add a new class for this
-                            metadata entry?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction asChild>
-                            <Button
-                              disabled={isAddingToClass}
-                              onClick={() =>
-                                addClass({ metadataId: metadata.metadataId })
-                              }
-                            >
-                              Confirm
-                            </Button>
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+      {/* TABLE */}
+      <Table className="border">
+        <TableCaption>Class Metadata</TableCaption>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button type="button" variant="success" size={"icon"}>
-                          <IconEdit />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Update Class Metadata
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Nulla totam debitis necessitatibus rerum, sunt
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <Formik
-                          onSubmit={(values) => {
-                            updateClassMetadata(values);
-                          }}
-                          initialValues={{
-                            metadataId: metadata.metadataId,
-                            levelOfStudies: metadata.levelOfStudies,
-                            specialty: metadata.specialty,
-                            maxYears: metadata.maxYears,
-                            level: metadata.level,
-                            maxTerms: metadata.maxTerms,
-                            numberOfClasses: metadata.numberOfClasses,
-                          }}
-                        >
-                          {() => (
-                            <Form>
-                              <FormikInput
-                                label="specialty:"
-                                name="specialty"
-                              />
-                              <div className="flex gap-2">
-                                <FormikInput
-                                  label="max years:"
-                                  name="maxYears"
-                                />
-                                <FormikInput
-                                  label="max terms:"
-                                  name="maxTerms"
-                                />
+        <TableHeader>
+          <TableRow>
+            <TableHead>Specialty</TableHead>
+            <TableHead>Level</TableHead>
+            <TableHead>Max Years</TableHead>
+            <TableHead>Max Terms</TableHead>
+            <TableHead># Classes</TableHead>
+            <TableHead>Year</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {classMetadata?.map((metadata) => (
+            <TableRow key={metadata.metadataId}>
+              <TableCell>{metadata.specialty}</TableCell>
+              <TableCell>{metadata.levelOfStudies}</TableCell>
+              <TableCell>{metadata.maxYears}</TableCell>
+              <TableCell>{metadata.maxTerms}</TableCell>
+              <TableCell>{metadata.numberOfClasses}</TableCell>
+              <TableCell>{metadata.level}</TableCell>
+
+              <TableCell>
+                <div className="flex gap-2">
+                  {/* VIEW CLASSES */}
+                  <Dialog
+                    onOpenChange={(open) => {
+                      if (!open) setSelectedMetadataId(null);
+                    }}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setSelectedMetadataId(metadata.metadataId)
+                        }
+                      >
+                        Classes
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Classes List</DialogTitle>
+                      </DialogHeader>
+
+                      <div className="max-h-100 overflow-y-auto border rounded-md p-2">
+                        {isClassListLoading ? (
+                          <div>Loading...</div>
+                        ) : classList?.length === 0 ? (
+                          <div>No classes found</div>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                            {classList?.map((cls) => (
+                              <div
+                                key={cls.id}
+                                className="p-3 border rounded-lg flex justify-between"
+                              >
+                                <div>
+                                  <p className="font-medium">{cls.className}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {cls.classCode}
+                                  </p>
+                                </div>
+
+                                <div className="text-sm">
+                                  {cls.currentTerm}/{cls.maxTerms}
+                                </div>
                               </div>
-                              <FormikInput
-                                label="level of studies:"
-                                name="levelOfStudies"
-                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
 
-                              <FormikInput label="level:" name="level" />
+                  {/* ADD CLASS */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="success">
+                        <IconPlus />
+                      </Button>
+                    </AlertDialogTrigger>
 
-                              <FormikInput
-                                label="number of classes:"
-                                name="numberOfClasses"
-                              />
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction asChild>
-                                  <Button
-                                    disabled={isUpdatingClassMetadata}
-                                    type="submit"
-                                  >
-                                    update class metadata
-                                  </Button>
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </Form>
-                          )}
-                        </Formik>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Add new class?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
 
-          <TableFooter className="bg-background hover:bg-background">
-            <TableRow>
-              <TableCell colSpan={9}>
-                <div className="flex justify-end items-center gap-2">
-                  {/* Previous */}
-                  <Link
-                    to="/administration/dashboard/classes"
-                    search={{
-                      pageNumber: Math.max(pageNumber - 1, 1),
-                      pageSize: pageSize,
-                    }}
-                  >
-                    <Button disabled={pageNumber === 1} variant={"outline"}>
-                      <IconArrowLeft />
-                    </Button>
-                  </Link>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction asChild>
+                          <Button
+                            disabled={isAddingToClass}
+                            onClick={() =>
+                              addClass({ metadataId: metadata.metadataId })
+                            }
+                          >
+                            Confirm
+                          </Button>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  {/* EDIT */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant={"success"}>
+                        <IconEdit />
+                      </Button>
+                    </AlertDialogTrigger>
 
-                  <Button variant={"ghost"}>{pageNumber}</Button>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Update</AlertDialogTitle>
+                      </AlertDialogHeader>
 
-                  {/* Next */}
-                  <Link
-                    to="/administration/dashboard/classes"
-                    search={{
-                      pageNumber: Math.min(pageNumber + 1, numberOfPages),
-                      pageSize: pageSize,
-                    }}
-                  >
-                    <Button
-                      size={"icon-lg"}
-                      variant={"outline"}
-                      disabled={pageNumber === numberOfPages}
-                    >
-                      <IconArrowRight />
-                    </Button>
-                  </Link>
+                      <Formik
+                        onSubmit={(values) => {
+                          updateClassMetadata(values);
+                        }}
+                        initialValues={{
+                          metadataId: metadata.metadataId,
+                          levelOfStudies: metadata.levelOfStudies,
+                          specialty: metadata.specialty,
+                          maxYears: metadata.maxYears,
+                          level: metadata.level,
+                          maxTerms: metadata.maxTerms,
+                          numberOfClasses: metadata.numberOfClasses,
+                        }}
+                      >
+                        {() => (
+                          <Form className="grid gap-3">
+                            <FormikInput name="specialty" label="Specialty" />
+                            <FormikInput name="maxYears" label="Max Years" />
+                            <FormikInput name="maxTerms" label="Max Terms" />
+                            <FormikInput name="levelOfStudies" label="Level" />
+                            <FormikInput
+                              name="numberOfClasses"
+                              label="Classes"
+                            />
+
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Button
+                                  type="submit"
+                                  disabled={isUpdatingClassMetadata}
+                                >
+                                  Update
+                                </Button>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </Form>
+                        )}
+                      </Formik>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </TableCell>
             </TableRow>
-          </TableFooter>
-        </Table>
-      </div>
+          ))}
+        </TableBody>
+
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={9}>
+              <div className="flex justify-end gap-2">
+                <Link
+                  to="/administration/dashboard/classes"
+                  search={{
+                    pageNumber: Math.max(pageNumber - 1, 1),
+                    pageSize,
+                  }}
+                >
+                  <Button disabled={pageNumber === 1}>
+                    <IconArrowLeft />
+                  </Button>
+                </Link>
+
+                <Button variant="ghost">{pageNumber}</Button>
+
+                <Link
+                  to="/administration/dashboard/classes"
+                  search={{
+                    pageNumber: Math.min(pageNumber + 1, numberOfPages),
+                    pageSize,
+                  }}
+                >
+                  <Button disabled={pageNumber === numberOfPages}>
+                    <IconArrowRight />
+                  </Button>
+                </Link>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
     </main>
   );
 }

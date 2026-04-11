@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import { IconUserCircle, IconSchool, IconUsers } from "@tabler/icons-react";
+import {
+  IconUserCircle,
+  IconSchool,
+  IconUsers,
+  IconInbox,
+} from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
@@ -38,6 +43,18 @@ export default function AdminDashboardSideBar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => {
+                  navigate({
+                    to: "/administration/dashboard/invitations",
+                  });
+                }}
+              >
+                <IconInbox />
+                {open && <span>Invitations</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
@@ -72,12 +89,15 @@ export default function AdminDashboardSideBar() {
           <DropdownMenuTrigger asChild>
             <Button variant={"ghost"}>
               <div className="flex items-center gap-2">
-                {open && <p>{account?.email}</p>}
                 {account?.pfpUrl ? (
-                  <img src={account.pfpUrl} />
+                  <img
+                    src={"http://localhost:5173/api/v0" + account.pfpUrl}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm"
+                  />
                 ) : (
                   <IconUserCircle />
                 )}
+                {open && <p>{account?.email}</p>}
               </div>
             </Button>
           </DropdownMenuTrigger>

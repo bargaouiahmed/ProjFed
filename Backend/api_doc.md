@@ -1334,6 +1334,8 @@
 
 ## 78. List Institute Users
 
+## done
+
 - **Endpoint:** `GET /administration/institute/users`
 - **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
 - **Headers:**

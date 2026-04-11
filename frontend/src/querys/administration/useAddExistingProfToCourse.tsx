@@ -9,7 +9,7 @@ interface AddProfToClass {
   };
 }
 
-export default function useAddExistingProfToClass() {
+export default function useAddExistingProfToCourse() {
   return useMutation({
     mutationFn: async ({ courseId, data }: AddProfToClass) => {
       const response = await api.post(
