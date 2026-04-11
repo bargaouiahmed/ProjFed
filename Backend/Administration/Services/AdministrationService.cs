@@ -1,5 +1,6 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
+using Backend.Account.DataTransferObjects.Responses;
 using Backend.Administration.DataTransferObjects.Requests;
 using Backend.Administration.DataTransferObjects.Responses;
 using Backend.Administration.Entities;
@@ -74,6 +75,63 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
 
     }
 
+    public async Task<List<SerializedCourse>> GetAllCoursesForClass(Guid uniStaffIdentityId, Guid classId)
+    {
+        var staffMemberInstituteId = await db.UniUsers.Where(uu=>uu.IdentityId == uniStaffIdentityId).Select(uu => uu.InstituteId).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No staff member with given id found");
+        if(!await db.UniClasses.AnyAsync(uc=>uc.Id == classId && uc!.Metadata!.InstituteId == staffMemberInstituteId)) throw new InvalidOperationException("You are not authorized to access this resource");
+        var courses = await db.Courses.Where(c=>c.UniClassId == classId).Select(c=>new SerializedCourse{
+            Id = c.Id,
+            CourseName = c.Name,
+            Description = c.Description,
+            Term = c.Term,
+            StudentCount = c.UniClass!.Students.Count()
+        }).ToListAsync();
+        return courses;
+
+    }
+    public async Task<List<SerializedUniClass>> GetAllClassesForMetadata(Guid uniStaffIdentityId, Guid metadataId)
+    {
+        var staffMemberInstituteId = await db.UniUsers.Where(uu => uu.IdentityId == uniStaffIdentityId).Select(uu => uu.InstituteId).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No staff member with given id found");
+        if (staffMemberInstituteId != await db.ClassMetadata.Where(cm => cm.Id == metadataId).Select(cm => cm.InstituteId).FirstOrDefaultAsync()) throw new InvalidOperationException("You are not authorized to access this resource");
+        var classes = await db.UniClasses.AsNoTracking().Include(uc=>uc.Metadata).Where(uc => uc.MetadataId == metadataId).Select(uc => new SerializedUniClass
+        {
+            Id = uc.Id,
+            Number = uc.Number,
+            ClassCode = uc.ClassCode,
+            ClassName = $"{uc.Metadata!.Level}{uc.Metadata.LevelOfStudies}{uc.Metadata.Specialty}{uc.Number}",
+            CurrentTerm = uc.Metadata.CurrentTerm,
+            MaxTerms = uc.Metadata.MaxTerms,
+        }).ToListAsync();
+        return classes;
+
+    }
+
+    public async Task<SerializedUserListResponse> GetAllUsersForInstitute(Guid uniStaffIdentityId, int pageNumber = 1, int pageSize = 10)
+
+    {
+        var staffMemberInstituteId = await db.UniUsers.Where(uu => uu.IdentityId == uniStaffIdentityId).Select(uu => uu.InstituteId).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No staff member with given id found");   
+        if(staffMemberInstituteId==Guid.Empty) throw new InvalidOperationException("This staff member does not belong to any institute");
+        int skip = (pageNumber - 1) * pageSize;
+        int take = pageSize;
+        var users = await db.UniUsers.AsNoTracking().Include(uu => uu.Identity).Where(uu => uu.InstituteId == staffMemberInstituteId && uu.IdentityId!=uniStaffIdentityId).Select(uu => new SerializedUser
+        {
+            Id = uu.Id,
+            IdentityId = uu.IdentityId,
+            Firstname = uu.Firstname,
+            Lastname = uu.Lastname,
+            Email = uu!.Identity!.Email,
+            Role = uu.Identity.Role,
+            CreatedAt = uu.Identity.CreatedAt,
+            UpdatedAt = uu.Identity.UpdatedAt,
+            PfpUrl = uu.PfpUrl
+        }).Skip(skip).Take(take).ToListAsync();
+        var totalCount = await db.UniUsers.AsNoTracking().Include(uu => uu.Identity).Where(uu => uu.InstituteId == staffMemberInstituteId && uu.IdentityId != uniStaffIdentityId).CountAsync();
+        return new SerializedUserListResponse
+        {
+            Users = users,
+            TotalCount = totalCount
+        };
+    }
     public async Task<List<SerializedProfessorInvitationForAdministration>> GetAllProfessorInvitations(Guid uniStaffIdentityId)
     {
         var staffMember = await db.UniUsers.FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
@@ -218,6 +276,23 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         await Task.WhenAll(tasks);
         
 
+    }   
+    public async Task AddProfessorToCourse(Guid uniStaffIdentityId, Guid courseId, string email)
+    {
+        if(await db.Professors.AnyAsync(p=>p.Identity.Email == email && p.Courses.Any(c=>c.Id == courseId)))
+        {
+            throw new InvalidOperationException("This professor is already assigned to this course");
+        }
+        else if (await db.Identities.AnyAsync(i => i.Email == email))
+        {
+             await AddExistingProfessor(uniStaffIdentityId, courseId, new AddExistingProfessorRequest{Email=email});
+             return;
+        }
+        else
+        {
+            throw new InvalidDataException("No professor with this email exists, please use the add new professor function to add them to the course");
+        }
+        
     }
     public async Task AddNewProfessor(Guid uniStaffIdentityId,  Guid courseId, AddNewProfessorRequest request)
     {
@@ -353,6 +428,17 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         };
         db.Add(invitation);
         await db.SaveChangesAsync();
+    }
+
+    public async Task AddUniStaffToInstitute(Guid uniAdminIdentityId, string email)
+    {
+        if (await db.Identities.AnyAsync(i => i.Email == email))
+        {
+            await AddExistingUniStaff(uniAdminIdentityId, new AddExistingUniStaffRequest { Email = email });
+            return;
+        }
+
+        throw new InvalidDataException("No university staff member with this email exists, please use the register new staff function to add them to the institute");
     }
 
 

@@ -74,7 +74,7 @@ public class AdminService(AppDbContext db, IEmailService smtp) : IAdminService
         db.Institutes.Add(institute);
         pendingRequest.Identity.UniUser!.Institute = institute;
         pendingRequest.Identity.GenerateActivateAccountToken();
-        string activationLink = $"https://localhost:5173/activate-account?token={pendingRequest.Identity.ActivateAccountToken}";
+        string activationLink = $"https://localhost:5173/activate-account?token={pendingRequest.Identity.ActivateAccountToken}&id={pendingRequest.Identity.Id}";
         await smtp.SendEmail(pendingRequest.Identity.Email, "Account Activation - Your Institute Join Request has been Accepted", $"Congratulations! Your request to join the institute has been accepted. Please click the following link to activate your account: {activationLink}. This link will expire in 15 minutes.");
         await db.SaveChangesAsync();
         return new PendingRequestResponse
