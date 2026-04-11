@@ -105,7 +105,8 @@ function RouteComponent() {
                     <div className="flex flex-col items-center gap-2">
                       <Button variant={"outline"} size={"sm"} asChild>
                         <Link
-                          to={req.proofDocumentUrl}
+                          from="/"
+                          to={"api/v0" + req.proofDocumentUrl}
                           target="_blank"
                           className="w-34"
                         >
@@ -115,7 +116,8 @@ function RouteComponent() {
 
                       <Button variant={"outline"} size={"sm"} asChild>
                         <Link
-                          to={req.identityDocumentUrl}
+                          from="/"
+                          to={"api/v0" + req.identityDocumentUrl}
                           target="_blank"
                           className="w-34"
                         >

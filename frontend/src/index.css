@@ -198,3 +198,7 @@ body::after {
   pointer-events: none;
   z-index: 1;
 }
+
+img {
+  background-size: cover;
+}
