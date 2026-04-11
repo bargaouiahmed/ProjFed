@@ -20,9 +20,9 @@ import {
   TableFooter,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import useAcceptRequest from "@/querys/useAcceptRequest";
-import useGetRequests from "@/querys/useGetRequests";
-import useRejectRequest from "@/querys/useRejectRequest";
+import useAcceptRequest from "@/querys/admin/useAcceptRequest";
+import useGetRequests from "@/querys/admin/useGetRequests";
+import useRejectRequest from "@/querys/admin/useRejectRequest";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -48,6 +48,7 @@ function RouteComponent() {
   const { mutate: acceptRequest } = useAcceptRequest();
   const { mutate: rejectRequest } = useRejectRequest();
 
+  console.log(requests);
   if (isPending)
     return <div className="text-center mt-10">Loading requests...</div>;
 

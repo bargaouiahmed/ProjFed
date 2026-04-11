@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "./axios";
+import { api } from "../axios";
 import { toast } from "sonner";
 
 export default function useAcceptRequest() {
@@ -13,7 +13,7 @@ export default function useAcceptRequest() {
 
     onSuccess: () => {
       toast.success("request accepted");
-      queryClient.invalidateQueries({ queryKey: ["accept-request"] });
+      queryClient.invalidateQueries({ queryKey: ["requests"] });
     },
 
     onError: (error) => {

@@ -20,10 +20,11 @@ function RouteComponent() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const { mutate: resetPassword, isPending } = useResetPassword();
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 bg-muted/30">
+    <main className="min-h-screen flex items-center justify-center px-4 ">
       <div className="w-full max-w-md">
         <Formik
           enableReinitialize:false

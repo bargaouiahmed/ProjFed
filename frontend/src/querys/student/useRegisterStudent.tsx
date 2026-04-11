@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { api } from "./axios";
+import { api } from "../axios";
 import { toast } from "sonner";
 
 interface FormData {

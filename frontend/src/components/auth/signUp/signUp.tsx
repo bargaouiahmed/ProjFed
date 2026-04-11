@@ -15,7 +15,7 @@ import { validation } from "./validation";
 import { Heading } from "../heading";
 
 import { FormikInput } from "@/components/form/formikInput";
-import useRegisterStudent from "@/querys/useRegisterStudent";
+import useRegisterStudent from "@/querys/student/useRegisterStudent";
 
 export default function SignIn({ goToSignIn }: { goToSignIn: () => void }) {
   const [showPassword, setShowPasswod] = useState(false);

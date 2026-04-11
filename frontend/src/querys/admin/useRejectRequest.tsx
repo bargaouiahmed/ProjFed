@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "./axios";
+import { api } from "../axios";
 import { toast } from "sonner";
 
 export default function useRejectRequest() {
