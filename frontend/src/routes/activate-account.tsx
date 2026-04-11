@@ -1,4 +1,4 @@
-import useActivateStudentAcount from "@/querys/useActivateStudentAcount";
+import useActivateStudentAcount from "@/querys/student/useActivateStudentAcount";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import {
