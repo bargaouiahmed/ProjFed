@@ -48,12 +48,15 @@ export default function AdminDashboardSideBar() {
           <DropdownMenuTrigger asChild>
             <Button variant={"ghost"}>
               <div className="flex items-center gap-2">
-                {open && <p>{account?.email}</p>}
                 {account?.pfpUrl ? (
-                  <img src={account.pfpUrl} />
+                  <img
+                    src={"http://localhost:5173/api/v0" + account.pfpUrl}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm"
+                  />
                 ) : (
                   <IconUserCircle />
                 )}
+                {open && <p>{account?.email}</p>}
               </div>
             </Button>
           </DropdownMenuTrigger>
