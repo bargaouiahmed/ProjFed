@@ -110,7 +110,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+        app.UseSwaggerUI(options =>
+    {
+        // Point Swagger UI to the JSON endpoint .NET 9 generated
+        options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    });
 }
+
 
 using (var scope = app.Services.CreateScope())
 {
