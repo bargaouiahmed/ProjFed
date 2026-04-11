@@ -44,8 +44,10 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconDisc,
+  IconEdit,
   IconPlus,
 } from "@tabler/icons-react";
+import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
 
 export const Route = createFileRoute("/administration/dashboard/classes")({
   component: RouteComponent,
@@ -71,6 +73,9 @@ function RouteComponent() {
       pageSize,
       enabled: !!instituteId,
     });
+
+  const { mutate: updateClassMetadata, isPending: isUpdatingClassMetadata } =
+    useUpdateClassMetadata();
   console.log(classMetadata);
   const numberOfPages = Math.max(
     Math.ceil((classMetadata?.length || 0) / pageSize),
@@ -191,35 +196,111 @@ function RouteComponent() {
                 <TableCell>{metadata.numberOfClasses}</TableCell>
                 <TableCell>{metadata.level}</TableCell>
                 <TableCell>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button type="button" variant="outline">
-                        Add class
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm add class</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to add a new class for this
-                          metadata entry?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction asChild>
-                          <Button
-                            disabled={isAddingToClass}
-                            onClick={() =>
-                              addClass({ metadataId: metadata.metadataId })
-                            }
-                          >
-                            Confirm
-                          </Button>
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <div className="flex gap-2">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" variant="outline">
+                          Add class
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm add class</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to add a new class for this
+                            metadata entry?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction asChild>
+                            <Button
+                              disabled={isAddingToClass}
+                              onClick={() =>
+                                addClass({ metadataId: metadata.metadataId })
+                              }
+                            >
+                              Confirm
+                            </Button>
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" variant="success" size={"icon"}>
+                          <IconEdit />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Update Class Metadata
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Nulla totam debitis necessitatibus rerum, sunt
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <Formik
+                          onSubmit={(values) => {
+                            updateClassMetadata(values);
+                          }}
+                          initialValues={{
+                            metadataId: metadata.metadataId,
+                            levelOfStudies: metadata.levelOfStudies,
+                            specialty: metadata.specialty,
+                            maxYears: metadata.maxYears,
+                            level: metadata.level,
+                            maxTerms: metadata.maxTerms,
+                            numberOfClasses: metadata.numberOfClasses,
+                          }}
+                        >
+                          {() => (
+                            <Form>
+                              <FormikInput
+                                label="specialty:"
+                                name="specialty"
+                              />
+                              <div className="flex gap-2">
+                                <FormikInput
+                                  label="max years:"
+                                  name="maxYears"
+                                />
+                                <FormikInput
+                                  label="max terms:"
+                                  name="maxTerms"
+                                />
+                              </div>
+                              <FormikInput
+                                label="level of studies:"
+                                name="levelOfStudies"
+                              />
+
+                              <FormikInput label="level:" name="level" />
+
+                              <FormikInput
+                                label="number of classes:"
+                                name="numberOfClasses"
+                              />
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction asChild>
+                                  <Button
+                                    disabled={isUpdatingClassMetadata}
+                                    type="submit"
+                                  >
+                                    update class metadata
+                                  </Button>
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </Form>
+                          )}
+                        </Formik>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
