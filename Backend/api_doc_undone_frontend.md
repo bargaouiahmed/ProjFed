@@ -649,3 +649,72 @@
   - `Content-Type: application/json`
 - **Request Body:** JSON
   - `score` (int, required)
+
+---
+
+## 66. Download Pending Request Identity Document
+
+- **Endpoint:** `GET /fs/pending-requests/{pendingRequestId}/identity-document`
+- **Auth:** Bearer token required, role `admin` or `super_admin`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: */*`
+- **Route Parameters:**
+  - `pendingRequestId` (GUID, required)
+- **Response:**
+  - 200 OK: Binary file stream for the pending request's identity document
+  - `Content-Type` matches the stored file when recognized, otherwise `application/octet-stream`
+  - 401 Unauthorized: Missing/invalid token claim
+  - 403 Forbidden: Forbidden by role policy
+  - 500 Internal Server Error: Pending request not found, invalid stored path, or file missing on disk
+- **Side Effects:**
+  - None (read-only)
+  - Resolves the stored `/uploads/...` path to a physical file under `wwwroot/uploads`
+
+---
+
+## 67. Download Pending Request Proof Document
+
+- **Endpoint:** `GET /fs/pending-requests/{pendingRequestId}/proof-document`
+- **Auth:** Bearer token required, role `admin` or `super_admin`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: */*`
+- **Route Parameters:**
+  - `pendingRequestId` (GUID, required)
+- **Response:**
+  - 200 OK: Binary file stream for the pending request's proof document
+  - `Content-Type` matches the stored file when recognized, otherwise `application/octet-stream`
+  - 401 Unauthorized: Missing/invalid token claim
+  - 403 Forbidden: Forbidden by role policy
+  - 500 Internal Server Error: Pending request not found, invalid stored path, or file missing on disk
+- **Side Effects:**
+  - None (read-only)
+  - Resolves the stored `/uploads/...` path to a physical file under `wwwroot/uploads`
+
+---
+
+## 68. Download Chapter Attachments Archive
+
+- **Endpoint:** `GET /fs/chapters/{chapterId}/attachments`
+- **Auth:** Bearer token required
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/zip`
+- **Route Parameters:**
+  - `chapterId` (GUID, required)
+- **Authorization Rules:**
+  - `admin` and `super_admin` may download any chapter archive
+  - `professor` may download only attachments for chapters belonging to their own courses
+  - `student` may download only attachments for chapters in courses attached to their class
+  - `uni_admin` and `uni_staff` may download only attachments for chapters belonging to their institute
+- **Response:**
+  - 200 OK: ZIP archive containing all stored chapter attachments
+  - `Content-Type: application/zip`
+  - Download filename format: `{chapterTitle}-attachments.zip`
+  - 401 Unauthorized: Missing/invalid token claim
+  - 403 Forbidden: Authentication failed or caller is rejected by policy before controller execution
+  - 500 Internal Server Error: Chapter not found, caller not authorized by service checks, chapter has no attachments, invalid stored path, or a file is missing on disk
+- **Side Effects:**
+  - None (read-only)
+  - Builds the archive in memory from the chapter's comma-separated `attachmentUrls`
