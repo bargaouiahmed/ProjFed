@@ -4,7 +4,6 @@ import useAddClassMetadata from "@/querys/administration/useAddClassMetadata";
 import useGetClassMetadata from "@/querys/administration/useGetClassMetadata";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Formik, Form } from "formik";
-
 import z from "zod";
 import * as yup from "yup";
 import useGetInstitue from "@/querys/administration/useGetInstitue";
@@ -43,25 +42,17 @@ import {
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconBook,
   IconDisc,
   IconEdit,
   IconPlus,
-  IconTrash,
-  IconUserMinus,
-  IconUserPlus,
 } from "@tabler/icons-react";
 import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
-import useListMClasses from "@/querys/administration/useListMClasses";
-import useListClassCourses from "@/querys/administration/useListClassCourses";
-import useAddCourseToClass from "@/querys/administration/useAddCourseToClass";
-import useRemoveCourse from "@/querys/administration/useDeleteCourseFromClass";
-import useTryAddProf from "@/querys/professor/useTryAddProf";
-import useAddNewProf from "@/querys/professor/useAddNewProf";
+
 import { useState } from "react";
-import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import useRemoveProfFromCourse from "@/querys/professor/useRemoveProfFromCourse";
+import { CourseManagerDialog } from "@/components/classes/CourseMangerDialog";
+import { ClassListDialog } from "@/components/classes/ClassListDialog";
+
+// ─── Route ───────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute("/administration/dashboard/classes")({
   component: RouteComponent,
@@ -71,162 +62,25 @@ export const Route = createFileRoute("/administration/dashboard/classes")({
   }),
 });
 
-// ─── Add Professor Sub-Form ───────────────────────────────────────────────────
-//
-// Implements the "try-add" flow described in API doc §69:
-//   1. POST /professors/try-add?email=...
-//      • 200 → success, done.
-//      • 400 "Professor doesn't exist" → show firstname/lastname fields → POST /professors
-//   2. All other errors bubble up as toast (handled inside each hook).
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-type ProfStep = "email" | "full";
-
-function AddProfessorForm({ courseId }: { courseId: string }) {
-  const [step, setStep] = useState<ProfStep>("email");
-  const [pendingEmail, setPendingEmail] = useState("");
-
-  const { mutate: tryAdd, isPending: isTrying } = useTryAddProf();
-  const { mutate: addNew, isPending: isAdding } = useAddNewProf();
-
-  function handleEmailSubmit(email: string) {
-    tryAdd(
-      { courseId, email },
-      {
-        onSuccess: () => {
-          setStep("email");
-          setPendingEmail("");
-          toast.success("Professor added to course successfully.");
-        },
-        onError: (err) => {
-          console.log(isAxiosError(err));
-
-          if (
-            isAxiosError(err) &&
-            (err.response?.data == "No professor with given email found" ||
-              err.response?.data == "Professor doesn't exist")
-          ) {
-            setPendingEmail(email);
-            setStep("full");
-          } else {
-            toast.error("adding professor failed please try again");
-          }
-        },
-      },
-    );
-  }
-
-  function handleFullSubmit(firstname: string, lastname: string) {
-    addNew(
-      {
-        params: { courseId },
-        body: { email: pendingEmail, firstname, lastname },
-      },
-      {
-        onSuccess: () => {
-          setStep("email");
-          setPendingEmail("");
-        },
-      },
-    );
-  }
-
-  if (step === "email") {
-    return (
-      <Formik
-        key={"email_form"}
-        initialValues={{ email: "" }}
-        validationSchema={yup.object({
-          email: yup
-            .string()
-            .email("Invalid email")
-            .required("Email is required"),
-        })}
-        onSubmit={(values) => handleEmailSubmit(values.email.trim())}
-      >
-        {() => (
-          <Form className="grid gap-3 rounded-md border p-4">
-            <p className="text-sm font-medium">Add professor</p>
-            <FormikInput name="email" label="Professor email" type="email" />
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isTrying}>
-                <IconUserPlus className="mr-1" size={16} />
-                {isTrying ? "Checking…" : "Add professor"}
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    );
-  }
-
-  // step === "full"
-  return (
-    <Formik
-      key={"full_form"}
-      initialValues={{ firstname: "", lastname: "" }}
-      validationSchema={yup.object({
-        firstname: yup.string().required("First name is required"),
-        lastname: yup.string().required("Last name is required"),
-      })}
-      onSubmit={(values) =>
-        handleFullSubmit(values.firstname.trim(), values.lastname.trim())
-      }
-    >
-      {() => (
-        <Form className="grid gap-3 rounded-md border p-4">
-          <div>
-            <p className="text-sm font-medium">New professor account</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              No account found for{" "}
-              <span className="font-medium text-foreground">
-                {pendingEmail}
-              </span>
-              . Please provide their name to create one.
-            </p>
-          </div>
-
-          <FormikInput name="firstname" label="First name" />
-          <FormikInput name="lastname" label="Last name" />
-
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setStep("email");
-                setPendingEmail("");
-              }}
-            >
-              Back
-            </Button>
-            <Button type="submit" disabled={isAdding}>
-              <IconUserPlus className="mr-1" size={16} />
-              {isAdding ? "Adding…" : "Create & add"}
-            </Button>
-          </div>
-        </Form>
-      )}
-    </Formik>
-  );
+export interface CourseManagerTarget {
+  id: string;
+  className: string;
+  classCode: string;
 }
-
-// ─── Main Route Component ─────────────────────────────────────────────────────
 
 function RouteComponent() {
   const { pageNumber, pageSize } = Route.useSearch();
 
-  const [selectedMetadataId, setSelectedMetadataId] = useState<string | null>(
-    null,
-  );
-  const [courseManagerClass, setCourseManagerClass] = useState<{
-    id: string;
-    className: string;
-    classCode: string;
-  } | null>(null);
+  const [courseManagerClass, setCourseManagerClass] =
+    useState<CourseManagerTarget | null>(null);
 
   const { data: institue, isLoading: isInstitueLoading } = useGetInstitue();
   const { mutate: addClass, isPending: isAddingToClass } = useAddClass();
   const { mutate: addClassMetadata, isPending } = useAddClassMetadata();
+  const { mutate: updateClassMetadata, isPending: isUpdatingClassMetadata } =
+    useUpdateClassMetadata();
 
   const instituteId = institue?.id ?? "";
 
@@ -238,37 +92,16 @@ function RouteComponent() {
       enabled: !!instituteId,
     });
 
-  const { mutate: updateClassMetadata, isPending: isUpdatingClassMetadata } =
-    useUpdateClassMetadata();
-
-  const { data: classList, isLoading: isClassListLoading } = useListMClasses({
-    metadataId: selectedMetadataId!,
-    enabled: !!selectedMetadataId,
-  });
-
-  const { data: classCourses, isLoading: isClassCoursesLoading } =
-    useListClassCourses({
-      classId: courseManagerClass?.id ?? "",
-      enabled: !!courseManagerClass,
-    });
-
-  const { mutate: addCourseToClass, isPending: isAddingCourse } =
-    useAddCourseToClass();
-  const { mutate: removeCourse, isPending: isRemovingCourse } =
-    useRemoveCourse();
-
   const numberOfPages = Math.max(
     Math.ceil((classMetadata?.length || 0) / pageSize),
     1,
   );
-  const { mutate: removeProf, isPending: isRemoving } =
-    useRemoveProfFromCourse();
-  if (isInstitueLoading) return <div>Loading...</div>;
-  if (isClassMetadataLoading) return <div>Loading...</div>;
+
+  if (isInstitueLoading || isClassMetadataLoading) return <div>Loading...</div>;
 
   return (
-    <main className="p-8 flex flex-col ">
-      {/* HEADER */}
+    <main className="p-8 flex flex-col">
+      {/* Header */}
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Class Metadata Management</h1>
@@ -277,7 +110,7 @@ function RouteComponent() {
           </p>
         </div>
 
-        {/* ADD METADATA */}
+        {/* Add metadata dialog */}
         <Dialog>
           <DialogTrigger asChild>
             <Button disabled={!instituteId}>
@@ -297,10 +130,7 @@ function RouteComponent() {
             <Formik
               onSubmit={(values) => {
                 if (!instituteId) return;
-                addClassMetadata({
-                  ...values,
-                  instituteId,
-                });
+                addClassMetadata({ ...values, instituteId });
               }}
               initialValues={{
                 specialty: "",
@@ -329,7 +159,6 @@ function RouteComponent() {
                     label="Default Max Terms"
                     type="number"
                   />
-
                   <DialogFooter>
                     <DialogClose asChild>
                       <Button variant="outline">Cancel</Button>
@@ -346,7 +175,7 @@ function RouteComponent() {
         </Dialog>
       </div>
 
-      {/* TABLE */}
+      {/* Table */}
       <Table className="border">
         <TableCaption>Class Metadata</TableCaption>
 
@@ -374,83 +203,20 @@ function RouteComponent() {
 
               <TableCell>
                 <div className="flex gap-2">
-                  {/* VIEW CLASSES */}
-                  <Dialog
-                    onOpenChange={(open) => {
-                      if (!open) setSelectedMetadataId(null);
-                    }}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          setSelectedMetadataId(metadata.metadataId)
-                        }
-                      >
-                        Classes
-                      </Button>
-                    </DialogTrigger>
+                  {/* View classes */}
+                  <ClassListDialog
+                    metadataId={metadata.metadataId}
+                    onSelectCourse={setCourseManagerClass}
+                    trigger={<Button variant="outline">Classes</Button>}
+                  />
 
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Classes List</DialogTitle>
-                      </DialogHeader>
-
-                      <div className="max-h-100 overflow-y-auto border rounded-md p-2">
-                        {isClassListLoading ? (
-                          <div>Loading...</div>
-                        ) : classList?.length === 0 ? (
-                          <div>No classes found</div>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            {classList?.map((cls) => (
-                              <div
-                                key={cls.id}
-                                className="p-3 border rounded-lg flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-                              >
-                                <div>
-                                  <p className="font-medium">{cls.className}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {cls.classCode}
-                                  </p>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <div className="text-sm text-muted-foreground">
-                                    Term {cls.currentTerm}/{cls.maxTerms}
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={() =>
-                                      setCourseManagerClass({
-                                        id: cls.id,
-                                        className: cls.className,
-                                        classCode: cls.classCode,
-                                      })
-                                    }
-                                  >
-                                    <IconBook size={16} className="mr-1" />
-                                    Courses
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  {/* ADD CLASS */}
+                  {/* Add class */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="success">
                         <IconPlus />
                       </Button>
                     </AlertDialogTrigger>
-
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirm</AlertDialogTitle>
@@ -458,7 +224,6 @@ function RouteComponent() {
                           Add new class?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction asChild>
@@ -475,23 +240,19 @@ function RouteComponent() {
                     </AlertDialogContent>
                   </AlertDialog>
 
-                  {/* EDIT */}
+                  {/* Edit metadata */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="icon" variant={"success"}>
+                      <Button size="icon" variant="success">
                         <IconEdit />
                       </Button>
                     </AlertDialogTrigger>
-
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Update</AlertDialogTitle>
                       </AlertDialogHeader>
-
                       <Formik
-                        onSubmit={(values) => {
-                          updateClassMetadata(values);
-                        }}
+                        onSubmit={(values) => updateClassMetadata(values)}
                         initialValues={{
                           metadataId: metadata.metadataId,
                           levelOfStudies: metadata.levelOfStudies,
@@ -512,7 +273,6 @@ function RouteComponent() {
                               name="numberOfClasses"
                               label="Classes"
                             />
-
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction asChild>
@@ -541,18 +301,13 @@ function RouteComponent() {
               <div className="flex justify-end gap-2">
                 <Link
                   to="/administration/dashboard/classes"
-                  search={{
-                    pageNumber: Math.max(pageNumber - 1, 1),
-                    pageSize,
-                  }}
+                  search={{ pageNumber: Math.max(pageNumber - 1, 1), pageSize }}
                 >
                   <Button disabled={pageNumber === 1}>
                     <IconArrowLeft />
                   </Button>
                 </Link>
-
                 <Button variant="ghost">{pageNumber}</Button>
-
                 <Link
                   to="/administration/dashboard/classes"
                   search={{
@@ -570,211 +325,11 @@ function RouteComponent() {
         </TableFooter>
       </Table>
 
-      {/* COURSE MANAGER DIALOG */}
-      <Dialog
-        open={!!courseManagerClass}
-        onOpenChange={(open) => {
-          if (!open) setCourseManagerClass(null);
-        }}
-      >
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Courses — {courseManagerClass?.className}</DialogTitle>
-            <DialogDescription>
-              {courseManagerClass?.classCode} · Add or remove courses and
-              professors for this class.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {/* COURSE LIST */}
-            <div className="rounded-md border">
-              {isClassCoursesLoading ? (
-                <div className="p-4 text-sm text-muted-foreground">
-                  Loading courses…
-                </div>
-              ) : !classCourses?.length ? (
-                <div className="p-4 text-sm text-muted-foreground">
-                  No courses yet. Add one below.
-                </div>
-              ) : (
-                <ul className="divide-y">
-                  {classCourses.map((course) => (
-                    <li
-                      key={course.id}
-                      className="flex items-start justify-between gap-2 p-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium leading-tight">
-                          {course.courseName}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Term {course.term}
-                          {typeof course.studentCount === "number"
-                            ? ` · ${course.studentCount} students`
-                            : ""}
-                        </p>
-                        {course.description ? (
-                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                            {course.description}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {/* ADD PROFESSOR — per-course try-add flow (API doc §69) */}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              aria-label={`Add professor to ${course.courseName}`}
-                            >
-                              <IconUserPlus size={18} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Add Professor</DialogTitle>
-                              <DialogDescription>
-                                {course.courseName}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <AddProfessorForm courseId={course.id} />
-                          </DialogContent>
-                        </Dialog>
-
-                        {/*remove Porfessor*/}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              aria-label={`delete professor from ${course.courseName}`}
-                            >
-                              <IconUserMinus size={18} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>remove Professor</DialogTitle>
-                              <DialogDescription>
-                                are you sure you want tot remove professor of
-                                the {course.courseName} course ?
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button
-                                variant={"destructive"}
-                                onClick={() => {
-                                  removeProf(course.id);
-                                }}
-                                disabled={isRemoving}
-                              >
-                                yes
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-
-                        {/* REMOVE COURSE */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              disabled={isRemovingCourse}
-                              aria-label={`Remove ${course.courseName}`}
-                            >
-                              <IconTrash size={18} />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Remove course?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This removes{" "}
-                                <span className="font-medium text-foreground">
-                                  {course.courseName}
-                                </span>{" "}
-                                from this class. This cannot be undone from
-                                here.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction asChild>
-                                <Button
-                                  variant="destructive"
-                                  disabled={isRemovingCourse}
-                                  onClick={() => removeCourse(course.id)}
-                                >
-                                  Remove
-                                </Button>
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* ADD COURSE FORM */}
-            {courseManagerClass ? (
-              <Formik
-                initialValues={{
-                  courseName: "",
-                  term: 1,
-                  description: "",
-                }}
-                validationSchema={yup.object({
-                  courseName: yup.string().required("Name is required"),
-                  term: yup
-                    .number()
-                    .integer()
-                    .min(1, "Term must be at least 1")
-                    .required(),
-                  description: yup.string().optional(),
-                })}
-                onSubmit={(values, { resetForm }) => {
-                  addCourseToClass(
-                    {
-                      classId: courseManagerClass.id,
-                      courseName: values.courseName.trim(),
-                      term: values.term,
-                      description: values.description.trim() || undefined,
-                    },
-                    { onSuccess: () => resetForm() },
-                  );
-                }}
-              >
-                {() => (
-                  <Form className="grid gap-3 rounded-md border p-4">
-                    <p className="text-sm font-medium">Add course</p>
-                    <FormikInput name="courseName" label="Course name" />
-                    <FormikInput name="term" label="Term" type="number" />
-                    <FormikInput name="description" label="Description" />
-                    <div className="flex justify-end">
-                      <Button type="submit" disabled={isAddingCourse}>
-                        <IconPlus className="mr-1" size={16} />
-                        Add course
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            ) : null}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Course manager — rendered outside the table so it isn't nested in it */}
+      <CourseManagerDialog
+        target={courseManagerClass}
+        onClose={() => setCourseManagerClass(null)}
+      />
     </main>
   );
 }
