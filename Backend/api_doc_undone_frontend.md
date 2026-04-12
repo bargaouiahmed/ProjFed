@@ -15,26 +15,6 @@
   - `application/json` for JSON bodies
   - `multipart/form-data` for file upload forms
 
-## 14. Reset User Password (Admin)
-
-- **Endpoint:** `PUT /admin/users/{userId}/reset-password`
-- **Auth:** Bearer token required, role `admin` or `super_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Content-Type: application/json`
-  - `Accept: application/json`
-- **Route Parameters:**
-  - `userId` (GUID, required)
-- **Request Body:** JSON
-  - `newPassword` (string, required)
-- **Response:**
-  - 200 OK: Password reset successful message
-  - 400 Bad Request: Error message
-  - 401/403: Unauthorized or forbidden by role policy
-- **Side Effects:**
-  - Replaces stored password hash
-  - Note: admin/super_admin accounts cannot be reset by this endpoint
-
 ## 18. List All Professor Invitations
 
 - **Endpoint:** `GET /administration/professor-invitations`
@@ -653,44 +633,6 @@
 
 ---
 
-## 69. Special Add Flow For Professors And Uni Staff
-
-- **Purpose:** Let the frontend try the "existing user" path first using only an email, and only ask for `firstname` / `lastname` when the account does not exist yet.
-- **Recommended Frontend Flow (Professor):**
-  - Call `POST /administration/courses/{courseId}/professors/try-add?email=...`
-  - If the response is `200 OK`, the professor flow is already processed:
-    - same-institute professor: assigned directly to the course
-    - other-institute professor: invitation created
-  - If the response is `400 Bad Request` with exact body `Professor doesn't exist`, collect `firstname` and `lastname` from the user and then call `POST /administration/courses/{courseId}/professors`
-- **Recommended Frontend Flow (Uni Staff):**
-  - Call `POST /administration/staff/try-add?email=...`
-  - If the response is `200 OK`, the uni staff flow is already processed:
-    - existing eligible uni staff account: linked/invited to the institute
-  - If the response is `400 Bad Request` with exact body `Staff member doesn't exist`, collect `firstname` and `lastname` from the user and then call `POST /administration/staff/register`
-
----
-
-## 70. Try Add Uni Staff
-
-- **Endpoint:** `POST /administration/staff/try-add`
-- **Auth:** Bearer token required, role `uni_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: application/json`
-- **Query Parameters:**
-  - `email` (string, required)
-- **Response:**
-  - 200 OK: `Staff member added successfully.`
-  - 400 Bad Request:
-    - exact special message `Staff member doesn't exist` when the email does not match an existing identity and the frontend should switch to the register-new-staff flow
-    - other error message for business-rule failures such as wrong role, already in institute, or different institute
-  - 401/403: Unauthorized or forbidden by role policy
-- **Side Effects:**
-  - If the identity exists, reuses the existing uni-staff flow (`POST /administration/staff/add-existing`)
-  - If the identity does not exist, no DB write occurs and the special error message is returned
-
----
-
 ## 71. Get Current Staff Member Institute Id
 
 - **Endpoint:** `GET /administration/staff/institute`
@@ -706,23 +648,5 @@
   - 401 Unauthorized: Missing/invalid token claim
 - **Side Effects:**
   - None (read-only)
-
----
-
-## 73. Remove Professor From Course
-
-- **Endpoint:** `DELETE /administration/courses/{courseId}/professors`
-- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: application/json`
-- **Route Parameters:**
-  - `courseId` (GUID, required)
-- **Response:**
-  - 200 OK: `Professor removed from course successfully.`
-  - 400 Bad Request: Error message
-  - 401 Unauthorized: Missing/invalid token claim
-- **Side Effects:**
-  - Clears the course's assigned professor
 
 ---

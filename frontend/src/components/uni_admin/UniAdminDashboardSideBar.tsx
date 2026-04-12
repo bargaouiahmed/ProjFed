@@ -16,6 +16,7 @@ import {
   IconSchool,
   IconUsers,
   IconInbox,
+  IconMail,
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
@@ -52,7 +53,7 @@ export default function AdminDashboardSideBar() {
                 }}
               >
                 <IconInbox />
-                {open && <span>Invitations</span>}
+                {open && <span>My Invitations</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -79,6 +80,18 @@ export default function AdminDashboardSideBar() {
               >
                 <IconUsers />
                 {open && <span>Staff</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => {
+                  navigate({
+                    to: "/administration/dashboard/professorsInvitations",
+                  });
+                }}
+              >
+                <IconMail />
+                {open && "proffessors invitations"}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
