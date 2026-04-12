@@ -5,6 +5,8 @@
 - Docker: `http://localhost:8080/api/v0`
 - Local: `http://localhost:5193/api/v0`
 
+---
+
 ## Common Request Headers
 
 - `Accept: application/json` (recommended for all endpoints)
@@ -33,9 +35,25 @@
   - Replaces stored password hash
   - Note: admin/super_admin accounts cannot be reset by this endpoint
 
-## 19. Get All Student Courses
+## 18. List All Professor Invitations
 
-- **Endpoint:** `POST /student`
+- **Endpoint:** `GET /administration/professor-invitations`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Response:**
+  - 200 OK: List of professor invitations across the caller's institute
+    - `id`, `identityId`, `professorEmail`, `courseId`, `courseName`, `classPrettyName`, `status`, `invitedAt`
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+- **Side Effects:**
+  - None (read-only)
+  - Includes invitations with any status: `pending`, `accepted`, or `rejected`
+
+## 20. Get All Student Courses
+
+- **Endpoint:** `GET /student`
 - **Auth:** Bearer token required, role `student`
 - **Headers:**
   - `Authorization: Bearer <accessToken>`
@@ -43,15 +61,30 @@
 - **Request Body:** None
 - **Response:**
   - 200 OK: List of `SerializedCourse`
-    - `id`, `name`, `description`, `professorFirstname`, `professorLastname`
+    - `id`, `name`, `description`, `term`, `professorFirstname`, `professorLastname`
+    - `chapters[]`
+      - `id`, `courseId`, `title`, `description`, `attachmentUrls`, `createdAt`, `updatedAt`
+    - `exams[]`
+      - `id`, `courseId`, `title`, `description`, `totalMarks`, `createdAt`, `updatedAt`
+      - `mcqs[]`
+        - `id`, `questionText`, `options`, `correctOptions`, `questionMark`, `explanation`, `attachmentUrls`, `createdAt`, `updatedAt`
+      - `redactionQuestions[]`
+        - `id`, `questionText`, `questionMark`, `attachmentUrls`, `createdAt`, `updatedAt`
+    - `tests[]`
+      - `id`, `courseId`, `title`, `description`, `totalMarks`, `createdAt`, `updatedAt`
+      - `mcqs[]`
+        - `id`, `questionText`, `options`, `correctOptions`, `questionMark`, `explanation`, `attachmentUrls`, `createdAt`, `updatedAt`
+      - `redactionQuestions[]`
+        - `id`, `questionText`, `questionMark`, `attachmentUrls`, `createdAt`, `updatedAt`
   - 400 Bad Request: Error message
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - None (read-only)
+  - Returns only the courses whose `Term` matches the student class metadata `CurrentTerm`
 
 ---
 
-## 20. Add Student to Class
+## 21. Add Student to Class
 
 - **Endpoint:** `POST /student/course/add`
 - **Auth:** Bearer token required, role `student`
@@ -93,28 +126,6 @@
 
 ---
 
-## 25. Add Existing Professor to Course
-
-- **Endpoint:** `POST /administration/courses/{courseId}/professors/add-existing`
-- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Content-Type: application/json`
-  - `Accept: application/json`
-- **Route Parameters:**
-  - `courseId` (GUID, required)
-- **Request Body:** JSON
-  - `email` (string, required)
-- **Response:**
-  - 200 OK: Professor assignment processed message
-  - 400 Bad Request: Error message
-  - 401/403: Unauthorized or forbidden by role policy
-- **Side Effects:**
-  - If professor exists in same institute, assigns course and creates a notification
-  - If professor exists in another institute, creates a `ProfessorInvitation`
-
----
-
 ## 26. Increment Class Metadata Term
 
 - **Endpoint:** `POST /administration/metadata/{metadataId}/increment-term`
@@ -148,8 +159,6 @@
   - 401 Unauthorized: Missing/invalid token claims
 - **Side Effects:**
   - Marks unread notifications as seen when fetched
-
----
 
 ## 31. Get Professor Invitations
 
@@ -641,3 +650,79 @@
 - **Side Effects:**
   - None (read-only)
   - Builds the archive in memory from the chapter's comma-separated `attachmentUrls`
+
+---
+
+## 69. Special Add Flow For Professors And Uni Staff
+
+- **Purpose:** Let the frontend try the "existing user" path first using only an email, and only ask for `firstname` / `lastname` when the account does not exist yet.
+- **Recommended Frontend Flow (Professor):**
+  - Call `POST /administration/courses/{courseId}/professors/try-add?email=...`
+  - If the response is `200 OK`, the professor flow is already processed:
+    - same-institute professor: assigned directly to the course
+    - other-institute professor: invitation created
+  - If the response is `400 Bad Request` with exact body `Professor doesn't exist`, collect `firstname` and `lastname` from the user and then call `POST /administration/courses/{courseId}/professors`
+- **Recommended Frontend Flow (Uni Staff):**
+  - Call `POST /administration/staff/try-add?email=...`
+  - If the response is `200 OK`, the uni staff flow is already processed:
+    - existing eligible uni staff account: linked/invited to the institute
+  - If the response is `400 Bad Request` with exact body `Staff member doesn't exist`, collect `firstname` and `lastname` from the user and then call `POST /administration/staff/register`
+
+---
+
+## 70. Try Add Uni Staff
+
+- **Endpoint:** `POST /administration/staff/try-add`
+- **Auth:** Bearer token required, role `uni_admin`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Query Parameters:**
+  - `email` (string, required)
+- **Response:**
+  - 200 OK: `Staff member added successfully.`
+  - 400 Bad Request:
+    - exact special message `Staff member doesn't exist` when the email does not match an existing identity and the frontend should switch to the register-new-staff flow
+    - other error message for business-rule failures such as wrong role, already in institute, or different institute
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - If the identity exists, reuses the existing uni-staff flow (`POST /administration/staff/add-existing`)
+  - If the identity does not exist, no DB write occurs and the special error message is returned
+
+---
+
+## 71. Get Current Staff Member Institute Id
+
+- **Endpoint:** `GET /administration/staff/institute`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Request Body:** None
+- **Response:**
+  - 200 OK: `UniId`
+    - `id`
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claim
+- **Side Effects:**
+  - None (read-only)
+
+---
+
+## 73. Remove Professor From Course
+
+- **Endpoint:** `DELETE /administration/courses/{courseId}/professors`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `courseId` (GUID, required)
+- **Response:**
+  - 200 OK: `Professor removed from course successfully.`
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claim
+- **Side Effects:**
+  - Clears the course's assigned professor
+
+---

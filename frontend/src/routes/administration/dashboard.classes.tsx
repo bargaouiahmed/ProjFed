@@ -48,13 +48,20 @@ import {
   IconEdit,
   IconPlus,
   IconTrash,
+  IconUserMinus,
+  IconUserPlus,
 } from "@tabler/icons-react";
 import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
 import useListMClasses from "@/querys/administration/useListMClasses";
 import useListClassCourses from "@/querys/administration/useListClassCourses";
 import useAddCourseToClass from "@/querys/administration/useAddCourseToClass";
 import useRemoveCourse from "@/querys/administration/useDeleteCourseFromClass";
+import useTryAddProf from "@/querys/professor/useTryAddProf";
+import useAddNewProf from "@/querys/professor/useAddNewProf";
 import { useState } from "react";
+import { toast } from "sonner";
+import { isAxiosError } from "axios";
+import useRemoveProfFromCourse from "@/querys/professor/useRemoveProfFromCourse";
 
 export const Route = createFileRoute("/administration/dashboard/classes")({
   component: RouteComponent,
@@ -63,6 +70,147 @@ export const Route = createFileRoute("/administration/dashboard/classes")({
     pageSize: z.coerce.number(),
   }),
 });
+
+// ─── Add Professor Sub-Form ───────────────────────────────────────────────────
+//
+// Implements the "try-add" flow described in API doc §69:
+//   1. POST /professors/try-add?email=...
+//      • 200 → success, done.
+//      • 400 "Professor doesn't exist" → show firstname/lastname fields → POST /professors
+//   2. All other errors bubble up as toast (handled inside each hook).
+
+type ProfStep = "email" | "full";
+
+function AddProfessorForm({ courseId }: { courseId: string }) {
+  const [step, setStep] = useState<ProfStep>("email");
+  const [pendingEmail, setPendingEmail] = useState("");
+
+  const { mutate: tryAdd, isPending: isTrying } = useTryAddProf();
+  const { mutate: addNew, isPending: isAdding } = useAddNewProf();
+
+  function handleEmailSubmit(email: string) {
+    tryAdd(
+      { courseId, email },
+      {
+        onSuccess: () => {
+          setStep("email");
+          setPendingEmail("");
+          toast.success("Professor added to course successfully.");
+        },
+        onError: (err) => {
+          console.log(isAxiosError(err));
+
+          if (
+            isAxiosError(err) &&
+            (err.response?.data == "No professor with given email found" ||
+              err.response?.data == "Professor doesn't exist")
+          ) {
+            setPendingEmail(email);
+            setStep("full");
+          } else {
+            toast.error("adding professor failed please try again");
+          }
+        },
+      },
+    );
+  }
+
+  function handleFullSubmit(firstname: string, lastname: string) {
+    addNew(
+      {
+        params: { courseId },
+        body: { email: pendingEmail, firstname, lastname },
+      },
+      {
+        onSuccess: () => {
+          setStep("email");
+          setPendingEmail("");
+        },
+      },
+    );
+  }
+
+  if (step === "email") {
+    return (
+      <Formik
+        key={"email_form"}
+        initialValues={{ email: "" }}
+        validationSchema={yup.object({
+          email: yup
+            .string()
+            .email("Invalid email")
+            .required("Email is required"),
+        })}
+        onSubmit={(values) => handleEmailSubmit(values.email.trim())}
+      >
+        {() => (
+          <Form className="grid gap-3 rounded-md border p-4">
+            <p className="text-sm font-medium">Add professor</p>
+            <FormikInput name="email" label="Professor email" type="email" />
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isTrying}>
+                <IconUserPlus className="mr-1" size={16} />
+                {isTrying ? "Checking…" : "Add professor"}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    );
+  }
+
+  // step === "full"
+  return (
+    <Formik
+      key={"full_form"}
+      initialValues={{ firstname: "", lastname: "" }}
+      validationSchema={yup.object({
+        firstname: yup.string().required("First name is required"),
+        lastname: yup.string().required("Last name is required"),
+      })}
+      onSubmit={(values) =>
+        handleFullSubmit(values.firstname.trim(), values.lastname.trim())
+      }
+    >
+      {() => (
+        <Form className="grid gap-3 rounded-md border p-4">
+          <div>
+            <p className="text-sm font-medium">New professor account</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              No account found for{" "}
+              <span className="font-medium text-foreground">
+                {pendingEmail}
+              </span>
+              . Please provide their name to create one.
+            </p>
+          </div>
+
+          <FormikInput name="firstname" label="First name" />
+          <FormikInput name="lastname" label="Last name" />
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setStep("email");
+                setPendingEmail("");
+              }}
+            >
+              Back
+            </Button>
+            <Button type="submit" disabled={isAdding}>
+              <IconUserPlus className="mr-1" size={16} />
+              {isAdding ? "Adding…" : "Create & add"}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+}
+
+// ─── Main Route Component ─────────────────────────────────────────────────────
 
 function RouteComponent() {
   const { pageNumber, pageSize } = Route.useSearch();
@@ -113,7 +261,8 @@ function RouteComponent() {
     Math.ceil((classMetadata?.length || 0) / pageSize),
     1,
   );
-
+  const { mutate: removeProf, isPending: isRemoving } =
+    useRemoveProfFromCourse();
   if (isInstitueLoading) return <div>Loading...</div>;
   if (isClassMetadataLoading) return <div>Loading...</div>;
 
@@ -325,6 +474,7 @@ function RouteComponent() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+
                   {/* EDIT */}
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -420,6 +570,7 @@ function RouteComponent() {
         </TableFooter>
       </Table>
 
+      {/* COURSE MANAGER DIALOG */}
       <Dialog
         open={!!courseManagerClass}
         onOpenChange={(open) => {
@@ -430,12 +581,13 @@ function RouteComponent() {
           <DialogHeader>
             <DialogTitle>Courses — {courseManagerClass?.className}</DialogTitle>
             <DialogDescription>
-              {courseManagerClass?.classCode} · Add or remove courses for this
-              class.
+              {courseManagerClass?.classCode} · Add or remove courses and
+              professors for this class.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* COURSE LIST */}
             <div className="rounded-md border">
               {isClassCoursesLoading ? (
                 <div className="p-4 text-sm text-muted-foreground">
@@ -468,50 +620,114 @@ function RouteComponent() {
                           </p>
                         ) : null}
                       </div>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="shrink-0 text-destructive hover:text-destructive"
-                            disabled={isRemovingCourse}
-                            aria-label={`Remove ${course.courseName}`}
-                          >
-                            <IconTrash size={18} />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Remove course?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This removes{" "}
-                              <span className="font-medium text-foreground">
+                      <div className="flex shrink-0 items-center gap-2">
+                        {/* ADD PROFESSOR — per-course try-add flow (API doc §69) */}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={`Add professor to ${course.courseName}`}
+                            >
+                              <IconUserPlus size={18} />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Professor</DialogTitle>
+                              <DialogDescription>
                                 {course.courseName}
-                              </span>{" "}
-                              from this class. This cannot be undone from here.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction asChild>
+                              </DialogDescription>
+                            </DialogHeader>
+                            <AddProfessorForm courseId={course.id} />
+                          </DialogContent>
+                        </Dialog>
+
+                        {/*remove Porfessor*/}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              aria-label={`delete professor from ${course.courseName}`}
+                            >
+                              <IconUserMinus size={18} />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>remove Professor</DialogTitle>
+                              <DialogDescription>
+                                are you sure you want tot remove professor of
+                                the {course.courseName} course ?
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
                               <Button
-                                variant="destructive"
-                                disabled={isRemovingCourse}
-                                onClick={() => removeCourse(course.id)}
+                                variant={"destructive"}
+                                onClick={() => {
+                                  removeProf(course.id);
+                                }}
+                                disabled={isRemoving}
                               >
-                                Remove
+                                yes
                               </Button>
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+
+                        {/* REMOVE COURSE */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              disabled={isRemovingCourse}
+                              aria-label={`Remove ${course.courseName}`}
+                            >
+                              <IconTrash size={18} />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Remove course?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This removes{" "}
+                                <span className="font-medium text-foreground">
+                                  {course.courseName}
+                                </span>{" "}
+                                from this class. This cannot be undone from
+                                here.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Button
+                                  variant="destructive"
+                                  disabled={isRemovingCourse}
+                                  onClick={() => removeCourse(course.id)}
+                                >
+                                  Remove
+                                </Button>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
+            {/* ADD COURSE FORM */}
             {courseManagerClass ? (
               <Formik
                 initialValues={{

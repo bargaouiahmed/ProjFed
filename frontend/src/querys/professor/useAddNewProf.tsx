@@ -1,32 +1,33 @@
 import { useMutation } from "@tanstack/react-query";
 import { api } from "../axios";
 import { toast } from "sonner";
-interface AddProfToCourse {
+
+interface props {
   params: {
     courseId: string;
   };
-  data: {
+  body: {
     email: string;
     firstname: string;
     lastname: string;
   };
 }
 
-export default function useAddProfToCourse() {
+export default function useAddNewProf() {
   return useMutation({
-    mutationFn: async ({ data, params }: AddProfToCourse) => {
+    mutationFn: async ({ params, body }: props) => {
       const response = await api.post(
         `/administration/courses/${params.courseId}/professors`,
-        data,
+        body,
       );
+
       return response.data;
     },
-
     onSuccess: () => {
-      toast.success("invitation to professor created succesfully");
+      toast.success("proffesor added to course successfully");
     },
     onError: () => {
-      toast.success("invitation failed please try again");
+      toast.error("failed to add professor please try again");
     },
   });
 }
