@@ -43,12 +43,17 @@ import {
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconBook,
   IconDisc,
   IconEdit,
   IconPlus,
+  IconTrash,
 } from "@tabler/icons-react";
 import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
 import useListMClasses from "@/querys/administration/useListMClasses";
+import useListClassCourses from "@/querys/administration/useListClassCourses";
+import useAddCourseToClass from "@/querys/administration/useAddCourseToClass";
+import useRemoveCourse from "@/querys/administration/useDeleteCourseFromClass";
 import { useState } from "react";
 
 export const Route = createFileRoute("/administration/dashboard/classes")({
@@ -65,6 +70,11 @@ function RouteComponent() {
   const [selectedMetadataId, setSelectedMetadataId] = useState<string | null>(
     null,
   );
+  const [courseManagerClass, setCourseManagerClass] = useState<{
+    id: string;
+    className: string;
+    classCode: string;
+  } | null>(null);
 
   const { data: institue, isLoading: isInstitueLoading } = useGetInstitue();
   const { mutate: addClass, isPending: isAddingToClass } = useAddClass();
@@ -87,6 +97,17 @@ function RouteComponent() {
     metadataId: selectedMetadataId!,
     enabled: !!selectedMetadataId,
   });
+
+  const { data: classCourses, isLoading: isClassCoursesLoading } =
+    useListClassCourses({
+      classId: courseManagerClass?.id ?? "",
+      enabled: !!courseManagerClass,
+    });
+
+  const { mutate: addCourseToClass, isPending: isAddingCourse } =
+    useAddCourseToClass();
+  const { mutate: removeCourse, isPending: isRemovingCourse } =
+    useRemoveCourse();
 
   const numberOfPages = Math.max(
     Math.ceil((classMetadata?.length || 0) / pageSize),
@@ -236,7 +257,7 @@ function RouteComponent() {
                             {classList?.map((cls) => (
                               <div
                                 key={cls.id}
-                                className="p-3 border rounded-lg flex justify-between"
+                                className="p-3 border rounded-lg flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
                               >
                                 <div>
                                   <p className="font-medium">{cls.className}</p>
@@ -245,8 +266,25 @@ function RouteComponent() {
                                   </p>
                                 </div>
 
-                                <div className="text-sm">
-                                  {cls.currentTerm}/{cls.maxTerms}
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <div className="text-sm text-muted-foreground">
+                                    Term {cls.currentTerm}/{cls.maxTerms}
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() =>
+                                      setCourseManagerClass({
+                                        id: cls.id,
+                                        className: cls.className,
+                                        classCode: cls.classCode,
+                                      })
+                                    }
+                                  >
+                                    <IconBook size={16} className="mr-1" />
+                                    Courses
+                                  </Button>
                                 </div>
                               </div>
                             ))}
@@ -381,6 +419,146 @@ function RouteComponent() {
           </TableRow>
         </TableFooter>
       </Table>
+
+      <Dialog
+        open={!!courseManagerClass}
+        onOpenChange={(open) => {
+          if (!open) setCourseManagerClass(null);
+        }}
+      >
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Courses — {courseManagerClass?.className}</DialogTitle>
+            <DialogDescription>
+              {courseManagerClass?.classCode} · Add or remove courses for this
+              class.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-md border">
+              {isClassCoursesLoading ? (
+                <div className="p-4 text-sm text-muted-foreground">
+                  Loading courses…
+                </div>
+              ) : !classCourses?.length ? (
+                <div className="p-4 text-sm text-muted-foreground">
+                  No courses yet. Add one below.
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {classCourses.map((course) => (
+                    <li
+                      key={course.id}
+                      className="flex items-start justify-between gap-2 p-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium leading-tight">
+                          {course.courseName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Term {course.term}
+                          {typeof course.studentCount === "number"
+                            ? ` · ${course.studentCount} students`
+                            : ""}
+                        </p>
+                        {course.description ? (
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                            {course.description}
+                          </p>
+                        ) : null}
+                      </div>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="shrink-0 text-destructive hover:text-destructive"
+                            disabled={isRemovingCourse}
+                            aria-label={`Remove ${course.courseName}`}
+                          >
+                            <IconTrash size={18} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove course?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This removes{" "}
+                              <span className="font-medium text-foreground">
+                                {course.courseName}
+                              </span>{" "}
+                              from this class. This cannot be undone from here.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction asChild>
+                              <Button
+                                variant="destructive"
+                                disabled={isRemovingCourse}
+                                onClick={() => removeCourse(course.id)}
+                              >
+                                Remove
+                              </Button>
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {courseManagerClass ? (
+              <Formik
+                initialValues={{
+                  courseName: "",
+                  term: 1,
+                  description: "",
+                }}
+                validationSchema={yup.object({
+                  courseName: yup.string().required("Name is required"),
+                  term: yup
+                    .number()
+                    .integer()
+                    .min(1, "Term must be at least 1")
+                    .required(),
+                  description: yup.string().optional(),
+                })}
+                onSubmit={(values, { resetForm }) => {
+                  addCourseToClass(
+                    {
+                      classId: courseManagerClass.id,
+                      courseName: values.courseName.trim(),
+                      term: values.term,
+                      description: values.description.trim() || undefined,
+                    },
+                    { onSuccess: () => resetForm() },
+                  );
+                }}
+              >
+                {() => (
+                  <Form className="grid gap-3 rounded-md border p-4">
+                    <p className="text-sm font-medium">Add course</p>
+                    <FormikInput name="courseName" label="Course name" />
+                    <FormikInput name="term" label="Term" type="number" />
+                    <FormikInput name="description" label="Description" />
+                    <div className="flex justify-end">
+                      <Button type="submit" disabled={isAddingCourse}>
+                        <IconPlus className="mr-1" size={16} />
+                        Add course
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

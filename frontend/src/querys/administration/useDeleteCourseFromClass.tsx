@@ -11,9 +11,8 @@ export default function useRemoveCourse() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["metadata-classes"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["class-courses"] });
+      queryClient.invalidateQueries({ queryKey: ["listclasses"] });
     },
   });
 }

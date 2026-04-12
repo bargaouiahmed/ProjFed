@@ -26,10 +26,11 @@ export default function useAddCourseToClass() {
       });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["metadata-classes"],
+        queryKey: ["class-courses", variables.classId],
       });
+      queryClient.invalidateQueries({ queryKey: ["listclasses"] });
     },
   });
 }

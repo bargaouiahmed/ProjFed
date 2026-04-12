@@ -6,12 +6,22 @@ interface Props {
   enabled?: boolean;
 }
 
+interface Course {
+  id: string;
+  courseName: string;
+  description: string;
+  term: string;
+  studentCount: string;
+}
+
 export default function useListClassCourses({ classId, enabled }: Props) {
   return useQuery({
     queryKey: ["class-courses", classId],
     enabled,
     queryFn: async () => {
-      const res = await api.get(`/administration/classes/${classId}/courses`);
+      const res = await api.get<Course[]>(
+        `/administration/classes/${classId}/courses`,
+      );
       return res.data;
     },
   });
