@@ -4,12 +4,15 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import { IconSchool, IconUserCircle } from "@tabler/icons-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { IconUserCircle, IconSchool, IconBell } from "@tabler/icons-react";
+import { useNavigate, useMatchRoute } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
   DropdownMenu,
@@ -21,37 +24,58 @@ import {
 } from "../ui/dropdown-menu";
 import logout from "@/querys/logout";
 import Profile from "../profile";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import { useState } from "react";
 
 export default function AdminDashboardSideBar() {
-  const naviagate = useNavigate();
+  const navigate = useNavigate();
   const { data: account } = useAccount();
-  console.log(account);
   const { open } = useSidebar();
+  const matchRoute = useMatchRoute();
+
+  const isActive = (to: string) => matchRoute({ to, fuzzy: true });
+  const getActiveClass = (to: string) => (isActive(to) ? "text-primary" : "");
+
+  const [notifOpen, setNotifOpen] = useState(false);
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <ThemeToggler />
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
-          <Link to="/admin/dashboard/requests">
-            <Button variant={"ghost"}>
-              {open && "university admins requests"}
-              <IconSchool />
-            </Button>
-          </Link>
+          <SidebarMenu>
+            {/* University Admin Requests */}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate({ to: "/admin/dashboard/requests" })}
+                className={getActiveClass("/admin/dashboard/requests")}
+              >
+                <IconSchool />
+                {open && <span>University Admins Requests</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup />
       </SidebarContent>
+
       <SidebarFooter>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"}>
+            <Button variant="outline" className="py-6">
               <div className="flex items-center gap-2">
                 {account?.pfpUrl ? (
                   <img
                     src={"http://localhost:5173/api/v0" + account.pfpUrl}
-                    className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm"
+                    className="w-8 h-8 rounded-full object-cover border shadow-sm"
                   />
                 ) : (
                   <IconUserCircle />
@@ -65,20 +89,49 @@ export default function AdminDashboardSideBar() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
+            {/* Notifications */}
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setNotifOpen(true);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <IconBell />
+                Notifications
+              </div>
+            </DropdownMenuItem>
+
             <Profile />
 
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className="text-red-500"
               onClick={() => {
                 logout();
-                naviagate({ to: "/auth" });
+                navigate({ to: "/auth" });
               }}
             >
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Notifications Dialog outside dropdown */}
+        <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Notifications</DialogTitle>
+              <DialogDescription>Your latest notifications.</DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground">
+                No new notifications
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </SidebarFooter>
     </Sidebar>
   );

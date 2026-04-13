@@ -17,8 +17,9 @@ import {
   IconUsers,
   IconInbox,
   IconMail,
+  IconBell,
 } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useMatchRoute } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
   DropdownMenu,
@@ -30,82 +31,113 @@ import {
 } from "../ui/dropdown-menu";
 import logout from "@/querys/logout";
 import Profile from "../profile";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import { useState } from "react";
 
 export default function AdminDashboardSideBar() {
   const navigate = useNavigate();
   const { data: account } = useAccount();
-  console.log(account);
   const { open } = useSidebar();
+  const matchRoute = useMatchRoute();
+
+  const isActive = (to: string) => matchRoute({ to, fuzzy: true });
+  const getActiveClass = (to: string) => (isActive(to) ? "text-primary" : "");
+
+  // ✅ dialog state
+  const [notifOpen, setNotifOpen] = useState(false);
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <ThemeToggler />
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
+            {/* Invitations */}
             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={() => {
+                onClick={() =>
                   navigate({
                     to: "/administration/dashboard/invitations",
-                  });
-                }}
+                  })
+                }
+                className={getActiveClass(
+                  "/administration/dashboard/invitations",
+                )}
               >
                 <IconInbox />
                 {open && <span>My Invitations</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
+
+            {/* Classes */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
                   navigate({
                     to: "/administration/dashboard/classes",
-                    search: {
-                      pageSize: 10,
-                      pageNumber: 1,
-                    },
+                    search: { pageSize: 10, pageNumber: 1 },
                   })
                 }
+                className={getActiveClass("/administration/dashboard/classes")}
               >
                 <IconSchool />
                 {open && <span>Classes</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
+
+            {/* Staff */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
-                  navigate({ to: "/administration/dashboard/staff" })
+                  navigate({
+                    to: "/administration/dashboard/staff",
+                  })
                 }
+                className={getActiveClass("/administration/dashboard/staff")}
               >
                 <IconUsers />
                 {open && <span>Staff</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
+
+            {/* Professors Invitations */}
             <SidebarMenuItem>
               <SidebarMenuButton
-                onClick={() => {
+                onClick={() =>
                   navigate({
                     to: "/administration/dashboard/professorsInvitations",
-                  });
-                }}
+                  })
+                }
+                className={getActiveClass(
+                  "/administration/dashboard/professorsInvitations",
+                )}
               >
                 <IconMail />
-                {open && "proffessors invitations"}
+                {open && <span>Professors Invitations</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"}>
+            <Button variant="outline" className="py-6">
               <div className="flex items-center gap-2">
                 {account?.pfpUrl ? (
                   <img
                     src={"http://localhost:5173/api/v0" + account.pfpUrl}
-                    className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow-sm"
+                    className="w-8 h-8 rounded-full object-cover border shadow-sm"
                   />
                 ) : (
                   <IconUserCircle />
@@ -119,9 +151,23 @@ export default function AdminDashboardSideBar() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
+            {/* ✅ NOTIFICATIONS AS DIALOG */}
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setNotifOpen(true);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <IconBell />
+                Notifications
+              </div>
+            </DropdownMenuItem>
+
             <Profile />
 
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className="text-red-500"
               onClick={() => {
@@ -133,6 +179,23 @@ export default function AdminDashboardSideBar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* ✅ DIALOG OUTSIDE DROPDOWN */}
+        <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Notifications</DialogTitle>
+              <DialogDescription>Description text here.</DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-4">
+              {/* your notifications list goes here */}
+              <p className="text-sm text-muted-foreground">
+                No new notifications
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </SidebarFooter>
     </Sidebar>
   );
