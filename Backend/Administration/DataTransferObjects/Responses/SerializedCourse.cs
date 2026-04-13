@@ -9,4 +9,8 @@ public class SerializedCourse
     public string? Description{get;set;}
     public int Term{get;set;}
     public int StudentCount{get;set;}
+    public string CourseProfessorEmail{get;set;}="";
+    public string CourseProfessorFirstname{get;set;}="";
+    public string CourseProfessorLastname{get;set;}="";
+    public string? CourseProfessorPfpUrl{get;set;}
 }

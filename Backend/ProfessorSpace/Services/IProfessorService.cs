@@ -1,4 +1,5 @@
 using System;
+using Backend.Account.DataTransferObjects.Responses;
 using Backend.ProfessorSpace.DataTransferObjects.Requests;
 using Backend.ProfessorSpace.DataTransferObjects.Responses;
 
@@ -35,7 +36,7 @@ public interface IProfessorService
     Task<SerializedRedactionQuestion> AddRedactionQuestionToTest(Guid professorIdentityId, Guid testId, AddRedactionQuestionRequest request);
     Task<SerializedRedactionQuestion> UpdateTestRedactionQuestion(Guid professorIdentityId, UpdateRedactionQuestionRequest request);
     Task DeleteTestRedactionQuestion(Guid professorIdentityId, Guid questionId);
-
+    public Task<ListSerializedProfessorInvitation> GetProfessorInvitation(Guid professorIdentityId, int pageNumber, int pageSize);
     Task<List<SerializedStudentGradeSummary>> GetCourseStudentsAndGrades(Guid professorIdentityId, Guid courseId);
     Task GradeExamMcqResponse(Guid professorIdentityId, Guid responseId, int score);
     Task GradeExamRedactionResponse(Guid professorIdentityId, Guid responseId, int score);

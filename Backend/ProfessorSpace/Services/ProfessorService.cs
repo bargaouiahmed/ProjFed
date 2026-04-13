@@ -1,4 +1,5 @@
 using System;
+using Backend.Account.DataTransferObjects.Responses;
 using Backend.Database.Auth;
 using Backend.ProfessorSpace.DataTransferObjects.Requests;
 using Backend.ProfessorSpace.DataTransferObjects.Responses;
@@ -11,6 +12,23 @@ namespace Backend.ProfessorSpace.Services;
 
 public class ProfessorService(AppDbContext db, IWebHostEnvironment env) : IProfessorService
 {
+    public async Task<ListSerializedProfessorInvitation> GetProfessorInvitation(Guid professorIdentityId, int pageNumber, int pageSize)
+    {
+        var invitations = await db.ProfessorInvitations.Where(i=>i.IdentityId==professorIdentityId)
+        .Select(prof=>new SerializedProfessorInvitation{
+            Id=prof.Id,
+            CourseId=prof.CourseId,
+            CourseName=prof.Course != null ? prof.Course.Name : string.Empty,
+            ClassPrettyName=prof.ClassPrettyName,
+            Status=prof.Status,
+            InvitedAt=prof.InvitedAt
+        }).OrderByDescending(i=>i.InvitedAt).Skip((pageNumber-1)*pageSize).Take(pageSize).ToListAsync();
+        var totalCount = await db.ProfessorInvitations.CountAsync(i=>i.IdentityId==professorIdentityId);
+        return new ListSerializedProfessorInvitation{
+            Invitations=invitations,
+            TotalCount=totalCount
+        };
+    }
     public async Task<SerializedChapter> InitializeChapter(Guid professorIdentityId, Guid courseId)
     {
         await EnsureProfessorOwnsCourse(professorIdentityId, courseId);
