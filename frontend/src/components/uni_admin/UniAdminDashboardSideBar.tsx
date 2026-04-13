@@ -66,24 +66,26 @@ export default function AdminDashboardSideBar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {/* Invitations */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() =>
-                  navigate({
-                    to: "/administration/dashboard/invitations",
-                  })
-                }
-                className={getActiveClass(
-                  "/administration/dashboard/invitations",
-                )}
-              >
-                <IconInbox />
-                {open && <span>My Invitations</span>}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {/* My Invitations - Only for uni_staff */}
+            {account?.role === "uni_staff" && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() =>
+                    navigate({
+                      to: "/administration/dashboard/invitations",
+                    })
+                  }
+                  className={getActiveClass(
+                    "/administration/dashboard/invitations",
+                  )}
+                >
+                  <IconInbox />
+                  {open && <span>My Invitations</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
 
-            {/* Classes */}
+            {/* Classes - For both */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
@@ -99,22 +101,24 @@ export default function AdminDashboardSideBar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Staff */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() =>
-                  navigate({
-                    to: "/administration/dashboard/staff",
-                  })
-                }
-                className={getActiveClass("/administration/dashboard/staff")}
-              >
-                <IconUsers />
-                {open && <span>Staff</span>}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {/* Staff - Only for uni_admin */}
+            {account?.role === "uni_admin" && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() =>
+                    navigate({
+                      to: "/administration/dashboard/staff",
+                    })
+                  }
+                  className={getActiveClass("/administration/dashboard/staff")}
+                >
+                  <IconUsers />
+                  {open && <span>Staff</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
 
-            {/* Professors Invitations */}
+            {/* Professors Invitations / Professors */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
@@ -127,7 +131,13 @@ export default function AdminDashboardSideBar() {
                 )}
               >
                 <IconMail />
-                {open && <span>Professors Invitations</span>}
+                {open && (
+                  <span>
+                    {account?.role === "uni_admin"
+                      ? "Professors Invitations"
+                      : "Professors"}
+                  </span>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
