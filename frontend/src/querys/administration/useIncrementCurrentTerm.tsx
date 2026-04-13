@@ -36,7 +36,7 @@ export default function useIncrementCurrentTerm() {
     },
 
     onError: () => {
-      toast.error("failed to increment current term please try again");
+      toast.warning("current term should be less than the max terms !!");
     },
 
     onSuccess: () => {

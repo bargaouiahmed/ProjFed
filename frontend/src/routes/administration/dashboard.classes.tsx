@@ -45,6 +45,7 @@ import {
   IconDisc,
   IconEdit,
   IconPlus,
+  IconRefresh,
   IconTrash,
 } from "@tabler/icons-react";
 import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
@@ -54,6 +55,7 @@ import { CourseManagerDialog } from "@/components/classes/CourseMangerDialog";
 import { ClassListDialog } from "@/components/classes/ClassListDialog";
 import useIncrementCurrentTerm from "@/querys/administration/useIncrementCurrentTerm";
 import useDeleteClassMetadata from "@/querys/useDeleteClassMetadata";
+import useResetCurrentTerm from "@/querys/administration/useResetCurrentTerm";
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
@@ -76,6 +78,8 @@ export interface CourseManagerTarget {
 function RouteComponent() {
   const { pageNumber, pageSize } = Route.useSearch();
 
+  const { mutate: resetCurrentTerm, isPending: isResetingCurrentTerm } =
+    useResetCurrentTerm();
   const [courseManagerClass, setCourseManagerClass] =
     useState<CourseManagerTarget | null>(null);
 
@@ -215,6 +219,8 @@ function RouteComponent() {
               <TableCell>{metadata.level}</TableCell>
               <TableCell className="flex items-center gap-2 justify-center">
                 <p>{metadata.currentTerm}</p>
+
+                <div></div>
                 <Button
                   variant={"outline"}
                   size={"icon-xs"}
@@ -225,7 +231,18 @@ function RouteComponent() {
                 >
                   <IconPlus />
                 </Button>
+                <Button
+                  variant={"outline"}
+                  size={"icon-xs"}
+                  onClick={() => {
+                    resetCurrentTerm(metadata.metadataId);
+                  }}
+                  disabled={isResetingCurrentTerm}
+                >
+                  <IconRefresh />
+                </Button>
               </TableCell>
+
               <TableCell>
                 <div className="flex gap-2">
                   {/* View classes */}
