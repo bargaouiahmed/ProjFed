@@ -549,6 +549,13 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             .ExecuteUpdateAsync(setters => setters.SetProperty(cm => cm.CurrentTerm, 1));
         return await GetAllClassMetaData(staffMember.InstituteId!.Value, uniStaffIdentityId);
     }
+    public async Task<ListSerializedClassMetadata> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId, int pageNumber, int pageSize)
+    {
+        var staffMember = await db.UniUsers.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        await db.ClassMetadata.Where(cm => cm.Id == metadataId && cm.InstituteId == staffMember.InstituteId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(cm => cm.CurrentTerm, 1));
+        return await GetAllClassMetaData(staffMember.InstituteId!.Value, uniStaffIdentityId, pageNumber, pageSize);
+    }
     public async Task DeleteClassMetaData(Guid uniStaffIdentityId, Guid metadataId)
     {
         var staffMember = await db.UniUsers.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");

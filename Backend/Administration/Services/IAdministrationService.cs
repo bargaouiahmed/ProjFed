@@ -10,6 +10,7 @@ public interface IAdministrationService
     Task AddNewClassMetaData(NewClassMetaDataRequest request, Guid uniAdminIdentityId);
     Task<ListSerializedClassMetadata> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10);
     public Task<ListSerializedClassMetadata> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId);
+    public Task<ListSerializedClassMetadata> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId,int pageNumber, int pageSize);
     Task<List<SerializedProfessorInvitationForAdministration>> GetAllProfessorInvitations(Guid uniStaffIdentityId);
     Task<List<SerializedUniStaffInvitationForAdministration>> GetAllUniStaffInvitations(Guid uniStaffIdentityId);
     Task<ClassPrettyName> AddClassToMetadataType(Guid uniAdminIdentityId, Guid metadataId);

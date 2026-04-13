@@ -8,8 +8,8 @@
 - **Route Parameters:**
   - `metadataId` (GUID, required)
 - **Response:**
-  - 200 OK: Array of `SerializedClassMetaData` objects (all class metadata for the institute, with the reset term)
-    - Each object:
+  - 200 OK: `ListSerializedClassMetadata`
+    - `classMetaData[]`
       - `metadataId` (GUID)
       - `levelOfStudies` (string)
       - `specialty` (string)
@@ -18,11 +18,110 @@
       - `maxTerms` (int)
       - `currentTerm` (int)
       - `numberOfClasses` (int)
+    - `totalCount` (int)
   - 400 Bad Request: Error message
   - 401 Unauthorized: Missing/invalid token claims
   - 403 Forbidden: Not allowed to reset term for this metadata
 - **Side Effects:**
-  - Resets the `CurrentTerm` for the specified ClassMetadata and returns all metadata for the institute
+  - Resets the `CurrentTerm` for the specified ClassMetadata to `1`
+  - Returns the default metadata page for the institute using `pageNumber=1` and `pageSize=10`
+
+---
+## 26B. Reset Class Metadata Term (Paginated GET)
+
+- **Endpoint:** `GET /administration/metadata/{metadataId}/reset-term-paginated`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `metadataId` (GUID, required)
+- **Query Parameters:**
+  - `pageNumber` (int, optional, default `1`)
+  - `pageSize` (int, optional, default `10`)
+- **Response:**
+  - 200 OK: `ListSerializedClassMetadata`
+    - `classMetaData[]`
+      - `metadataId` (GUID)
+      - `levelOfStudies` (string)
+      - `specialty` (string)
+      - `maxYears` (int)
+      - `level` (int)
+      - `maxTerms` (int)
+      - `currentTerm` (int)
+      - `numberOfClasses` (int)
+    - `totalCount` (int)
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+  - 403 Forbidden: Not allowed to reset term for this metadata
+- **Side Effects:**
+  - Resets the `CurrentTerm` for the specified ClassMetadata to `1`
+  - Returns the requested metadata page for the institute after the reset
+
+---
+## 26C. Reset Class Metadata Term (POST)
+
+- **Endpoint:** `POST /administration/metadata/{metadataId}/reset-term`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `metadataId` (GUID, required)
+- **Request Body:** None
+- **Response:**
+  - 200 OK: `ListSerializedClassMetadata`
+    - `classMetaData[]`
+      - `metadataId` (GUID)
+      - `levelOfStudies` (string)
+      - `specialty` (string)
+      - `maxYears` (int)
+      - `level` (int)
+      - `maxTerms` (int)
+      - `currentTerm` (int)
+      - `numberOfClasses` (int)
+    - `totalCount` (int)
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+  - 403 Forbidden: Not allowed to reset term for this metadata
+- **Side Effects:**
+  - Resets the `CurrentTerm` for the specified ClassMetadata to `1`
+  - Returns the default metadata page for the institute using `pageNumber=1` and `pageSize=10`
+  - Preferred over the GET variant for new clients because this operation mutates server state
+
+---
+## 26D. Reset Class Metadata Term (Paginated POST)
+
+- **Endpoint:** `POST /administration/metadata/{metadataId}/reset-term-paginated`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `metadataId` (GUID, required)
+- **Query Parameters:**
+  - `pageNumber` (int, optional, default `1`)
+  - `pageSize` (int, optional, default `10`)
+- **Request Body:** None
+- **Response:**
+  - 200 OK: `ListSerializedClassMetadata`
+    - `classMetaData[]`
+      - `metadataId` (GUID)
+      - `levelOfStudies` (string)
+      - `specialty` (string)
+      - `maxYears` (int)
+      - `level` (int)
+      - `maxTerms` (int)
+      - `currentTerm` (int)
+      - `numberOfClasses` (int)
+    - `totalCount` (int)
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+  - 403 Forbidden: Not allowed to reset term for this metadata
+- **Side Effects:**
+  - Resets the `CurrentTerm` for the specified ClassMetadata to `1`
+  - Returns the requested metadata page for the institute after the reset
+  - Preferred over the GET paginated variant for new clients because this operation mutates server state
 
 ---
 ## 17. Delete Class Metadata
