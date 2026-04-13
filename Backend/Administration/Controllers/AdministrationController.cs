@@ -70,6 +70,23 @@ namespace Backend.Administration.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("uni-staff-invitations")]
+        public async Task<ActionResult<List<SerializedUniStaffInvitationForAdministration>>> GetAllUniStaffInvitations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                return Ok(await admservice.GetAllUniStaffInvitations(Guid.Parse(userId)));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpPost("metadata/addClass")]
         public async Task<ActionResult<ClassPrettyName>> AddClassToMetadataType([FromQuery] Guid metadataId)
         {

@@ -400,6 +400,36 @@
 - **Side Effects:**
   - None (read-only)
   - Includes invitations with any status: `pending`, `accepted`, or `rejected`
+  - Scope is institute-wide for the authenticated `uni_admin` / `uni_staff`
+  - The caller must already belong to an institute
+  - Use `GET /accounts/professor-invitations` for the invitee-facing personal list instead of the institute-wide list
+
+---
+
+## 18A. List All Uni Staff Invitations
+
+- **Endpoint:** `GET /administration/uni-staff-invitations`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Response:**
+  - 200 OK: List of uni staff invitations across the caller's institute
+    - `id`: invitation id
+    - `identityId`: invited staff member identity id
+    - `staffEmail`: invited staff member email
+    - `instituteId`: target institute id
+    - `instituteName`: target institute name
+    - `status`: one of `pending`, `accepted`, or `rejected`
+    - `invitedAt`: UTC creation timestamp for the invitation
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+- **Side Effects:**
+  - None (read-only)
+  - Scope is institute-wide for the authenticated `uni_admin` / `uni_staff`
+  - The caller must already belong to an institute
+  - Returns invitations for all invited uni staff members targeting the caller's institute, not just the current authenticated user
+  - Use `GET /accounts/uni-staff-invitations` for the invitee-facing personal list instead of the institute-wide list
 
 ---
 
@@ -614,12 +644,16 @@
   - `Authorization: Bearer <accessToken>`
   - `Accept: application/json`
 - **Response:**
-  - 200 OK: List of uni staff invitations
+  - 200 OK: List of uni staff invitations owned by the authenticated `uni_staff` user
     - `id`, `instituteId`, `instituteName`, `status`, `invitedAt`
   - 400 Bad Request: Error message
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - None (read-only)
+  - Filtered by `invitation.IdentityId == authenticated user id`
+  - Does not return other staff members' invitations from the same institute
+  - Includes invitations with any status: `pending`, `accepted`, or `rejected`
+  - Use `GET /administration/uni-staff-invitations` when a `uni_admin` or `uni_staff` user needs the institute-wide list
 
 ---
 
@@ -640,6 +674,8 @@
   - Sets invitation `Status = accepted`
   - Assigns the invited staff member to the invitation's institute
   - Creates a notification confirming acceptance
+  - Fails if the invitation does not belong to the authenticated `uni_staff` user
+  - Fails if the invitation status is already not `pending`
 
 ---
 
@@ -660,6 +696,8 @@
   - Sets invitation `Status = rejected`
   - Does not assign the staff member to the institute
   - Creates a notification confirming rejection
+  - Fails if the invitation does not belong to the authenticated `uni_staff` user
+  - Fails if the invitation status is already not `pending`
 
 ---
 
@@ -671,12 +709,16 @@
   - `Authorization: Bearer <accessToken>`
   - `Accept: application/json`
 - **Response:**
-  - 200 OK: List of professor invitations
+  - 200 OK: List of professor invitations owned by the authenticated `professor` user
     - `id`, `courseId`, `courseName`, `classPrettyName`, `status`, `invitedAt`
   - 400 Bad Request: Error message
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - None (read-only)
+  - Filtered by `invitation.IdentityId == authenticated user id`
+  - Does not return the entire institute's professor invitations
+  - Includes invitations with any status: `pending`, `accepted`, or `rejected`
+  - Use `GET /administration/professor-invitations` when a `uni_admin` or `uni_staff` user needs the institute-wide list
 
 ---
 
@@ -695,6 +737,8 @@
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - Sets invitation `Status = accepted`
+  - Fails if the invitation does not belong to the authenticated `professor` user
+  - Fails if the invitation status is already not `pending`
   - Assigns the invited professor to the invitation’s course
   - Creates a notification confirming acceptance
 
@@ -717,6 +761,8 @@
   - Sets invitation `Status = rejected`
   - Does not assign the professor to the course
   - Creates a notification confirming rejection
+  - Fails if the invitation does not belong to the authenticated `professor` user
+  - Fails if the invitation status is already not `pending`
 
 ---
 

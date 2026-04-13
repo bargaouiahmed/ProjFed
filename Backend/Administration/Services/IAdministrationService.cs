@@ -10,6 +10,7 @@ public interface IAdministrationService
     Task AddNewClassMetaData(NewClassMetaDataRequest request, Guid uniAdminIdentityId);
     Task<List<SerializedClassMetaData>> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10);
     Task<List<SerializedProfessorInvitationForAdministration>> GetAllProfessorInvitations(Guid uniStaffIdentityId);
+    Task<List<SerializedUniStaffInvitationForAdministration>> GetAllUniStaffInvitations(Guid uniStaffIdentityId);
     Task<ClassPrettyName> AddClassToMetadataType(Guid uniAdminIdentityId, Guid metadataId);
     Task<SerializedClassMetaData> UpdateClassMetaData(SerializedClassMetaData request, Guid uniAdminIdentityId);
     public  Task AddNewProfessor(Guid uniStaffIdentityId,  Guid courseId, AddNewProfessorRequest request);
@@ -26,6 +27,5 @@ public interface IAdministrationService
     public  Task AddProfessorToCourse(Guid uniStaffIdentityId, Guid courseId, string email);
     public Task<List<SerializedCourse>> GetAllCoursesForClass(Guid uniStaffIdentityId, Guid classId);
     public Task<List<SerializedUniClass>> GetAllClassesForMetadata(Guid uniStaffIdentityId, Guid metadataId);
-
     public Task<SerializedUserListResponse> GetAllUsersForInstitute(Guid uniStaffIdentityId, int pageNumber = 1, int pageSize = 10);
 }

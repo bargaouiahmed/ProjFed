@@ -84,7 +84,12 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             CourseName = c.Name,
             Description = c.Description,
             Term = c.Term,
-            StudentCount = c.UniClass!.Students.Count()
+            StudentCount = c.UniClass!.Students.Count(),
+            CourseProfessorEmail=c.Professor != null ? c.Professor.Identity.Email : string.Empty,
+            CourseProfessorFirstname=c.Professor != null ? c.Professor.Firstname : string.Empty,
+            CourseProfessorLastname=c.Professor != null ? c.Professor.Lastname : string.Empty,
+            CourseProfessorPfpUrl=c.Professor != null ? c.Professor.PfpUrl : null
+            
         }).ToListAsync();
         return courses;
 
@@ -157,6 +162,32 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             CourseId = i.CourseId,
             CourseName = i.Course?.Name ?? string.Empty,
             ClassPrettyName = i.ClassPrettyName,
+            Status = i.Status,
+            InvitedAt = i.InvitedAt
+        })];
+    }
+    public async Task<List<SerializedUniStaffInvitationForAdministration>> GetAllUniStaffInvitations(Guid uniStaffIdentityId)
+    {
+        var staffMember = await db.UniUsers.FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        if (!staffMember.InstituteId.HasValue)
+        {
+            throw new InvalidOperationException("This staff member does not belong to any institute");
+        }
+
+        var invitations = await db.UniStaffInvitations
+            .Include(i => i.Identity)
+            .Include(i => i.Institute)
+            .Where(i => i.InstituteId == staffMember.InstituteId.Value)
+            .OrderByDescending(i => i.InvitedAt)
+            .ToListAsync();
+
+        return [.. invitations.Select(i => new SerializedUniStaffInvitationForAdministration
+        {
+            Id = i.Id,
+            IdentityId = i.IdentityId,
+            StaffEmail = i.Identity?.Email ?? string.Empty,
+            InstituteId = i.InstituteId,
+            InstituteName = i.Institute?.Name ?? string.Empty,
             Status = i.Status,
             InvitedAt = i.InvitedAt
         })];
@@ -242,7 +273,11 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
                 }
                 else
                 {
-                    existingIdentity.UniUser.InstituteId = uniAdmin!.UniUser!.Institute!.Id;
+                    db.Add(new UniStaffInvitation
+                    {
+                        Identity = existingIdentity,
+                        Institute = uniAdmin.UniUser!.Institute!
+                    });
                     await db.SaveChangesAsync();
                     return;
                 }
@@ -362,7 +397,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             db.Add(identity);
             db.Add(professor);
             db.Add(invitation);
-            List<Task> tasks = [smtp.SendEmail(identity.Email, "Invitation to join EduAdmin", $"You've been invited to join EduAdmin by {uniStaffMember.Lastname} {uniStaffMember.Firstname}. Your automatically generated password is {password}. Make sure to change it as soon as you sign in and then review your professor invitations to accept or reject them.")];
+            List<Task> tasks = [smtp.SendEmail(identity.Email, "Invitation to join EduAdmin", $"You've been invited to join EduAdmin by {uniStaffMember.Lastname} {uniStaffMember.Firstname} ;  Your automatically generated password is {password}. Make sure to change it as soon as you sign in and then review your professor invitations to accept or reject them.")];
             await db.SaveChangesAsync();
             await Task.WhenAll(tasks);
         }
@@ -420,7 +455,6 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             throw new InvalidOperationException("This user already exists and belongs to your institute");
         }
 
-        existingIdentity.UniUser.InstituteId = uniAdmin.UniUser!.Institute!.Id;
         UniStaffInvitation invitation = new()
         {
             Identity = existingIdentity,

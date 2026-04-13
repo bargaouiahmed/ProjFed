@@ -10,7 +10,7 @@ public class ProfessorInvitation
     public Guid IdentityId{get;set;}
     public AuthIdentity? Identity {get;set;} 
     public Guid CourseId{get;set;}
-    public Course Course{get;set;} = new();
+    public Course? Course{get;set;}
     public DateTime InvitedAt {get;set;}=DateTime.UtcNow;
 
     public string ClassPrettyName{get;set;}=string.Empty;
