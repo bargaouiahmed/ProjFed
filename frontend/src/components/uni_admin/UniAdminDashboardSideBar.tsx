@@ -19,6 +19,7 @@ import {
   IconMail,
   IconBell,
   IconLogout,
+  IconHome,
 } from "@tabler/icons-react";
 import { useNavigate, useMatchRoute } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
@@ -48,8 +49,9 @@ export default function AdminDashboardSideBar() {
   const { open } = useSidebar();
   const matchRoute = useMatchRoute();
 
-  const isActive = (to: string) => matchRoute({ to, fuzzy: true });
-  const getActiveClass = (to: string) => (isActive(to) ? "text-primary" : "");
+  const isActive = (to: string) => matchRoute({ to });
+  const getActiveClass = (to: string) =>
+    isActive(to) ? "text-indigo-400" : "";
 
   const { data: notifications, isLoading: isLoadingNotifications } =
     useNotifications();
@@ -65,6 +67,18 @@ export default function AdminDashboardSideBar() {
 
       <SidebarContent>
         <SidebarGroup>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => {
+                navigate({ to: "/administration/dashboard" });
+              }}
+              className={getActiveClass("/administration/dashboard")}
+            >
+              <IconHome />
+              {open && "Home"}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
           <SidebarMenu>
             {/* My Invitations - Only for uni_staff */}
             {account?.role === "uni_staff" && (

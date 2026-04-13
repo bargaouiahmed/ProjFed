@@ -29,7 +29,7 @@
 }
 
 :root {
-  --background: #F8F8F6;
+  --background: #f8f8f6;
   --foreground: oklch(0.145 0.008 326);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0.008 326);
@@ -70,7 +70,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.212 0.019 322.12);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.398 0.195 277.366);
+  --primary: oklch(45.366% 0.21023 278.644);
   --primary-foreground: oklch(0.962 0.018 272.314);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
@@ -162,15 +162,12 @@
     position: fixed;
     inset: 0;
 
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
     opacity: 0.07;
     pointer-events: none;
     z-index: 50;
   }
 
   .bg-light-grain {
-    min-height: 100vh;
-
     background: radial-gradient(
       circle at 20% 20%,
       #ffffff,
@@ -185,7 +182,7 @@
     position: fixed;
 
     inset: 0;
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+
     opacity: 0.05;
     pointer-events: none;
   }
