@@ -52,6 +52,24 @@ namespace Backend.Administration.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("metadata/{metadataId:guid}/reset-term")]
+        public async Task<ActionResult<List<SerializedClassMetaData>>> ResetClassMetadataTerm([FromRoute] Guid metadataId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized("Invalid token: missing user ID claim.");
+            }
+            try
+            {
+                var metadataList = await admservice.ResetClassMetadataTerm(Guid.Parse(userId), metadataId);
+                return Ok(metadataList);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpGet("professor-invitations")]
         public async Task<ActionResult<List<SerializedProfessorInvitationForAdministration>>> GetAllProfessorInvitations()
         {
