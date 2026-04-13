@@ -18,6 +18,7 @@ import {
   IconInbox,
   IconMail,
   IconBell,
+  IconLogout,
 } from "@tabler/icons-react";
 import { useNavigate, useMatchRoute } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
@@ -39,6 +40,7 @@ import {
   DialogDescription,
 } from "../ui/dialog";
 import { useState } from "react";
+import useNotifications from "@/querys/useNotifications";
 
 export default function AdminDashboardSideBar() {
   const navigate = useNavigate();
@@ -48,6 +50,9 @@ export default function AdminDashboardSideBar() {
 
   const isActive = (to: string) => matchRoute({ to, fuzzy: true });
   const getActiveClass = (to: string) => (isActive(to) ? "text-primary" : "");
+
+  const { data: notifications, isLoading: isLoadingNotifications } =
+    useNotifications();
 
   // ✅ dialog state
   const [notifOpen, setNotifOpen] = useState(false);
@@ -175,6 +180,7 @@ export default function AdminDashboardSideBar() {
                 navigate({ to: "/auth" });
               }}
             >
+              <IconLogout />
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -188,12 +194,17 @@ export default function AdminDashboardSideBar() {
               <DialogDescription>Description text here.</DialogDescription>
             </DialogHeader>
 
-            <div className="mt-4">
-              {/* your notifications list goes here */}
-              <p className="text-sm text-muted-foreground">
-                No new notifications
-              </p>
-            </div>
+            {isLoadingNotifications ? (
+              <div>loading...</div>
+            ) : notifications && notifications.length > 0 ? (
+              JSON.stringify(notifications)
+            ) : (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  No new notifications
+                </p>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </SidebarFooter>

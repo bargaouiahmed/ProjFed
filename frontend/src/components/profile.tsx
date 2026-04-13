@@ -6,7 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { IconLoader, IconMail, IconUser } from "@tabler/icons-react";
+import {
+  IconLoader,
+  IconMail,
+  IconSettings,
+  IconUser,
+} from "@tabler/icons-react";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 import { useState } from "react";
 import useUpdateAccount from "@/querys/useUpdateAccount";
@@ -30,6 +35,7 @@ export default function Profile() {
           setOpen(true);
         }}
       >
+        <IconSettings />
         Profile settings
       </DropdownMenuItem>
 

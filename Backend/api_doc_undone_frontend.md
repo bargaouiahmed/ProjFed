@@ -15,22 +15,6 @@
   - `application/json` for JSON bodies
   - `multipart/form-data` for file upload forms
 
-## 18. List All Professor Invitations
-
-- **Endpoint:** `GET /administration/professor-invitations`
-- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: application/json`
-- **Response:**
-  - 200 OK: List of professor invitations across the caller's institute
-    - `id`, `identityId`, `professorEmail`, `courseId`, `courseName`, `classPrettyName`, `status`, `invitedAt`
-  - 400 Bad Request: Error message
-  - 401 Unauthorized: Missing/invalid token claims
-- **Side Effects:**
-  - None (read-only)
-  - Includes invitations with any status: `pending`, `accepted`, or `rejected`
-
 ## 20. Get All Student Courses
 
 - **Endpoint:** `GET /student`
@@ -79,32 +63,6 @@
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - Associates the student with the class identified by `classCode`
-
-## 24. Add New Professor to Course
-
-- **Endpoint:** `POST /administration/courses/{courseId}/professors`
-- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Content-Type: application/json`
-  - `Accept: application/json`
-- **Route Parameters:**
-  - `courseId` (GUID, required)
-- **Request Body:** JSON
-  - `email` (string, required)
-  - `firstname` (string, required)
-  - `lastname` (string, required)
-- **Response:**
-  - 200 OK: Professor invitation created message
-  - 400 Bad Request: Error message
-  - 401/403: Unauthorized or forbidden by role policy
-- **Side Effects:**
-  - If professor exists in same institute, assigns course and creates a notification
-  - If professor exists in another institute, creates a `ProfessorInvitation`
-  - If professor does not exist, creates identity/professor + invitation and sends email
-  - Newly created professor accounts also receive a `ProfessorInvitation` row that they can later accept or reject
-
----
 
 ## 26. Increment Class Metadata Term
 

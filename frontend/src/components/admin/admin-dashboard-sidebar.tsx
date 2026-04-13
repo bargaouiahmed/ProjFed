@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import { IconUserCircle, IconSchool, IconBell } from "@tabler/icons-react";
+import {
+  IconUserCircle,
+  IconSchool,
+  IconBell,
+  IconLogout,
+} from "@tabler/icons-react";
 import { useNavigate, useMatchRoute } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
@@ -32,13 +37,15 @@ import {
   DialogDescription,
 } from "../ui/dialog";
 import { useState } from "react";
+import useNotifications from "@/querys/useNotifications";
 
 export default function AdminDashboardSideBar() {
   const navigate = useNavigate();
   const { data: account } = useAccount();
   const { open } = useSidebar();
   const matchRoute = useMatchRoute();
-
+  const { data: notifications, isLoading: isLoadingNotifications } =
+    useNotifications();
   const isActive = (to: string) => matchRoute({ to, fuzzy: true });
   const getActiveClass = (to: string) => (isActive(to) ? "text-primary" : "");
 
@@ -113,6 +120,7 @@ export default function AdminDashboardSideBar() {
                 navigate({ to: "/auth" });
               }}
             >
+              <IconLogout />
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -125,11 +133,18 @@ export default function AdminDashboardSideBar() {
               <DialogTitle>Notifications</DialogTitle>
               <DialogDescription>Your latest notifications.</DialogDescription>
             </DialogHeader>
-            <div className="mt-4">
-              <p className="text-sm text-muted-foreground">
-                No new notifications
-              </p>
-            </div>
+
+            {isLoadingNotifications ? (
+              <div>loading...</div>
+            ) : notifications && notifications.length > 0 ? (
+              JSON.stringify(notifications)
+            ) : (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  No new notifications
+                </p>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </SidebarFooter>
