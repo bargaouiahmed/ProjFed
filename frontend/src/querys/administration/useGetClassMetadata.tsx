@@ -7,6 +7,11 @@ interface QueryParameters {
   pageSize?: number;
 }
 
+interface ClassMetadataProps {
+  classMetaData: ClassMetadata[];
+  totalCount: number;
+}
+
 interface ClassMetadata {
   metadataId: string;
   specialty: string;
@@ -27,7 +32,7 @@ export default function useGetClassMetadata({
   return useQuery({
     queryKey: ["classMetadata", instituteId, pageNumber, pageSize],
     queryFn: async () => {
-      const response = await api.get<ClassMetadata[]>(
+      const response = await api.get<ClassMetadataProps>(
         "/administration/metadata",
         {
           params: {

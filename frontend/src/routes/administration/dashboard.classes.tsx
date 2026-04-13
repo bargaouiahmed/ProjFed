@@ -45,6 +45,7 @@ import {
   IconDisc,
   IconEdit,
   IconPlus,
+  IconTrash,
 } from "@tabler/icons-react";
 import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetadata";
 
@@ -52,6 +53,7 @@ import { useState } from "react";
 import { CourseManagerDialog } from "@/components/classes/CourseMangerDialog";
 import { ClassListDialog } from "@/components/classes/ClassListDialog";
 import useIncrementCurrentTerm from "@/querys/administration/useIncrementCurrentTerm";
+import useDeleteClassMetadata from "@/querys/useDeleteClassMetadata";
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
@@ -94,12 +96,17 @@ function RouteComponent() {
     });
 
   const numberOfPages = Math.max(
-    Math.ceil((classMetadata?.length || 0) / pageSize),
+    Math.ceil((classMetadata?.totalCount || 0) / pageSize),
     1,
   );
 
   const { mutate: incrementCurrentTerm, isPending: isIncrementing } =
     useIncrementCurrentTerm();
+
+  const { mutate: deleteMetadata, isPending: isDeletingMetadata } =
+    useDeleteClassMetadata();
+
+  console.log(classMetadata);
   if (isInstitueLoading || isClassMetadataLoading) return <div>Loading...</div>;
   console.log(classMetadata);
   return (
@@ -196,7 +203,7 @@ function RouteComponent() {
         </TableHeader>
 
         <TableBody>
-          {classMetadata?.map((metadata) => (
+          {classMetadata?.classMetaData?.map((metadata) => (
             <TableRow key={metadata.metadataId}>
               <TableCell className="text-center">
                 {metadata.specialty}
@@ -308,6 +315,37 @@ function RouteComponent() {
                           </Form>
                         )}
                       </Formik>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  {/**  delete class metadata */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant={"destructive"}>
+                        <IconTrash />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogTitle className="text-destructive">
+                        are you sure delete metadata with id
+                        {metadata.metadataId}
+                      </AlertDialogTitle>
+
+                      <AlertDialogDescription></AlertDialogDescription>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>cancel</AlertDialogCancel>
+                        <AlertDialogAction asChild variant={"destructive"}>
+                          <Button
+                            variant={"destructive"}
+                            onClick={() => {
+                              deleteMetadata(metadata.metadataId);
+                            }}
+                            disabled={isDeletingMetadata}
+                          >
+                            yes delete
+                          </Button>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
