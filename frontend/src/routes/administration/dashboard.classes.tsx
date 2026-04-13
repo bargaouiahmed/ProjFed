@@ -182,7 +182,7 @@ function RouteComponent() {
         <TableHeader>
           <TableRow>
             <TableHead>Specialty</TableHead>
-            <TableHead>Level</TableHead>
+            <TableHead>Diploma:</TableHead>
             <TableHead>Max Years</TableHead>
             <TableHead>Max Terms</TableHead>
             <TableHead># Classes</TableHead>
@@ -268,7 +268,10 @@ function RouteComponent() {
                             <FormikInput name="specialty" label="Specialty" />
                             <FormikInput name="maxYears" label="Max Years" />
                             <FormikInput name="maxTerms" label="Max Terms" />
-                            <FormikInput name="levelOfStudies" label="Level" />
+                            <FormikInput
+                              name="levelOfStudies"
+                              label="Diploma"
+                            />
                             <FormikInput
                               name="numberOfClasses"
                               label="Classes"
