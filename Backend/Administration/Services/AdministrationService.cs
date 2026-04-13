@@ -157,7 +157,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             .Where(i => i!.Course!.UniClass != null && i.Course.UniClass.Metadata != null && i.Course.UniClass.Metadata.InstituteId == staffMember.InstituteId.Value)
             .OrderByDescending(i => i.InvitedAt)
             .ToListAsync();
-
+        //THIS IS JUST A TUTORIAL COMMENT
         return [.. invitations.Select(i => new SerializedProfessorInvitationForAdministration
         {
             Id = i.Id,
