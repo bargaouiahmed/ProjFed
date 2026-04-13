@@ -51,6 +51,7 @@ import useUpdateClassMetadata from "@/querys/administration/useUpdateClassMetada
 import { useState } from "react";
 import { CourseManagerDialog } from "@/components/classes/CourseMangerDialog";
 import { ClassListDialog } from "@/components/classes/ClassListDialog";
+import useIncrementCurrentTerm from "@/querys/administration/useIncrementCurrentTerm";
 
 // ─── Route ───────────────────────────────────────────────────────────────────
 
@@ -97,8 +98,10 @@ function RouteComponent() {
     1,
   );
 
+  const { mutate: incrementCurrentTerm, isPending: isIncrementing } =
+    useIncrementCurrentTerm();
   if (isInstitueLoading || isClassMetadataLoading) return <div>Loading...</div>;
-
+  console.log(classMetadata);
   return (
     <main className="p-8 flex flex-col">
       {/* Header */}
@@ -187,6 +190,7 @@ function RouteComponent() {
             <TableHead>Max Terms</TableHead>
             <TableHead># Classes</TableHead>
             <TableHead>Year</TableHead>
+            <TableHead>current term</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -194,13 +198,27 @@ function RouteComponent() {
         <TableBody>
           {classMetadata?.map((metadata) => (
             <TableRow key={metadata.metadataId}>
-              <TableCell>{metadata.specialty}</TableCell>
+              <TableCell className="text-center">
+                {metadata.specialty}
+              </TableCell>
               <TableCell>{metadata.levelOfStudies}</TableCell>
               <TableCell>{metadata.maxYears}</TableCell>
               <TableCell>{metadata.maxTerms}</TableCell>
               <TableCell>{metadata.numberOfClasses}</TableCell>
               <TableCell>{metadata.level}</TableCell>
-
+              <TableCell className="flex items-center gap-2 justify-center">
+                <p>{metadata.currentTerm}</p>
+                <Button
+                  variant={"outline"}
+                  size={"icon-xs"}
+                  onClick={() => {
+                    incrementCurrentTerm(metadata.metadataId);
+                  }}
+                  disabled={isIncrementing}
+                >
+                  <IconPlus />
+                </Button>
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   {/* View classes */}
