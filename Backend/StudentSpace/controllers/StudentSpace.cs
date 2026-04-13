@@ -13,7 +13,7 @@ namespace Backend.StudentSpace.controllers
 
     public class StudentSpaceController(IStudentService isService) : ControllerBase
     {
-        [HttpPost]
+        [HttpGet]
         public async Task<ActionResult<List<SerializedCourse>>> GetAllStudentCourses()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

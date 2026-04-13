@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Backend.Account.DataTransferObjects.Responses;
 using Backend.ProfessorSpace.DataTransferObjects.Requests;
 using Backend.ProfessorSpace.DataTransferObjects.Responses;
 using Backend.ProfessorSpace.Services;
@@ -140,6 +141,8 @@ public class ProfessorSpaceController(IProfessorService professorService) : Cont
     public async Task<ActionResult> GradeTestRedactionResponse([FromRoute] Guid responseId, [FromBody] GradeQuestionResponseRequest request)
         => await ExecuteNoContent(() => professorService.GradeTestRedactionResponse(GetProfessorIdentityId(), responseId, request.Score));
 
+    public async Task<ActionResult<ListSerializedProfessorInvitation>> GetProfessorInvitation([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        => await Execute(() => professorService.GetProfessorInvitation(GetProfessorIdentityId(), pageNumber, pageSize));
     private Guid GetProfessorIdentityId()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

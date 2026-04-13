@@ -14,3 +14,9 @@ public class SerializedUser
     public DateTime UpdatedAt { get; set; }
     public string? PfpUrl { get; set; }
 }
+
+public class SerializedUserListResponse
+{
+    public List<SerializedUser> Users { get; set; } = [];
+    public int TotalCount { get; set; }
+} // for pagination

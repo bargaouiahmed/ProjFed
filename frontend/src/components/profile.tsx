@@ -6,7 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { IconLoader, IconMail, IconUser } from "@tabler/icons-react";
+import {
+  IconLoader,
+  IconMail,
+  IconSettings,
+  IconUser,
+} from "@tabler/icons-react";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 import { useState } from "react";
 import useUpdateAccount from "@/querys/useUpdateAccount";
@@ -30,6 +35,7 @@ export default function Profile() {
           setOpen(true);
         }}
       >
+        <IconSettings />
         Profile settings
       </DropdownMenuItem>
 
@@ -75,7 +81,13 @@ export default function Profile() {
             {() => (
               <Form className="flex flex-col" encType="multipart/form-data">
                 <section className="flex flex-col items-center gap-3">
-                  <ImageUpload name="pfp" preview={account?.pfpUrl} />
+                  <ImageUpload
+                    name="pfp"
+                    preview={
+                      //localhost:5173/api/v0/uploads/institutes/uniname/admindocuments/proofdocuments/520c4bbd-63b8-489e-b6f4-b5e3353a3bf4.png
+                      "http://localhost:5173/api/v0" + account?.pfpUrl
+                    }
+                  />
 
                   <h1>
                     {account?.firstname} {account?.lastname}

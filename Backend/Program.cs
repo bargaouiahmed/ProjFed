@@ -2,14 +2,17 @@ using System.Text.Json;
 using Backend.Account.Services;
 using Backend.Administration.Services;
 using Backend.Admin.Services;
+using Backend.FileSystem;
 using Backend.Auth.Services;
 using Backend.Database.Auth;
 using Backend.ProfessorSpace.Services;
 using Backend.StudentSpace.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.OpenApi;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +38,46 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IAdministrationService, AdministrationService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();
-builder.Services.AddOpenApi();
+builder.Services.AddScoped<IFSService, FSService>();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Description = "Paste the JWT access token. The client will send it as 'Authorization: Bearer {token}'."
+        };
+
+        return Task.CompletedTask;
+    });
+
+    options.AddOperationTransformer((operation, context, _) =>
+    {
+        var endpointMetadata = context.Description.ActionDescriptor.EndpointMetadata;
+        var allowsAnonymous = endpointMetadata.OfType<IAllowAnonymous>().Any();
+        var requiresAuthorization = endpointMetadata.OfType<IAuthorizeData>().Any();
+
+        if (allowsAnonymous || !requiresAuthorization)
+        {
+            return Task.CompletedTask;
+        }
+
+        operation.Security ??= new List<OpenApiSecurityRequirement>();
+        operation.Security.Add(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", context.Document, null)] = []
+        });
+
+        return Task.CompletedTask;
+    });
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -108,7 +150,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+        app.UseSwaggerUI(options =>
+    {
+        // Point Swagger UI to the JSON endpoint .NET 9 generated
+        options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    });
 }
+
 
 using (var scope = app.Services.CreateScope())
 {

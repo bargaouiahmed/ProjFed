@@ -29,7 +29,7 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #F8F8F6;
   --foreground: oklch(0.145 0.008 326);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0.008 326);
@@ -66,7 +66,7 @@
 .dark {
   --background: oklch(0.145 0.008 326);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.212 0.019 322.12);
+  --card: oklch(13.481% 0.05518 328.1);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.212 0.019 322.12);
   --popover-foreground: oklch(0.985 0 0);
@@ -197,4 +197,8 @@ body::after {
   background: rgba(0, 120, 255, 0.04);
   pointer-events: none;
   z-index: 1;
+}
+
+img {
+  background-size: cover;
 }

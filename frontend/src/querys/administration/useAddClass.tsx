@@ -1,8 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 import { toast } from "sonner";
 
 export default function useAddClass() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ metadataId }: { metadataId: string }) => {
       const response = await api.post(
@@ -19,6 +20,7 @@ export default function useAddClass() {
 
     onSuccess: () => {
       toast.success("Class added successfully!");
+      queryClient.invalidateQueries({ queryKey: ["classMetadata"] });
     },
 
     onError: () => {

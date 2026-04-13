@@ -127,7 +127,10 @@ public class StudentService(AppDbContext db) : IStudentService
     {
         var uniClass = await db.UniClasses.Include(c => c.Students).FirstOrDefaultAsync(c => c.ClassCode == classCode) ?? throw new InvalidOperationException("Invalid class code");
         var student = await db.Students.FirstOrDefaultAsync(s => s.IdentityId == studentIdentityId) ?? throw new InvalidOperationException("student not found");
-        uniClass.Students.Add(student);
+        if (student.UniClassId == uniClass.Id) throw new InvalidOperationException("Student already belongs to this class");
+        if (student.UniClassId != null) throw new InvalidOperationException("Student already belongs to a class");
+
+        student.UniClassId = uniClass.Id;
         await db.SaveChangesAsync();
     }
 

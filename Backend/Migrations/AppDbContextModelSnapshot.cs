@@ -365,7 +365,7 @@ namespace Backend.Migrations
                     b.Property<string>("PfpUrl")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UniClassId")
+                    b.Property<Guid?>("UniClassId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -969,8 +969,7 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Auth.Entities.UniClass", "UniClass")
                         .WithMany("Students")
                         .HasForeignKey("UniClassId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Identity");
 

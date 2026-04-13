@@ -46,6 +46,7 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
                 Email = p.Identity.Email,
                 Firstname = p.Firstname,
                 Lastname = p.Lastname,
+                Role = "professor",
                 CreatedAt = p.Identity.CreatedAt,
                 UpdatedAt = p.Identity.UpdatedAt,
                 PfpUrl = p.PfpUrl
@@ -93,6 +94,7 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
                 Email = uu.Identity.Email,
                 CreatedAt = uu.Identity.CreatedAt,
                 UpdatedAt = uu.Identity.UpdatedAt,
+                Role= uu.Identity.Role,
                 PfpUrl = uu.PfpUrl
             }).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No matching user found");
 

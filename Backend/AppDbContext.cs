@@ -70,6 +70,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             student.HasOne(s => s.UniClass)
                 .WithMany(c => c.Students)
                 .HasForeignKey(s => s.UniClassId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<Course>(course =>

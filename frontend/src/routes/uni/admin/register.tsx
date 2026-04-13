@@ -26,16 +26,29 @@ import * as yup from "yup";
 import ThemeToggler from "@/components/ThemeToggler";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
+import useAccount from "@/querys/useAccount";
 
 export const Route = createFileRoute("/uni/admin/register")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = Route.useNavigate();
+  const { data: account, isPending: isAccountPending } = useAccount();
+  console.log(account);
+  if (account && ["uni_admin", "staff_admin"].includes(account.role)) {
+    navigate({ to: "/admin/dashboard/requests" });
+  }
+
+  if (account && account.role == "student") {
+    navigate({ to: "/" });
+  }
+
   const [showPassword, setShowPassword] = useState(false);
   const { theme } = useTheme();
-  const { mutate: register } = useRegisterUniAdmin();
+  const { mutate: register, isPending } = useRegisterUniAdmin();
 
+  if (isAccountPending) return <div>loadingg</div>;
   return (
     <div className="min-h-screen flex items-center justify-center  px-4 py-8  ">
       <Card
@@ -68,7 +81,7 @@ function RouteComponent() {
             renderButtons={({
               currentStep,
               isLastStep,
-              isSubmitting,
+
               prevStep,
             }) => (
               <div className="flex justify-between pt-6 border-t">
@@ -80,8 +93,8 @@ function RouteComponent() {
                 >
                   Back
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? (
                     <IconLoader className="animate-spin" />
                   ) : isLastStep ? (
                     "Register"

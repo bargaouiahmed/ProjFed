@@ -15,6 +15,7 @@ interface ClassMetadata {
   level: number;
   maxTerms: number;
   numberOfClasses: number;
+  currentTerm: number;
 }
 
 export default function useGetClassMetadata({

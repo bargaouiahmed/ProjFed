@@ -11,8 +11,16 @@ import {
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import { IconUserCircle, IconSchool, IconUsers } from "@tabler/icons-react";
-import { useNavigate } from "@tanstack/react-router";
+import {
+  IconUserCircle,
+  IconSchool,
+  IconUsers,
+  IconInbox,
+  IconMail,
+  IconBell,
+  IconLogout,
+} from "@tabler/icons-react";
+import { useNavigate, useMatchRoute } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
   DropdownMenu,
@@ -24,60 +32,132 @@ import {
 } from "../ui/dropdown-menu";
 import logout from "@/querys/logout";
 import Profile from "../profile";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import { useState } from "react";
+import useNotifications from "@/querys/useNotifications";
 
 export default function AdminDashboardSideBar() {
   const navigate = useNavigate();
   const { data: account } = useAccount();
-  console.log(account);
   const { open } = useSidebar();
+  const matchRoute = useMatchRoute();
+
+  const isActive = (to: string) => matchRoute({ to, fuzzy: true });
+  const getActiveClass = (to: string) => (isActive(to) ? "text-primary" : "");
+
+  const { data: notifications, isLoading: isLoadingNotifications } =
+    useNotifications();
+
+  // ✅ dialog state
+  const [notifOpen, setNotifOpen] = useState(false);
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <ThemeToggler />
       </SidebarHeader>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
+            {/* My Invitations - Only for uni_staff */}
+            {account?.role === "uni_staff" && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() =>
+                    navigate({
+                      to: "/administration/dashboard/invitations",
+                    })
+                  }
+                  className={getActiveClass(
+                    "/administration/dashboard/invitations",
+                  )}
+                >
+                  <IconInbox />
+                  {open && <span>My Invitations</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+
+            {/* Classes - For both */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
                   navigate({
                     to: "/administration/dashboard/classes",
-                    search: {
-                      pageSize: 10,
-                      pageNumber: 1,
-                    },
+                    search: { pageSize: 10, pageNumber: 1 },
                   })
                 }
+                className={getActiveClass("/administration/dashboard/classes")}
               >
                 <IconSchool />
                 {open && <span>Classes</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
+
+            {/* Staff - Only for uni_admin */}
+            {account?.role === "uni_admin" && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() =>
+                    navigate({
+                      to: "/administration/dashboard/staff",
+                    })
+                  }
+                  className={getActiveClass("/administration/dashboard/staff")}
+                >
+                  <IconUsers />
+                  {open && <span>Staff</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+
+            {/* Professors Invitations / Professors */}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() =>
-                  navigate({ to: "/administration/dashboard/staff" })
+                  navigate({
+                    to: "/administration/dashboard/professorsInvitations",
+                  })
                 }
+                className={getActiveClass(
+                  "/administration/dashboard/professorsInvitations",
+                )}
               >
-                <IconUsers />
-                {open && <span>Staff</span>}
+                <IconMail />
+                {open && (
+                  <span>
+                    {account?.role === "uni_admin"
+                      ? "Professors Invitations"
+                      : "Professors"}
+                  </span>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"}>
+            <Button variant="outline" className="py-6">
               <div className="flex items-center gap-2">
-                {open && <p>{account?.email}</p>}
                 {account?.pfpUrl ? (
-                  <img src={account.pfpUrl} />
+                  <img
+                    src={"http://localhost:5173/api/v0" + account.pfpUrl}
+                    className="w-8 h-8 rounded-full object-cover border shadow-sm"
+                  />
                 ) : (
                   <IconUserCircle />
                 )}
+                {open && <p>{account?.email}</p>}
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -86,9 +166,23 @@ export default function AdminDashboardSideBar() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
+            {/* ✅ NOTIFICATIONS AS DIALOG */}
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setNotifOpen(true);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <IconBell />
+                Notifications
+              </div>
+            </DropdownMenuItem>
+
             <Profile />
 
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               className="text-red-500"
               onClick={() => {
@@ -96,10 +190,33 @@ export default function AdminDashboardSideBar() {
                 navigate({ to: "/auth" });
               }}
             >
+              <IconLogout />
               Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* ✅ DIALOG OUTSIDE DROPDOWN */}
+        <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Notifications</DialogTitle>
+              <DialogDescription>Description text here.</DialogDescription>
+            </DialogHeader>
+
+            {isLoadingNotifications ? (
+              <div>loading...</div>
+            ) : notifications && notifications.length > 0 ? (
+              JSON.stringify(notifications)
+            ) : (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  No new notifications
+                </p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </SidebarFooter>
     </Sidebar>
   );

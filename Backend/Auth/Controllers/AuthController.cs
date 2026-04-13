@@ -71,6 +71,21 @@ namespace Backend.Auth.Controllers
             }
 
         }
+        [HttpGet("auth/activate-account")]
+                public async Task<ActionResult> ActivateAccountForAllBecauseImNotSoIntelligent([FromQuery] string id, [FromQuery] string token)
+        {
+            token = token.Replace(' ', '+');
+            try
+            {
+                await authService.ActivateAccount(new Guid(id), token);
+                return Ok("Account activated successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error:{ex.Message}");
+            }
+
+        }
         [HttpPost("auth/request-password-reset")]
         public async Task<ActionResult> RequestPasswordReset([FromQuery] string email)
         {
