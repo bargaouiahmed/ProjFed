@@ -54,7 +54,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         if (!uniStaffMember.InstituteId.HasValue) throw new InvalidOperationException("This staff member does not belong to any institute");
         return new UniId(uniStaffMember.InstituteId.Value);
     }
-    public async Task<List<SerializedClassMetaData>> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10)
+    public async Task<ListSerializedClassMetadata> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10)
     {
         int skip = (pageNumber - 1) * pageSize;
         int take = pageSize;
@@ -70,7 +70,11 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             CurrentTerm = c.CurrentTerm,
             NumberOfClasses = c.Classes.Count()
         }).Skip(skip).Take(take).ToListAsync();
-        return classMetaDatas;
+        return new ListSerializedClassMetadata
+        {
+            ClassMetaData = classMetaDatas,
+            TotalCount = await db.ClassMetadata.CountAsync(c => c.InstituteId == instituteId)
+        };
 
     }
 
@@ -418,12 +422,23 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
         }
         await db.SaveChangesAsync();
     }
-    public async Task<List<SerializedClassMetaData> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId)
+    public async Task<ListSerializedClassMetadata> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId)
     {
         var staffMember = await db.UniUsers.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
         await db.ClassMetadata.Where(cm => cm.Id == metadataId && cm.InstituteId == staffMember.InstituteId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(cm => cm.CurrentTerm, 1));
         return await GetAllClassMetaData(staffMember.InstituteId!.Value, uniStaffIdentityId);
+    }
+    public async Task DeleteClassMetaData(Guid uniStaffIdentityId, Guid metadataId)
+    {
+        var staffMember = await db.UniUsers.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityId == uniStaffIdentityId) ?? throw new InvalidOperationException("No staff member with given id found");
+        var metadata = await db.ClassMetadata.FirstOrDefaultAsync(cm => cm.Id == metadataId) ?? throw new InvalidOperationException("Invalid metadata id");
+        if (metadata.InstituteId != staffMember.InstituteId)
+        {
+            throw new InvalidOperationException("You are not authorized to manipulate this class metadata.");
+        }
+        db.ClassMetadata.Remove(metadata);
+        await db.SaveChangesAsync();
     }
 
 }

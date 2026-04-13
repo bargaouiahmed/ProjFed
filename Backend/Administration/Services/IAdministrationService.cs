@@ -7,8 +7,8 @@ namespace Backend.Administration.Services;
 public interface IAdministrationService
 {
     Task AddNewClassMetaData(NewClassMetaDataRequest request, Guid uniAdminIdentityId);
-    Task<List<SerializedClassMetaData>> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10);
-    public Task<List<SerializedClassMetaData>> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId);
+    Task<ListSerializedClassMetadata> GetAllClassMetaData(Guid instituteId, Guid uniAdminIdentityId, int pageNumber = 1, int pageSize = 10);
+    public Task<ListSerializedClassMetadata> ResetClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId);
     Task<List<SerializedProfessorInvitationForAdministration>> GetAllProfessorInvitations(Guid uniStaffIdentityId);
     Task<ClassPrettyName> AddClassToMetadataType(Guid uniAdminIdentityId, Guid metadataId);
     Task<SerializedClassMetaData> UpdateClassMetaData(SerializedClassMetaData request, Guid uniAdminIdentityId);
@@ -21,5 +21,5 @@ public interface IAdministrationService
     public  Task RemoveProfessorFromCourse(Guid uniStaffIdentityId, Guid courseId);
     public  Task RemoveCourseFromClass(Guid uniStaffIdentityId, Guid courseId);
     public Task<int> IncrementClassMetadataTerm(Guid uniStaffIdentityId, Guid metadataId);
-
+    public Task DeleteClassMetaData(Guid uniStaffIdentityId, Guid metadataId);
 }

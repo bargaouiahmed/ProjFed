@@ -1,3 +1,21 @@
+## 17. Delete Class Metadata
+
+- **Endpoint:** `DELETE /administration/metadata/{metadataId}`
+- **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `metadataId` (GUID, required)
+- **Response:**
+  - 200 OK: Class metadata deleted successfully message
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+  - 403 Forbidden: Not allowed to delete this metadata
+- **Side Effects:**
+  - Deletes the specified ClassMetadata and all associated classes/courses (if implemented in backend)
+
+---
 # API Documentation
 
 ## Base URL
@@ -357,8 +375,16 @@
   - `pageNumber` (int, optional, default `1`)
   - `pageSize` (int, optional, default `10`)
 - **Response:**
-  - 200 OK: List of `SerializedClassMetaData`
-    - `metadataId`, `levelOfStudies`, `specialty`, `maxYears`, `level`, `maxTerms`, `currentTerm`, `numberOfClasses`
+  - 200 OK: Array of `SerializedClassMetaData` objects
+    - Each object:
+      - `metadataId` (GUID)
+      - `levelOfStudies` (string)
+      - `specialty` (string)
+      - `maxYears` (int)
+      - `level` (int)
+      - `maxTerms` (int)
+      - `currentTerm` (int)
+      - `numberOfClasses` (int)
   - 400 Bad Request: Error message
   - 401 Unauthorized: Missing/invalid token claims
 - **Side Effects:**
@@ -1084,3 +1110,32 @@
   - `Content-Type: application/json`
 - **Request Body:** JSON
   - `score` (int, required)
+
+##66. Reset Class Meta Data
+
+## 66. Reset Class Metadata Term
+
+- **Endpoint:** `GET /administration/metadata/{metadataId}/reset-term`
+- **Auth:** Bearer token required, role `uni_staff` or `uni_admin`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `metadataId` (GUID, required)
+- **Response:**
+  - 200 OK: Array of `SerializedClassMetaData` objects (all class metadata for the institute, with the reset term)
+    - Each object:
+      - `metadataId` (GUID)
+      - `levelOfStudies` (string)
+      - `specialty` (string)
+      - `maxYears` (int)
+      - `level` (int)
+      - `maxTerms` (int)
+      - `currentTerm` (int)
+      - `numberOfClasses` (int)
+  - 400 Bad Request: Error message
+  - 401 Unauthorized: Missing/invalid token claims
+  - 403 Forbidden: Not allowed to reset term for this metadata
+
+---
+

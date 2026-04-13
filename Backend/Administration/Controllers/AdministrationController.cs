@@ -289,5 +289,22 @@ namespace Backend.Administration.Controllers
             }
         }
         
+        [HttpDelete("metadata/{metadataId:guid}")
+        public async Task<ActionResult> DeleteClassMetaData([FromRoute] Guid metadataId)
+        {
+            if(!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized("Invalid token: missing or invalid user ID claim.");
+            }
+            try
+            {
+                await admservice.DeleteClassMetaData(userId, metadataId);
+                return Ok("Class metadata deleted successfully.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

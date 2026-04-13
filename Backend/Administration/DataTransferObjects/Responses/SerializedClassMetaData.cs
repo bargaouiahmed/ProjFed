@@ -14,3 +14,11 @@ public class SerializedClassMetaData
     public int CurrentTerm { get; set; }
     public int NumberOfClasses { get; set; }
 }
+
+
+public class ListSerializedClassMetadata
+{
+    public List<SerializedClassMetaData> ClassMetaData { get; set; } = new List<SerializedClassMetaData>();
+    public int TotalCount { get; set; } 
+    
+}
