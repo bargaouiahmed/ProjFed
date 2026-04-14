@@ -24,7 +24,7 @@ export default function useAddNewProf() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("proffesor added to course successfully");
+      toast.success("invitations send to proffesor success");
     },
     onError: () => {
       toast.error("failed to add professor please try again");

@@ -4,24 +4,14 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import {
-  IconUserCircle,
-  IconSchool,
-  IconUsers,
-  IconInbox,
-  IconMail,
-  IconBell,
-  IconLogout,
-  IconHome,
-} from "@tabler/icons-react";
-import { useNavigate, useMatchRoute } from "@tanstack/react-router";
+import { IconUserCircle, IconBell, IconLogout } from "@tabler/icons-react";
+import { useMatchRoute, useNavigate } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
   DropdownMenu,
@@ -43,20 +33,21 @@ import {
 import { useState } from "react";
 import useNotifications from "@/querys/useNotifications";
 
-export default function AdminDashboardSideBar() {
+export default function ProfDashboardSidebar() {
   const navigate = useNavigate();
   const { data: account } = useAccount();
   const { open } = useSidebar();
+
   const matchRoute = useMatchRoute();
 
   const isActive = (to: string) => matchRoute({ to });
+
   const getActiveClass = (to: string) =>
     isActive(to) ? "text-indigo-400" : "";
 
   const { data: notifications, isLoading: isLoadingNotifications } =
     useNotifications();
 
-  //  dialog state
   const [notifOpen, setNotifOpen] = useState(false);
 
   return (
@@ -69,92 +60,14 @@ export default function AdminDashboardSideBar() {
         <SidebarGroup>
           <SidebarMenuItem>
             <SidebarMenuButton
+              className={getActiveClass("")}
               onClick={() => {
-                navigate({ to: "/administration/dashboard" });
+                navigate({ to: "/prof/dashboard/invitations" });
               }}
-              className={getActiveClass("/administration/dashboard")}
             >
-              <IconHome />
-              {open && "Home"}
+              my invitations
             </SidebarMenuButton>
           </SidebarMenuItem>
-
-          <SidebarMenu>
-            {/* My Invitations - Only for uni_staff */}
-            {account?.role === "uni_staff" && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() =>
-                    navigate({
-                      to: "/administration/dashboard/invitations",
-                    })
-                  }
-                  className={getActiveClass(
-                    "/administration/dashboard/invitations",
-                  )}
-                >
-                  <IconInbox />
-                  {open && <span>My Invitations</span>}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
-
-            {/* Classes - For both */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() =>
-                  navigate({
-                    to: "/administration/dashboard/classes",
-                    search: { pageSize: 10, pageNumber: 1 },
-                  })
-                }
-                className={getActiveClass("/administration/dashboard/classes")}
-              >
-                <IconSchool />
-                {open && <span>Classes</span>}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            {/* Staff - Only for uni_admin */}
-            {account?.role === "uni_admin" && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() =>
-                    navigate({
-                      to: "/administration/dashboard/staff",
-                    })
-                  }
-                  className={getActiveClass("/administration/dashboard/staff")}
-                >
-                  <IconUsers />
-                  {open && <span>Staff</span>}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
-
-            {/* Professors Invitations / Professors */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() =>
-                  navigate({
-                    to: "/administration/dashboard/professorsInvitations",
-                  })
-                }
-                className={getActiveClass(
-                  "/administration/dashboard/professorsInvitations",
-                )}
-              >
-                <IconMail />
-                {open && (
-                  <span>
-                    {account?.role === "uni_admin"
-                      ? "Professors Invitations"
-                      : "Professors"}
-                  </span>
-                )}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
@@ -180,7 +93,7 @@ export default function AdminDashboardSideBar() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            {/* ✅ NOTIFICATIONS AS DIALOG */}
+            {/*  NOTIFICATIONS AS DIALOG */}
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();

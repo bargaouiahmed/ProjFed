@@ -8,6 +8,7 @@ export interface ProfessorInvitation {
   classPrettyName: string;
   status: string;
   invitedAt: string;
+  instituteName: string;
 }
 
 export default function useGetProfInvitations() {
