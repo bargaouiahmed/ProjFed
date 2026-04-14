@@ -17,17 +17,17 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         if (request.Role == "student")
         {
 
-            user = await db.Students.Include(s => s.Identity).Where(s => s.Identity.Id == request.UserId)
+            user = await db.Students.Include(s => s.Identity).Where(s => s!.Identity!.Id == request.UserId)
             .Select(s => new SerializedUser
             {
                 Id = s.Id,
-                IdentityId = s.Identity.Id,
+                IdentityId = s!.Identity!.Id,
                 Firstname = s.Firstname,
                 Lastname = s.Lastname,
-                Email = s.Identity.Email,
+                Email = s!.Identity!.Email,
                 Role = "student",
-                CreatedAt = s.Identity.CreatedAt,
-                UpdatedAt = s.Identity.UpdatedAt,
+                CreatedAt = s!.Identity!.CreatedAt,
+                UpdatedAt = s!.Identity!.UpdatedAt,
                 PfpUrl = s.PfpUrl
             }).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No matching user found");
 
@@ -38,17 +38,17 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         {
 
 
-            user = await db.Professors.Include(p => p.Identity).Where(p => p.Identity.Id == request.UserId)
+            user = await db.Professors.Include(p => p.Identity).Where(p => p!.Identity!.Id == request.UserId)
             .Select(p => new SerializedUser
             {
                 Id = p.Id,
-                IdentityId = p.Identity.Id,
-                Email = p.Identity.Email,
+                IdentityId = p!.Identity!.Id,
+                Email = p!.Identity!.Email,
                 Firstname = p.Firstname,
                 Lastname = p.Lastname,
                 Role = "professor",
-                CreatedAt = p.Identity.CreatedAt,
-                UpdatedAt = p.Identity.UpdatedAt,
+                CreatedAt = p!.Identity!.CreatedAt,
+                UpdatedAt = p!.Identity!.UpdatedAt,
                 PfpUrl = p.PfpUrl
 
             }).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No matching user found");
@@ -60,16 +60,16 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         {
 
             user = await db.AdminUsers.Include(au => au.Identity)
-            .Where(au => au.Identity.Id == request.UserId)
+            .Where(au => au!.Identity!.Id == request.UserId)
             .Select(au => new SerializedUser
             {
                 Id = au.Id,
-                IdentityId = au.Identity.Id,
+                IdentityId = au!.Identity!.Id,
                 Firstname = au.Firstname,
                 Lastname = au.Lastname,
-                Email = au.Identity.Email,
-                CreatedAt = au.Identity.CreatedAt,
-                UpdatedAt = au.Identity.UpdatedAt,
+                Email = au!.Identity!.Email,
+                CreatedAt = au!.Identity!.CreatedAt,
+                UpdatedAt = au!.Identity!.UpdatedAt,
                 Role = au.Identity.Role,
                 PfpUrl = au.PfpUrl
             })
@@ -84,17 +84,17 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
             user = await db
             .UniUsers
             .Include(uu => uu.Identity)
-            .Where(uu => uu.Identity.Id == request.UserId)
+            .Where(uu => uu!.Identity!.Id == request.UserId)
             .Select(uu => new SerializedUser
             {
                 Id = uu.Id,
-                IdentityId = uu.Identity.Id,
+                IdentityId = uu!.Identity!.Id,
                 Firstname = uu.Firstname,
                 Lastname = uu.Lastname,
-                Email = uu.Identity.Email,
-                CreatedAt = uu.Identity.CreatedAt,
-                UpdatedAt = uu.Identity.UpdatedAt,
-                Role= uu.Identity.Role,
+                Email = uu!.Identity!.Email,
+                CreatedAt = uu!.Identity!.CreatedAt,
+                UpdatedAt = uu!.Identity!.UpdatedAt,
+                Role= uu!.Identity!.Role,
                 PfpUrl = uu.PfpUrl
             }).FirstOrDefaultAsync() ?? throw new InvalidOperationException("No matching user found");
 
@@ -328,7 +328,7 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         }
 
         invitation.Status = "accepted";
-        invitation.Course.ProfessorId = invitation.Identity.Professor.Id;
+        invitation!.Course!.ProfessorId = invitation.Identity.Professor.Id;
         Notification notification = new()
         {
             IdentityId = identityId,
@@ -354,7 +354,7 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
         Notification notification = new()
         {
             IdentityId = identityId,
-            Message = $"You rejected the invitation to teach {invitation.Course.Name} for {invitation.ClassPrettyName}."
+            Message = $"You rejected the invitation to teach {invitation!.Course!.Name} for {invitation.ClassPrettyName}."
         };
         db.Notifications.Add(notification);
         await db.SaveChangesAsync();

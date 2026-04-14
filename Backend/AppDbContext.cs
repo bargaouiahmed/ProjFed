@@ -55,7 +55,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Professor>(prof =>
         {
             prof.HasOne(p => p.Identity)
-                .WithOne(i=>i.Professor)
+                .WithOne(i=>i.Professor) //hedhi kenet .WithOne() donc fl code k naaml .Include(i=>i!.Professor),
+                //  mafamech professor fel hkeya hhh, m surprised no errors were raised
                 .HasForeignKey<Professor>(p => p.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
