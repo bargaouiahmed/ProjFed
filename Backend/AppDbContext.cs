@@ -55,7 +55,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Professor>(prof =>
         {
             prof.HasOne(p => p.Identity)
-                .WithOne()
+                .WithOne(i=>i.Professor)
                 .HasForeignKey<Professor>(p => p.IdentityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
