@@ -217,17 +217,21 @@ function RouteComponent() {
               <TableCell>{metadata.maxTerms}</TableCell>
               <TableCell>{metadata.numberOfClasses}</TableCell>
               <TableCell>{metadata.level}</TableCell>
-              <TableCell className="flex items-center gap-2 justify-center">
+              <TableCell
+                className="flex items-center gap-2 justify-center"
+                key={metadata.currentTerm}
+              >
                 <p>{metadata.currentTerm}</p>
 
-                <div></div>
                 <Button
                   variant={"outline"}
                   size={"icon-xs"}
                   onClick={() => {
                     incrementCurrentTerm(metadata.metadataId);
                   }}
-                  disabled={isIncrementing}
+                  disabled={
+                    isIncrementing || metadata.currentTerm >= metadata.maxTerms
+                  }
                 >
                   <IconPlus />
                 </Button>

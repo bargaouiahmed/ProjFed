@@ -1,20 +1,3 @@
-# API Documentation
-
-## Base URL
-
-- Docker: `http://localhost:8080/api/v0`
-- Local: `http://localhost:5193/api/v0`
-
----
-
-## Common Request Headers
-
-- `Accept: application/json` (recommended for all endpoints)
-- `Authorization: Bearer <accessToken>` (required only on protected endpoints)
-- `Content-Type` depends on endpoint body type:
-  - `application/json` for JSON bodies
-  - `multipart/form-data` for file upload forms
-
 ## 20. Get All Student Courses
 
 - **Endpoint:** `GET /student`
@@ -64,6 +47,8 @@
 - **Side Effects:**
   - Associates the student with the class identified by `classCode`
 
+---
+
 ## 31. Get Professor Invitations
 
 - **Endpoint:** `GET /accounts/professor-invitations`
@@ -72,12 +57,16 @@
   - `Authorization: Bearer <accessToken>`
   - `Accept: application/json`
 - **Response:**
-  - 200 OK: List of professor invitations
+  - 200 OK: List of professor invitations owned by the authenticated `professor` user
     - `id`, `courseId`, `courseName`, `classPrettyName`, `status`, `invitedAt`
   - 400 Bad Request: Error message
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - None (read-only)
+  - Filtered by `invitation.IdentityId == authenticated user id`
+  - Does not return the entire institute's professor invitations
+  - Includes invitations with any status: `pending`, `accepted`, or `rejected`
+  - Use `GET /administration/professor-invitations` when a `uni_admin` or `uni_staff` user needs the institute-wide list
 
 ---
 
@@ -96,6 +85,8 @@
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - Sets invitation `Status = accepted`
+  - Fails if the invitation does not belong to the authenticated `professor` user
+  - Fails if the invitation status is already not `pending`
   - Assigns the invited professor to the invitation’s course
   - Creates a notification confirming acceptance
 
@@ -118,6 +109,8 @@
   - Sets invitation `Status = rejected`
   - Does not assign the professor to the course
   - Creates a notification confirming rejection
+  - Fails if the invitation does not belong to the authenticated `professor` user
+  - Fails if the invitation status is already not `pending`
 
 ---
 
@@ -488,48 +481,6 @@
 
 ---
 
-## 66. Download Pending Request Identity Document
-
-- **Endpoint:** `GET /fs/pending-requests/{pendingRequestId}/identity-document`
-- **Auth:** Bearer token required, role `admin` or `super_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: */*`
-- **Route Parameters:**
-  - `pendingRequestId` (GUID, required)
-- **Response:**
-  - 200 OK: Binary file stream for the pending request's identity document
-  - `Content-Type` matches the stored file when recognized, otherwise `application/octet-stream`
-  - 401 Unauthorized: Missing/invalid token claim
-  - 403 Forbidden: Forbidden by role policy
-  - 500 Internal Server Error: Pending request not found, invalid stored path, or file missing on disk
-- **Side Effects:**
-  - None (read-only)
-  - Resolves the stored `/uploads/...` path to a physical file under `wwwroot/uploads`
-
----
-
-## 67. Download Pending Request Proof Document
-
-- **Endpoint:** `GET /fs/pending-requests/{pendingRequestId}/proof-document`
-- **Auth:** Bearer token required, role `admin` or `super_admin`
-- **Headers:**
-  - `Authorization: Bearer <accessToken>`
-  - `Accept: */*`
-- **Route Parameters:**
-  - `pendingRequestId` (GUID, required)
-- **Response:**
-  - 200 OK: Binary file stream for the pending request's proof document
-  - `Content-Type` matches the stored file when recognized, otherwise `application/octet-stream`
-  - 401 Unauthorized: Missing/invalid token claim
-  - 403 Forbidden: Forbidden by role policy
-  - 500 Internal Server Error: Pending request not found, invalid stored path, or file missing on disk
-- **Side Effects:**
-  - None (read-only)
-  - Resolves the stored `/uploads/...` path to a physical file under `wwwroot/uploads`
-
----
-
 ## 68. Download Chapter Attachments Archive
 
 - **Endpoint:** `GET /fs/chapters/{chapterId}/attachments`
@@ -555,22 +506,24 @@
   - None (read-only)
   - Builds the archive in memory from the chapter's comma-separated `attachmentUrls`
 
----
+## 78. List Institute Users
 
-## 71. Get Current Staff Member Institute Id
+## done
 
-- **Endpoint:** `GET /administration/staff/institute`
+- **Endpoint:** `GET /administration/institute/users`
 - **Auth:** Bearer token required, role `uni_admin` or `uni_staff`
 - **Headers:**
   - `Authorization: Bearer <accessToken>`
   - `Accept: application/json`
-- **Request Body:** None
+- **Query Parameters:**
+  - `pageNumber` (int, optional, default `1`)
+  - `pageSize` (int, optional, default `10`)
 - **Response:**
-  - 200 OK: `UniId`
-    - `id`
+  - 200 OK: `SerializedUserListResponse`
+    - `users[]`
+      - `id`, `identityId`, `firstname`, `lastname`, `email`, `role`, `createdAt`, `updatedAt`, `pfpUrl`
+    - `totalCount`
   - 400 Bad Request: Error message
   - 401 Unauthorized: Missing/invalid token claim
 - **Side Effects:**
   - None (read-only)
-
----

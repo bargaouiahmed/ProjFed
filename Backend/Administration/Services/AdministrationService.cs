@@ -70,7 +70,7 @@ public class AdministrationService(AppDbContext db, IEmailService smtp) : IAdmin
             MaxTerms = c.MaxTerms,
             CurrentTerm = c.CurrentTerm,
             NumberOfClasses = c.Classes.Count()
-        }).Skip(skip).Take(take).ToListAsync();
+        }).Skip(skip).Take(take).OrderBy(c=> c.Specialty).ThenBy(c=>c.MetadataId).ToListAsync();
         return new ListSerializedClassMetadata
         {
             ClassMetaData = classMetaDatas,
