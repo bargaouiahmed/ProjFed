@@ -4,6 +4,8 @@ using Backend.ProfessorSpace.DataTransferObjects.Responses;
 using Backend.StudentSpace.DataTransferObjects.Responses;
 using Microsoft.EntityFrameworkCore;
 
+using SerializedCourse = Backend.StudentSpace.DataTransferObjects.Responses.SerializedCourse;
+
 namespace Backend.StudentSpace.Services;
 
 public class StudentService(AppDbContext db) : IStudentService
