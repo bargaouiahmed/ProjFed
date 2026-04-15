@@ -37,6 +37,8 @@ import {
 } from "../ui/dialog";
 import { useState } from "react";
 import useNotifications from "@/querys/useNotifications";
+import { ScrollArea } from "../ui/scroll-area";
+import NotificationCard from "../NotificationCard";
 
 export default function ProfDashboardSidebar() {
   const navigate = useNavigate();
@@ -78,6 +80,11 @@ export default function ProfDashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <div>
+          {open && notifications && notifications[0] && (
+            <NotificationCard notif={notifications[0]} />
+          )}
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="py-6">
@@ -131,23 +138,39 @@ export default function ProfDashboardSidebar() {
 
         {/*  DIALOG OUTSIDE DROPDOWN */}
         <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Notifications</DialogTitle>
-              <DialogDescription>Description text here.</DialogDescription>
-            </DialogHeader>
-
-            {isLoadingNotifications ? (
-              <div>loading...</div>
-            ) : notifications && notifications.length > 0 ? (
-              JSON.stringify(notifications)
-            ) : (
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  No new notifications
-                </p>
+          <DialogContent className="max-w-md p-0 overflow-hidden">
+            {" "}
+            {/* p-0 and overflow-hidden to keep ScrollArea flush */}
+            <div className="p-6 pb-2">
+              <DialogHeader>
+                <DialogTitle className="text-primary">
+                  Notifications
+                </DialogTitle>
+                <DialogDescription>
+                  Stay updated with your latest teaching activities.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+            <ScrollArea className="h-100 w-full px-6 pb-6">
+              <div className="flex flex-col gap-3">
+                {isLoadingNotifications ? (
+                  <div className="flex justify-center py-8 text-muted-foreground animate-pulse">
+                    Loading notifications...
+                  </div>
+                ) : notifications && notifications.length > 0 ? (
+                  notifications.map((notif) => (
+                    <NotificationCard notif={notif} />
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 opacity-60">
+                    <IconBell className="h-10 w-10 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Inbox is empty
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </SidebarFooter>

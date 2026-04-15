@@ -18,7 +18,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./axios";
 
-interface Notification {
+export interface Notification {
   id: string;
   message: string;
   createdAt: string;
