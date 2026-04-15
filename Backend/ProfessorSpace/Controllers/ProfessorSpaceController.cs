@@ -141,8 +141,10 @@ public class ProfessorSpaceController(IProfessorService professorService) : Cont
     public async Task<ActionResult> GradeTestRedactionResponse([FromRoute] Guid responseId, [FromBody] GradeQuestionResponseRequest request)
         => await ExecuteNoContent(() => professorService.GradeTestRedactionResponse(GetProfessorIdentityId(), responseId, request.Score));
 
+    [HttpGet("invitations")]
     public async Task<ActionResult<ListSerializedProfessorInvitation>> GetProfessorInvitation([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         => await Execute(() => professorService.GetProfessorInvitation(GetProfessorIdentityId(), pageNumber, pageSize));
+    [HttpGet("courses")]
     public async Task<ActionResult<ListSerializedCourse>> GetProfessorCourses([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         => await Execute(() => professorService.GetProfessorCourses(GetProfessorIdentityId(), pageNumber, pageSize));
     private Guid GetProfessorIdentityId()

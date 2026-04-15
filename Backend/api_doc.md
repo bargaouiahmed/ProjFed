@@ -144,6 +144,49 @@
 ---
 # API Documentation
 
+---
+
+## XX. List Professor Invitations (ProfessorSpace)
+
+- **Endpoint:** `GET /professor-space/invitations`
+- **Auth:** Bearer token required, role `professor`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Query Parameters:**
+  - `pageNumber` (int, optional, default `1`)
+  - `pageSize` (int, optional, default `10`)
+- **Response:**
+  - 200 OK: List of professor invitations owned by the authenticated professor
+    - `id`, `courseId`, `courseName`, `classPrettyName`, `status`, `invitedAt`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Filtered by authenticated professor's identity
+  - Includes invitations with any status: `pending`, `accepted`, or `rejected`
+
+---
+
+## XX. List Professor Courses (ProfessorSpace)
+
+- **Endpoint:** `GET /professor-space/courses`
+- **Auth:** Bearer token required, role `professor`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Query Parameters:**
+  - `pageNumber` (int, optional, default `1`)
+  - `pageSize` (int, optional, default `10`)
+- **Response:**
+  - 200 OK: List of courses assigned to the authenticated professor
+    - `id`, `courseName`, `description`, `term`, `studentCount`, etc.
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Only returns courses for the authenticated professor
+
 ## Base URL
 
 - Docker: `http://localhost:8080/api/v0`
