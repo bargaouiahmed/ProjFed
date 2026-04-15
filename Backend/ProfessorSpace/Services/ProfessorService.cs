@@ -412,7 +412,24 @@ public class ProfessorService(AppDbContext db, IWebHostEnvironment env) : IProfe
 
         return result;
     }
-
+    public async Task<ListSerializedCourse> GetProfessorCourses(Guid professorIdentityId, int pageNumber=1, int pageSize=10)
+    {
+        return new ListSerializedCourse
+        {
+            
+          Courses = await db.Courses.AsNoTracking().Where(c => c.Professor != null && c.Professor.IdentityId == professorIdentityId) 
+        .Select(c => new SerializedCourse
+        {
+            Id = c.Id,
+            Name = c.Name,
+            Description = c.Description ?? string.Empty,
+            Term = c.Term,
+            UniClassId = c.UniClassId,
+            CreatedAt = c.CreatedAt})
+            .OrderByDescending(c => c.CreatedAt).Skip((pageNumber-1)*pageSize).Take(pageSize).ToListAsync(),
+            TotalCount = await db.Courses.CountAsync(c => c.Professor != null && c.Professor.IdentityId == professorIdentityId)
+        };
+        }
     public async Task GradeExamMcqResponse(Guid professorIdentityId, Guid responseId, int score)
     {
         var response = await db.ResponseMCQs.Include(r => r.MCQ).ThenInclude(m => m!.Exam).ThenInclude(e => e!.Course).ThenInclude(c => c!.Professor)

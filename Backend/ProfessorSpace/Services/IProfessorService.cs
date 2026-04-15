@@ -12,7 +12,7 @@ public interface IProfessorService
     Task<SerializedChapter> GetChapter(Guid professorIdentityId, Guid chapterId);
     Task<SerializedChapter> UpdateChapter(Guid professorIdentityId, UpdateChapterRequest request);
     Task DeleteChapter(Guid professorIdentityId, Guid chapterId);
-
+    Task<ListSerializedCourse> GetProfessorCourses(Guid professorIdentityId, int pageNumber=1, int pageSize=10);
     Task<SerializedExam> InitializeExam(Guid professorIdentityId, Guid courseId);
     Task<List<SerializedExam>> GetCourseExams(Guid professorIdentityId, Guid courseId);
     Task<SerializedExam> GetExam(Guid professorIdentityId, Guid examId);
