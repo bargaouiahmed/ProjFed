@@ -113,8 +113,14 @@ function CoursesDashboard() {
                   variant="outline"
                   size="sm"
                   className="border-dashed hover:border-primary hover:bg-primary/5"
+                  asChild
                 >
-                  tests and exams
+                  <Link
+                    to="/prof/dashboard/exams/$courseId"
+                    params={{ courseId: course.id }}
+                  >
+                    exams
+                  </Link>
                 </Button>
 
                 {/* NAVIGATION TO COURSE DETAIL */}
