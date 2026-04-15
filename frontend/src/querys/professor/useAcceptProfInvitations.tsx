@@ -29,7 +29,7 @@ import { toast } from "sonner";
 export default function useAcceptProfInvitations() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (invitationId: string) => {
+    mutationFn: async ({ invitationId }: { invitationId: string }) => {
       const response = await api.put(
         `/accounts/professor-invitations/${invitationId}/accept`,
       );

@@ -291,22 +291,24 @@ public class AccountService(AppDbContext db, IWebHostEnvironment env) : IAccount
 
     public async Task<List<SerializedProfessorInvitation>> GetProfessorInvitationsAsync(Guid identityId)
     {
-        var invitations = await db.ProfessorInvitations
-            .Include(i => i.Course)
-            .Where(i => i.IdentityId == identityId)
-            .OrderByDescending(i => i.InvitedAt)
-            .ToListAsync();
-
-        return [.. invitations.Select(i => new SerializedProfessorInvitation
+    var invitations = await db.ProfessorInvitations
+        .Where(i => i.IdentityId == identityId)
+        .OrderByDescending(i => i.InvitedAt)
+        .Select(i => new SerializedProfessorInvitation
         {
             Id = i.Id,
             CourseId = i.CourseId,
-            CourseName = i.Course?.Name ?? string.Empty,
+            CourseName = i.Course.Name,
             ClassPrettyName = i.ClassPrettyName,
             Status = i.Status,
-            InvitedAt = i.InvitedAt
-        })];
+            InvitedAt = i.InvitedAt,
+            InstitueName = i.Course.UniClass.Metadata.Institute.Name
+        })
+        .ToListAsync();
+
+    return invitations;
     }
+   
 
     public async Task AcceptProfessorInvitationAsync(Guid identityId, Guid invitationId)
     {

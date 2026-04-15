@@ -9,6 +9,8 @@ public class SerializedProfessorInvitation
     public string CourseName { get; set; } = string.Empty;
     public string ClassPrettyName { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
+
+    public string InstitueName {get;set;} = string.Empty;
     public DateTime InvitedAt { get; set; }
 }
 public class ListSerializedProfessorInvitation

@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/sidebar";
 import ThemeToggler from "../ThemeToggler";
 import { Button } from "../ui/button";
-import { IconUserCircle, IconBell, IconLogout } from "@tabler/icons-react";
+import {
+  IconUserCircle,
+  IconBell,
+  IconLogout,
+  IconMailOpened,
+} from "@tabler/icons-react";
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
 import {
@@ -65,7 +70,8 @@ export default function ProfDashboardSidebar() {
                 navigate({ to: "/prof/dashboard/invitations" });
               }}
             >
-              my invitations
+              <IconMailOpened />
+              {open && "my invitations"}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarGroup>
@@ -75,7 +81,7 @@ export default function ProfDashboardSidebar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="py-6">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 overflow-clip">
                 {account?.pfpUrl ? (
                   <img
                     src={"http://localhost:5173/api/v0" + account.pfpUrl}

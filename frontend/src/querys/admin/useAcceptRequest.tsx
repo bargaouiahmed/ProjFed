@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 import { toast } from "sonner";
+import { isAxiosError } from "axios";
 
 export default function useAcceptRequest() {
   const queryClient = useQueryClient();
@@ -19,6 +20,11 @@ export default function useAcceptRequest() {
     onError: (error) => {
       toast.warning("acception failed");
       console.log(error.message);
+      if (isAxiosError(error)) {
+        console.log(error.cause);
+        console.log(error.name);
+        console.log(error.toJSON());
+      }
     },
   });
 }

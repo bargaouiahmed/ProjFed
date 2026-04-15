@@ -22,6 +22,7 @@ function RouteComponent() {
   console.log(invitations);
   const { mutate: accept, isPending: isAccepting } = useAcceptProfInvitations();
   const { mutate: reject, isPending: isRejecting } = useRejectProfInvitations();
+
   if (isLoading) return <p>isLoading...</p>;
   return (
     <main className="p-8 flex flex-col">
@@ -57,7 +58,7 @@ function RouteComponent() {
 
               return (
                 <TableRow key={invitation.id}>
-                  <TableCell>{invitation.instituteName}</TableCell>
+                  <TableCell>{invitation.institueName}</TableCell>
                   <TableCell>{invitation.classPrettyName}</TableCell>
 
                   <TableCell>{invitation.courseName}</TableCell>
@@ -84,7 +85,7 @@ function RouteComponent() {
                       <Button
                         variant={"success"}
                         disabled={!isPendingStatus || isAccepting}
-                        onClick={() => accept(invitation.id)}
+                        onClick={() => accept({ invitationId: invitation.id })}
                       >
                         Accept
                       </Button>
