@@ -10,6 +10,7 @@ export default function NotificationCard({ notif }: { notif: Notification }) {
     >
       <div className="flex items-start gap-4">
         {/* Icon/Indicator Section */}
+
         <div className="mt-1">
           {notif.message.includes("accepted") ? (
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10">
