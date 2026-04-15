@@ -34,6 +34,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import useDownloadChapters from "@/querys/useDownloadChapters";
 
 interface Chapter {
   id: string;
@@ -58,6 +59,8 @@ function RouteComponent() {
   const { mutate: initChapter, isPending: isInitializing } = useInitChapter();
   const { mutate: deleteChapter } = useDeleteChapter();
   const { mutate: updateChapter, isPending: isUpdating } = useUpdateChapter();
+
+  const { mutate: downloadAttachemnts } = useDownloadChapters();
 
   console.log(chapters);
   if (isLoading)
@@ -96,18 +99,29 @@ function RouteComponent() {
             key={chapter.id}
             className="border rounded-xl bg-card p-4 flex items-center justify-between shadow-sm"
           >
-            <div className="flex items-center gap-4">
-              <div className="bg-muted w-10 h-10 rounded-lg flex items-center justify-center font-bold">
-                {index + 1}
+            <div>
+              <div className="flex items-center gap-4">
+                <div className="bg-muted w-10 h-10 rounded-lg flex items-center justify-center font-bold">
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className="font-bold">
+                    {chapter.title || "Untitled Chapter"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-1">
+                    {chapter.description}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold">
-                  {chapter.title || "Untitled Chapter"}
-                </h3>
-                <p className="text-sm text-muted-foreground line-clamp-1">
-                  {chapter.description}
-                </p>
-              </div>
+              <Button
+                variant={"ghost"}
+                className="ml-15 mt-2 text-sm underline cursor-pointer"
+                onClick={() => {
+                  downloadAttachemnts(chapter.id);
+                }}
+              >
+                download attachemnts
+              </Button>
             </div>
 
             <div className="flex gap-2">

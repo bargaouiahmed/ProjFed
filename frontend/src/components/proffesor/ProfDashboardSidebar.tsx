@@ -15,6 +15,7 @@ import {
   IconBell,
   IconLogout,
   IconMailOpened,
+  IconBook,
 } from "@tabler/icons-react";
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
 import useAccount from "@/querys/useAccount";
@@ -67,13 +68,23 @@ export default function ProfDashboardSidebar() {
         <SidebarGroup>
           <SidebarMenuItem>
             <SidebarMenuButton
-              className={getActiveClass("")}
+              className={getActiveClass("/prof/dashboard/invitations")}
               onClick={() => {
                 navigate({ to: "/prof/dashboard/invitations" });
               }}
             >
               <IconMailOpened />
               {open && "my invitations"}
+            </SidebarMenuButton>
+
+            <SidebarMenuButton
+              className={getActiveClass("/prof/dashboard/courses")}
+              onClick={() => {
+                navigate({ to: "/prof/dashboard/courses" });
+              }}
+            >
+              <IconBook />
+              {open && "courses"}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarGroup>
