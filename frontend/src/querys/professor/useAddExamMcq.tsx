@@ -25,6 +25,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 
 export interface Mcq {
+  id: string;
   questionText: string;
   options: string;
   correctOptions: string;
@@ -43,9 +44,24 @@ export default function useAddExamMcq() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ formData, params }: Props) => {
+      const form = new FormData();
+      form.append("questionText", formData.questionText);
+      form.append("options", formData.options);
+      form.append("correctOptions", formData.correctOptions);
+      form.append("questionMark", formData.questionMark);
+
+      if (formData.explanation) {
+        form.append("explanation", formData.explanation);
+      }
+
+      formData.attachments?.forEach((file) => {
+        form.append("attachments", file); // matches List<IFormFile> Attachments
+      });
+
       const response = await api.post(
         `/professor/exams/${params.examId}/mcqs`,
-        formData,
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       return response.data;
     },
