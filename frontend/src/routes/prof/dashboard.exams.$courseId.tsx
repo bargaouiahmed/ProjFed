@@ -1,3 +1,4 @@
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +11,7 @@ import useExams, { type Exam } from "@/querys/professor/useExams";
 import useInitExam from "@/querys/professor/useInitExam";
 import useUpdateExam from "@/querys/professor/useUpdateExam";
 import useUpdateExamMcq from "@/querys/professor/useUpdateExamMcq";
+
 import * as yup from "yup";
 import {
   IconChevronDown,
@@ -38,7 +40,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -59,6 +60,7 @@ export function Header({
   count?: number;
 }) {
   const { mutate: initExam } = useInitExam();
+
   return (
     <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
       <header className="flex flex-col gap-2">
@@ -68,24 +70,16 @@ export function Header({
             Professor Space
           </span>
         </div>
+
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-            Manage Exams
-          </h1>
-          <Badge
-            variant="secondary"
-            className="px-3 py-1 rounded-full bg-primary/10 text-primary border-none"
-          >
+          <h1 className="text-3xl font-extrabold">Manage Exams</h1>
+          <Badge className="px-3 py-1 bg-primary/10 text-primary">
             {count || 0} Total
           </Badge>
         </div>
       </header>
-      <Button
-        className="shadow-sm gap-2"
-        onClick={() => {
-          initExam(courseId);
-        }}
-      >
+
+      <Button onClick={() => initExam(courseId)} className="gap-2">
         <IconPlus size={18} />
         Initialize New Exam
       </Button>
@@ -95,30 +89,24 @@ export function Header({
 
 export function DeleteDialog({ exam }: { exam: Exam }) {
   const { mutate: deleteExam } = useDeleteExam();
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:bg-destructive/10"
-        >
-          <IconTrash size={18} />
+        <Button variant="ghost" size="icon">
+          <IconTrash size={18} className="text-destructive" />
         </Button>
       </AlertDialogTrigger>
+
       <AlertDialogContent>
         <AlertDialogTitle>
           Are you sure you want to delete this exam?
         </AlertDialogTitle>
+
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={() => {
-              deleteExam(exam.id);
-            }}
-          >
-            Yes, delete
+          <AlertDialogAction onClick={() => deleteExam(exam.id)}>
+            Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -126,71 +114,48 @@ export function DeleteDialog({ exam }: { exam: Exam }) {
   );
 }
 
-export default function UpdateExamDialog({ exam }: { exam: Exam }) {
-  const { mutate: updateExam, isPending: isUpdatingExam } = useUpdateExam();
+export function UpdateExamDialog({ exam }: { exam: Exam }) {
+  const { mutate: updateExam } = useUpdateExam();
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-primary hover:bg-primary/10"
-        >
-          <IconPencil size={18} />
+        <Button variant="ghost" size="icon">
+          <IconPencil size={18} className="text-emerald-400" />
         </Button>
       </DialogTrigger>
+
       <DialogContent>
-        <DialogHeader className="font-bold text-lg">{exam.title}</DialogHeader>
-        <DialogDescription>Update the details for this exam.</DialogDescription>
+        <DialogHeader>{exam.title}</DialogHeader>
+        <DialogDescription>Update exam</DialogDescription>
 
         <Formik
-          validationSchema={yup.object({
-            id: yup.string().required("id is required"),
-            title: yup.string().optional(),
-            description: yup.string().optional(),
-            totalMarks: yup.number(),
-          })}
           initialValues={{
             id: exam.id,
             title: exam.title,
             description: exam.description,
             totalMarks: exam.totalMarks,
           }}
-          onSubmit={(values) => {
-            updateExam(values);
-          }}
+          validationSchema={yup.object({
+            id: yup.string().required(),
+          })}
+          onSubmit={(values) => updateExam(values)}
         >
           {({ handleChange, values }) => (
-            <Form className="space-y-4 py-4">
-              <FormikInput name="id" label="Exam ID" />
+            <Form className="space-y-4">
               <FormikInput name="title" label="Title" />
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
-                <ScrollArea className="h-24 w-full rounded-md border">
-                  <Textarea
-                    name="description"
-                    placeholder="Enter exam description..."
-                    className="border-none focus-visible:ring-0 "
-                    onChange={handleChange}
-                    value={values.description}
-                  />
-                </ScrollArea>
-              </div>
-              <FormikInput
-                name="totalMarks"
-                label="Total Marks"
-                type="number"
-              />
-              <DialogFooter className="pt-4">
-                <Button
-                  type="submit"
-                  disabled={isUpdatingExam}
-                  className="w-full sm:w-auto"
-                >
-                  <IconPencil size={16} className="mr-2" />
-                  Update Exam
-                </Button>
-              </DialogFooter>
+
+              <ScrollArea className="h-24 border">
+                <Textarea
+                  name="description"
+                  onChange={handleChange}
+                  value={values.description}
+                />
+              </ScrollArea>
+
+              <FormikInput name="totalMarks" label="Marks" type="number" />
+
+              <Button type="submit">Update</Button>
             </Form>
           )}
         </Formik>
@@ -199,67 +164,86 @@ export default function UpdateExamDialog({ exam }: { exam: Exam }) {
   );
 }
 
-function RouteComponent() {
-  const { courseId } = Route.useParams();
-  const { data: exams, isLoading: isLoadingExams } = useExams(courseId);
-
-  if (isLoadingExams)
-    return (
-      <div className="flex items-center justify-center ">
-        <p className="text-muted-foreground animate-pulse">Loading exams...</p>
-      </div>
-    );
+function ExamItem({ exam }: { exam: Exam }) {
+  const [type, setType] = React.useState<"mcq" | "rq">("mcq");
 
   return (
-    <main className="max-w-5xl mx-auto p-6 mt-4">
+    <Collapsible className="border rounded-xl">
+      <section className="p-5 flex justify-between items-center">
+        <div>
+          <h3 className="font-bold">{exam.title}</h3>
+          <p className="text-sm text-muted-foreground">{exam.description}</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Badge className="bg-amber-600">{exam.totalMarks} Marks</Badge>
+          <UpdateExamDialog exam={exam} />
+          <DeleteDialog exam={exam} />
+
+          <CollapsibleTrigger asChild>
+            <Button size="icon" variant="ghost">
+              <IconChevronDown />
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+      </section>
+
+      <CollapsibleContent className="p-5 border-t space-y-4">
+        <div className="flex w-full overflow-hidden rounded-lg border">
+          <Button
+            type="button"
+            className="flex-1 "
+            variant={type === "rq" ? "ghost" : "outline"}
+            onClick={() => setType("mcq")}
+          >
+            MCQ
+          </Button>
+
+          <Button
+            type="button"
+            className="flex-1 "
+            variant={type === "rq" ? "outline" : "ghost"}
+            onClick={() => setType("rq")}
+          >
+            Redaction
+          </Button>
+        </div>
+
+        {type === "mcq" ? (
+          <div className="text-center py-16 border rounded-xl">
+            <IconLayoutDashboard size={40} className="mx-auto mb-4" />
+            <h2>No mcqs question created</h2>
+          </div>
+        ) : (
+          <div className="text-center py-16 border rounded-xl">
+            <IconLayoutDashboard size={40} className="mx-auto mb-4" />
+            <h2>No redaction question found</h2>
+          </div>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function RouteComponent() {
+  const { courseId } = Route.useParams();
+  const { data: exams, isLoading } = useExams(courseId);
+
+  if (isLoading) return <p>Loading...</p>;
+
+  return (
+    <main className="max-w-5xl mx-auto p-6">
       <Header courseId={courseId} count={exams?.length} />
 
       <div className="grid gap-4">
-        {exams?.map((exam) => (
-          <Collapsible
-            key={exam.id}
-            className="group overflow-hidden rounded-xl border bg-card "
-          >
-            <section className="p-5 flex justify-between items-center gap-4">
-              <div className="flex-1 space-y-1">
-                <h3 className="text-lg font-bold leading-none tracking-tight">
-                  {exam.title}
-                </h3>
-                <p className="text-sm text-muted-foreground line-clamp-1 max-w-125">
-                  {exam.description}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-6">
-                <Badge
-                  variant="outline"
-                  className="h-7 px-3 font-semibold bg-muted/50 border-border"
-                >
-                  {exam.totalMarks} Marks
-                </Badge>
-
-                <div className="flex items-center gap-1 border-x px-2">
-                  <UpdateExamDialog exam={exam} />
-                  <DeleteDialog exam={exam} />
-                </div>
-
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <IconChevronDown
-                      size={20}
-                      className="transition-transform duration-200 group-data-[state=open]:rotate-180"
-                    />
-                  </Button>
-                </CollapsibleTrigger>
-              </div>
-            </section>
-            <CollapsibleContent className="px-5 pb-5 pt-0 text-sm text-muted-foreground border-t bg-muted/20">
-              <div className="mt-4">
-                <h1>Question mangement</h1>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
+        {!exams || exams.length === 0 ? (
+          <div className="text-center py-16 border rounded-xl">
+            <IconLayoutDashboard size={40} className="mx-auto mb-4" />
+            <h2>No exams found</h2>
+          </div>
+        ) : (
+          exams.map((exam) => <ExamItem key={exam.id} exam={exam} />)
+        )}
       </div>
     </main>
   );
