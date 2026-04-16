@@ -15,8 +15,8 @@ import { api } from "../axios";
 export default function useDeleteExam() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const response = await api.delete(`/professor/exams/{examId}`);
+    mutationFn: async (examId: string) => {
+      const response = await api.delete(`/professor/exams/${examId}`);
       return response.data;
     },
     onSuccess: () => {

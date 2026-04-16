@@ -39,6 +39,7 @@ export default function useUpdateExam() {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["exams"] });
+      toast.success("exam updated successfully");
     },
     onError: () => {
       toast.error("failed to update please try again");

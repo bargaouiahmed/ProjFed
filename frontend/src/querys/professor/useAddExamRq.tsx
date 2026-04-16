@@ -21,7 +21,7 @@ import { api } from "../axios";
 
 */
 
-interface Rq {
+export interface Rq {
   questionText: string;
   questionMark: number;
   attachments: File[];

@@ -10,14 +10,30 @@
 ---
 */
 
+export interface Exam {
+  courseId: string;
+  createdAt: Date;
+  description: string;
+  id: string;
+  mcqs: Mcq[];
+  redactionQuestions: Rq[];
+  title: string;
+  totalMarks: 20;
+  updatedAt: Date;
+}
+
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../axios";
+import type { Mcq } from "./useAddExamMcq";
+import type { Rq } from "./useAddExamRq";
 
 export default function useExams(courseId: string) {
   return useQuery({
     queryKey: ["exams"],
     queryFn: async () => {
-      const response = await api.get(`/professor/courses/${courseId}/exams`);
+      const response = await api.get<Exam[]>(
+        `/professor/courses/${courseId}/exams`,
+      );
       return response.data;
     },
   });

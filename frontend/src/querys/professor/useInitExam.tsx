@@ -14,16 +14,21 @@
 
 */
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 
 export default function useInitExam() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (courseId: string) => {
       const response = await api.post(
         `/professor/courses/${courseId}/exams/init`,
       );
       return response.data;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["exams"] });
     },
   });
 }
