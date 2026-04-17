@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 
 /*
@@ -22,6 +22,7 @@ import { api } from "../axios";
 */
 
 export interface Rq {
+  id?: string;
   questionText: string;
   questionMark: number;
   attachments: File[];
@@ -34,13 +35,23 @@ interface Props {
 }
 
 export default function useAddExamRq() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ params, rq }: Props) => {
+      const form = new FormData();
+      form.append("questionText", rq.questionText);
+      form.append("questionMark", String(rq.questionMark));
+      rq.attachments?.forEach((file) => form.append("attachments", file));
+
       const response = await api.post(
         `/professor/exams/${params.examId}/redaction-questions`,
-        rq,
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } },
       );
       return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["exams"] });
     },
   });
 }

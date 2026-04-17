@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 import useAddExamMcq, { type Mcq } from "@/querys/professor/useAddExamMcq";
-import useAddExamRq from "@/querys/professor/useAddExamRq";
+import useAddExamRq, { type Rq } from "@/querys/professor/useAddExamRq";
 import useDeleteExam from "@/querys/professor/useDeleteExam";
 import useDeleteExamMcq from "@/querys/professor/useDeleteExamMcq";
 import useDeleteExamRq from "@/querys/professor/useDeleteExamRq";
@@ -199,6 +199,7 @@ function AddMcqDialog({ examId }: { examId: string }) {
             addExamMcq(
               {
                 formData: {
+                  id: examId,
                   questionText: values.questionText,
                   options: values.options,
                   correctOptions: values.correctOptions,
@@ -426,6 +427,204 @@ function McqItem({ mcq }: { mcq: Mcq & { id: string }; examId: string }) {
   );
 }
 
+function AddRqDialog({ examId }: { examId: string }) {
+  const { mutate: addExamRq, isPending: isAdding } = useAddExamRq();
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>
+          <IconPlus size={16} className="mr-1" />
+          Add Redaction Question
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="max-w-lg">
+        <DialogTitle>Add a Redaction Question</DialogTitle>
+
+        <Formik
+          initialValues={{
+            questionText: "",
+            questionMark: "",
+            attachments: [] as File[],
+          }}
+          onSubmit={(values, { resetForm }) => {
+            addExamRq(
+              {
+                params: { examId },
+                rq: {
+                  questionText: values.questionText,
+                  questionMark: Number(values.questionMark),
+                  attachments: values.attachments,
+                },
+              },
+              { onSuccess: () => resetForm() },
+            );
+          }}
+        >
+          {({ setFieldValue }) => (
+            <Form className="space-y-4">
+              <FormikInput
+                label="Question text"
+                name="questionText"
+                placeholder="e.g. Describe the water cycle."
+                icon={<IconQuestionMark />}
+              />
+              <FormikInput
+                label="Points"
+                name="questionMark"
+                type="number"
+                placeholder="e.g. 10"
+                icon={<IconStar />}
+              />
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium pl-1">
+                  Attachments (optional)
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.webp,.pdf"
+                  onChange={(e) =>
+                    setFieldValue(
+                      "attachments",
+                      Array.from(e.currentTarget.files ?? []),
+                    )
+                  }
+                />
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isAdding}>
+                {isAdding ? "Adding…" : "Add Question"}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UpdateRqDialog({ rq }: { rq: Rq }) {
+  const { mutate: updateRq, isPending: isUpdating } = useUpdateExamRq();
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <IconPencil size={16} className="text-emerald-400" />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="max-w-lg">
+        <DialogTitle>Update Redaction Question</DialogTitle>
+
+        <Formik
+          initialValues={{
+            questionText: rq.questionText,
+            questionMark: String(rq.questionMark),
+            attachments: [] as File[],
+          }}
+          onSubmit={(values, { resetForm }) => {
+            updateRq(
+              {
+                id: rq.id!,
+                formData: {
+                  questionText: values.questionText,
+                  questionMark: Number(values.questionMark),
+                  attachments: values.attachments,
+                },
+              },
+              { onSuccess: () => resetForm() },
+            );
+          }}
+        >
+          {({ setFieldValue, values, handleChange }) => (
+            <Form className="space-y-4">
+              <div>
+                <label>question text :</label>
+                <Textarea
+                  name="questionText"
+                  onChange={handleChange}
+                  value={values.questionText}
+                ></Textarea>
+              </div>
+              <FormikInput
+                label="Points"
+                name="questionMark"
+                type="number"
+                icon={<IconStar />}
+              />
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium pl-1">
+                  Attachments (optional)
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.webp,.pdf"
+                  onChange={(e) =>
+                    setFieldValue(
+                      "attachments",
+                      Array.from(e.currentTarget.files ?? []),
+                    )
+                  }
+                />
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isUpdating}>
+                {isUpdating ? "Updating…" : "Update Question"}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RqItem({ rq }: { rq: Rq }) {
+  const { mutate: deleteRq } = useDeleteExamRq();
+
+  return (
+    <div className="border rounded-lg p-4 flex justify-between items-center gap-4">
+      <div className="flex-1 space-y-1">
+        <p className="font-medium">{rq.questionText}</p>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
+        <Badge className="bg-amber-600">{rq.questionMark} pts</Badge>
+
+        <UpdateRqDialog rq={rq} />
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="icon">
+              <IconTrash size={16} />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogTitle>
+              Are you sure you want to delete "{rq.questionText}"?
+            </AlertDialogTitle>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => deleteRq(rq.id!)}
+              >
+                Yes, delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </div>
+  );
+}
+
 // Updated ExamItem
 function ExamItem({ exam }: { exam: Exam }) {
   const [type, setType] = React.useState<"mcq" | "rq">("mcq");
@@ -498,10 +697,24 @@ function ExamItem({ exam }: { exam: Exam }) {
               ))}
             </div>
           )
-        ) : (
+        ) : rqs.length === 0 ? (
           <div className="text-center py-16 border rounded-xl">
             <IconLayoutDashboard size={40} className="mx-auto mb-4" />
-            <h2>No redaction question found</h2>
+            <h2>No redaction questions created</h2>
+            <AddRqDialog examId={exam.id} />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {rqs.length} question{rqs.length !== 1 && "s"}
+              </p>
+              <AddRqDialog examId={exam.id} />
+            </div>
+
+            {rqs.map((rq) => (
+              <RqItem key={rq.id} rq={rq} />
+            ))}
           </div>
         )}
       </CollapsibleContent>
