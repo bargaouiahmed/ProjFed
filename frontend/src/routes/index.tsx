@@ -1,141 +1,141 @@
+import ThemeToggler from "@/components/ThemeToggler";
 import { Button } from "@/components/ui/button";
-import logout from "@/querys/logout";
 import useAccount from "@/querys/useAccount";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  IconBuilding,
-  IconClipboardList,
-  IconLogout,
-  IconUserCheck,
-} from "@tabler/icons-react";
-import Profile from "@/components/profile";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
-import ThemeToggler from "@/components/ThemeToggler";
 
 export const Route = createFileRoute("/")({
   component: RouteComponent,
 });
 
+import imagesrc from "@/assets/landingpage.png";
+
+// Updated RouteComponent — full landing page
 function RouteComponent() {
-  const { data: account, isPending } = useAccount();
-  const { theme } = useTheme();
+  const { data: account, isLoading: isLoadingAccount } = useAccount();
 
   const navigate = Route.useNavigate();
 
-  if (isPending) return <div>Loading...</div>;
+  if (isLoadingAccount) return <div>loading...</div>;
+
+  if (account && (account.role === "admin" || account.role === "super_admin")) {
+    navigate({ to: "/admin/dashboard/requests" });
+  }
+  if (
+    account &&
+    (account.role === "uni_admin" || account.role === "staff_admin")
+  ) {
+    navigate({ to: "/administration/dashboard" });
+  }
+  if (account && account.role === "professor") {
+    navigate({ to: "/prof/dashboard/invitations" });
+  }
 
   return (
-    <main className="min-h-screen flex items-center ">
-      <div className="absolute top-4 left-4">
+    <main className="min-h-screen flex flex-col items-center px-6 pt-16 pb-24 relative overflow-hidden">
+      {/* Theme toggle — top right */}
+      <div className="absolute top-6 right-6">
         <ThemeToggler />
       </div>
-      <div className="max-w-4xl mx-auto">
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            Welcome back, {account?.firstname}!
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Access your university management dashboard
-          </p>
+
+      {/* Hero text */}
+      <section className="max-w-3xl w-full text-center flex flex-col items-center gap-6 mt-12">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium text-muted-foreground">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+          Academic platform for universities
         </div>
 
-        {/* Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Staff/Admin Dashboard */}
-          <Link
-            to="/administration/dashboard/classes"
-            search={{ pageNumber: 1, pageSize: 10 }}
-            className="block"
-          >
-            <div
-              className={cn(
-                "bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary",
-                theme === "dark" && "bg-dark-card",
-                theme === "light" && "bg-light-card",
-              )}
-            >
-              <IconBuilding className="mx-auto mb-4 text-primary" size={48} />
-              <h3 className="text-xl font-semibold text-card-foreground mb-2">
-                Staff/Admin Dashboard
-              </h3>
-              <p className="text-muted-foreground">
-                Manage classes, staff, and institute settings
-              </p>
-            </div>
-          </Link>
+        <h1 className="text-6xl sm:text-7xl font-extrabold tracking-tight leading-[1.05]">
+          Learning, <span className="text-primary">structured</span> for
+          everyone.
+        </h1>
 
-          {/* University Admin Requests */}
-          <Link to="/admin/dashboard/requests" className="block">
-            <div
-              className={cn(
-                "bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary",
-                theme === "dark" && "bg-dark-card",
-                theme === "light" && "bg-light-card",
-              )}
-            >
-              <IconClipboardList
-                className="mx-auto mb-4 text-primary"
-                size={48}
-              />
-              <h3 className="text-xl font-semibold text-card-foreground mb-2">
-                Admin Requests
-              </h3>
-              <p className="text-muted-foreground">
-                Review and approve university admin applications
-              </p>
-            </div>
-          </Link>
+        <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+          Professors build courses. Students learn. Administrators oversee. One
+          platform — every role, every workflow, in one place.
+        </p>
 
-          {/* Register as University Admin */}
-          <Link to="/uni/admin/register" className="block">
-            <div
-              className={cn(
-                "bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 text-center border border-border hover:border-primary",
-                theme === "dark" && "bg-dark-card",
-                theme === "light" && "bg-light-card",
-              )}
+        {/* CTA buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 mt-2">
+          <Link to="/auth">
+            <Button size="lg" className="px-8 text-base font-semibold">
+              Sign in
+            </Button>
+          </Link>
+          <Link to="/uni/admin/register">
+            <Button
+              size="lg"
+              variant="outline"
+              className="px-8 text-base font-semibold"
             >
-              <IconUserCheck className="mx-auto mb-4 text-primary" size={48} />
-              <h3 className="text-xl font-semibold text-card-foreground mb-2">
-                Register as Admin
-              </h3>
-              <p className="text-muted-foreground">
-                Apply for university administrator privileges
-              </p>
-            </div>
+              Register your university
+            </Button>
           </Link>
         </div>
+      </section>
 
-        {/* Logout Section */}
-        <div className="absolute bottom-4 left-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant={"outline"}>settings</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <Profile />
-              <DropdownMenuItem
-                variant={"destructive"}
-                onClick={() => {
-                  logout();
-                  navigate({ to: "/auth" });
-                }}
-              >
-                <IconLogout className="mr-2" size={20} />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      {/* Dashboard placeholder image */}
+      <div className="mt-16 w-full max-w-5xl rounded-2xl border bg-muted/40 overflow-hidden shadow-sm">
+        <div className="w-full aspect-video flex items-center justify-center bg-muted/60 relative">
+          {/* Fake browser chrome */}
+          <div className="absolute top-0 left-0 right-0 h-9 bg-muted border-b flex items-center px-4 gap-2">
+            <span className="w-3 h-3 rounded-full bg-destructive/60" />
+            <span className="w-3 h-3 rounded-full bg-amber-400/60" />
+            <span className="w-3 h-3 rounded-full bg-emerald-400/60" />
+            <div className="mx-auto w-48 h-5 rounded bg-background/60 border text-xs flex items-center justify-center text-muted-foreground">
+              app.university.edu
+            </div>
+          </div>
+          <img src={imagesrc} />
         </div>
       </div>
+
+      {/* Actor explanation cards */}
+      <section className="mt-24 max-w-5xl w-full">
+        <h2 className="text-center text-3xl font-extrabold mb-10">
+          Built for every role
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {/* Professor */}
+          <div className="rounded-2xl border p-6 flex flex-col gap-3 hover:border-primary/50 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+              P
+            </div>
+            <h3 className="font-bold text-lg">Professors</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Create and manage courses, build exams and tests with MCQ and
+              redaction questions, upload materials, and grade student responses
+              — all in one place.
+            </p>
+          </div>
+
+          {/* Student */}
+          <div className="rounded-2xl border p-6 flex flex-col gap-3 hover:border-primary/50 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-bold text-lg">
+              S
+            </div>
+            <h3 className="font-bold text-lg">Students</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Join classes with a code, access your current term's courses, take
+              exams and tests, view your grades, and track your academic
+              progress over time.
+            </p>
+          </div>
+
+          {/* Administration */}
+          <div className="rounded-2xl border p-6 flex flex-col gap-3 hover:border-primary/50 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-bold text-lg">
+              A
+            </div>
+            <h3 className="font-bold text-lg">Administrators</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Register your university, manage professors and student classes,
+              oversee the academic structure, and keep the platform running
+              smoothly for your institution.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
