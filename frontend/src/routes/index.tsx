@@ -7,14 +7,16 @@ export const Route = createFileRoute("/")({
   component: RouteComponent,
 });
 
-import imagesrc from "@/assets/landingpage.png";
+import imagesrclight from "@/assets/lightmodedashboard.png";
+import imagersecDark from "@/assets/darkmodedashboard.png";
+import { useTheme } from "@/components/theme-provider";
 
 // Updated RouteComponent — full landing page
 function RouteComponent() {
   const { data: account, isLoading: isLoadingAccount } = useAccount();
 
   const navigate = Route.useNavigate();
-
+  const { theme } = useTheme();
   if (isLoadingAccount) return <div>loading...</div>;
 
   if (account && (account.role === "admin" || account.role === "super_admin")) {
@@ -85,7 +87,7 @@ function RouteComponent() {
               app.university.edu
             </div>
           </div>
-          <img src={imagesrc} />
+          <img src={theme == "dark" ? imagersecDark : imagesrclight} />
         </div>
       </div>
 
