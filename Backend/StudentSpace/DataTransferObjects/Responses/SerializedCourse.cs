@@ -1,5 +1,4 @@
 using System;
-using Backend.ProfessorSpace.DataTransferObjects.Responses;
 
 namespace Backend.StudentSpace.DataTransferObjects.Responses;
 

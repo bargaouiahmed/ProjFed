@@ -669,13 +669,13 @@
     - `exams[]`
       - `id`, `courseId`, `title`, `description`, `totalMarks`, `createdAt`, `updatedAt`
       - `mcqs[]`
-        - `id`, `questionText`, `options`, `correctOptions`, `questionMark`, `explanation`, `attachmentUrls`, `createdAt`, `updatedAt`
+        - `id`, `questionText`, `options`, `questionMark`, `attachmentUrls`, `createdAt`, `updatedAt`
       - `redactionQuestions[]`
         - `id`, `questionText`, `questionMark`, `attachmentUrls`, `createdAt`, `updatedAt`
     - `tests[]`
       - `id`, `courseId`, `title`, `description`, `totalMarks`, `createdAt`, `updatedAt`
       - `mcqs[]`
-        - `id`, `questionText`, `options`, `correctOptions`, `questionMark`, `explanation`, `attachmentUrls`, `createdAt`, `updatedAt`
+        - `id`, `questionText`, `options`, `questionMark`, `attachmentUrls`, `createdAt`, `updatedAt`
       - `redactionQuestions[]`
         - `id`, `questionText`, `questionMark`, `attachmentUrls`, `createdAt`, `updatedAt`
   - 400 Bad Request: Error message
@@ -701,6 +701,225 @@
   - 401/403: Unauthorized or forbidden by role policy
 - **Side Effects:**
   - Associates the student with the class identified by `classCode`
+
+---
+
+## 21.1 Get Student Course
+
+- **Endpoint:** `GET /student/courses/{courseId}`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `courseId` (GUID, required)
+- **Response:**
+  - 200 OK: `SerializedCourse`
+  - 400 Bad Request: Error message (course not found / unauthorized / class not joined)
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Returns only if the course belongs to the student's class and current term
+
+---
+
+## 21.2 Get Course Chapters For Student
+
+- **Endpoint:** `GET /student/courses/{courseId}/chapters`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `courseId` (GUID, required)
+- **Response:**
+  - 200 OK: List of `SerializedChapter`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+
+---
+
+## 21.3 Get Chapter For Student
+
+- **Endpoint:** `GET /student/chapters/{chapterId}`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `chapterId` (GUID, required)
+- **Response:**
+  - 200 OK: `SerializedChapter`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+
+---
+
+## 21.4 Get Course Exams For Student
+
+- **Endpoint:** `GET /student/courses/{courseId}/exams`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `courseId` (GUID, required)
+- **Response:**
+  - 200 OK: List of `SerializedExam`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Exam MCQs returned to students do not include `correctOptions`
+
+---
+
+## 21.5 Get Exam For Student
+
+- **Endpoint:** `GET /student/exams/{examId}`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `examId` (GUID, required)
+- **Response:**
+  - 200 OK: `SerializedExam`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Exam MCQs returned to students do not include `correctOptions`
+
+---
+
+## 21.6 Get Course Tests For Student
+
+- **Endpoint:** `GET /student/courses/{courseId}/tests`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `courseId` (GUID, required)
+- **Response:**
+  - 200 OK: List of `SerializedTest`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Test MCQs returned to students do not include `correctOptions`
+
+---
+
+## 21.7 Get Test For Student
+
+- **Endpoint:** `GET /student/tests/{testId}`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Accept: application/json`
+- **Route Parameters:**
+  - `testId` (GUID, required)
+- **Response:**
+  - 200 OK: `SerializedTest`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - None (read-only)
+  - Test MCQs returned to students do not include `correctOptions`
+
+---
+
+## 21.8 Submit Exam MCQ Response
+
+- **Endpoint:** `PUT /student/exams/mcqs/response`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Content-Type: application/json`
+  - `Accept: application/json`
+- **Request Body:** JSON
+  - `questionId` (GUID, required)
+  - `selectedOptionIndex` (int, required, zero-based)
+- **Response:**
+  - 200 OK: `SerializedStudentMcqResponse`
+    - `id`, `questionId`, `selectedOptionIndex`, `score`, `createdAt`, `updatedAt`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - Creates or updates the student MCQ response for the question
+  - Sets score automatically from server-side answer validation
+
+---
+
+## 21.9 Submit Exam Redaction Response
+
+- **Endpoint:** `PUT /student/exams/redaction-questions/response`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Content-Type: application/json`
+  - `Accept: application/json`
+- **Request Body:** JSON
+  - `questionId` (GUID, required)
+  - `answerText` (string, required)
+- **Response:**
+  - 200 OK: `SerializedStudentRedactionResponse`
+    - `id`, `questionId`, `answerText`, `score`, `createdAt`, `updatedAt`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - Creates or updates the student redaction response for the question
+  - Resets score to `0` until professor grading
+
+---
+
+## 21.10 Submit Test MCQ Response
+
+- **Endpoint:** `PUT /student/tests/mcqs/response`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Content-Type: application/json`
+  - `Accept: application/json`
+- **Request Body:** JSON
+  - `questionId` (GUID, required)
+  - `selectedOptionIndex` (int, required, zero-based)
+- **Response:**
+  - 200 OK: `SerializedStudentMcqResponse`
+    - `id`, `questionId`, `selectedOptionIndex`, `score`, `createdAt`, `updatedAt`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - Creates or updates the student MCQ response for the question
+  - Sets score automatically from server-side answer validation
+
+---
+
+## 21.11 Submit Test Redaction Response
+
+- **Endpoint:** `PUT /student/tests/redaction-questions/response`
+- **Auth:** Bearer token required, role `student`
+- **Headers:**
+  - `Authorization: Bearer <accessToken>`
+  - `Content-Type: application/json`
+  - `Accept: application/json`
+- **Request Body:** JSON
+  - `questionId` (GUID, required)
+  - `answerText` (string, required)
+- **Response:**
+  - 200 OK: `SerializedStudentRedactionResponse`
+    - `id`, `questionId`, `answerText`, `score`, `createdAt`, `updatedAt`
+  - 400 Bad Request: Error message
+  - 401/403: Unauthorized or forbidden by role policy
+- **Side Effects:**
+  - Creates or updates the student redaction response for the question
+  - Resets score to `0` until professor grading
 
 ---
 
