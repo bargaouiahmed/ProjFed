@@ -31,6 +31,9 @@ function RouteComponent() {
   if (account && account.role === "professor") {
     navigate({ to: "/prof/dashboard/invitations" });
   }
+  if (account && account.role === "student") {
+    navigate({ to: "/student/dashboard/courses" });
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-center px-6 pt-16 pb-24 relative overflow-hidden">

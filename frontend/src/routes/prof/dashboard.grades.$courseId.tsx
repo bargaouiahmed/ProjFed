@@ -149,7 +149,7 @@ function GradesDashboard() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase()),
   );
-
+  console.log(students);
   if (isLoading) {
     return (
       <div className="p-8 space-y-4">
