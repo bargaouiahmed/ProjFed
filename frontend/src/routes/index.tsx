@@ -94,7 +94,7 @@ function RouteComponent() {
       {/* Actor explanation cards */}
       <section className="mt-24 max-w-5xl w-full">
         <h2 className="text-center text-3xl font-extrabold mb-10">
-          Built for every role
+          Built for all
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

@@ -119,11 +119,37 @@ function CoursesDashboard() {
                     to="/prof/dashboard/exams/$courseId"
                     params={{ courseId: course.id }}
                   >
-                    exams
+                    Exams
                   </Link>
                 </Button>
 
-                {/* NAVIGATION TO COURSE DETAIL */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-dashed hover:border-primary hover:bg-primary/5"
+                  asChild
+                >
+                  <Link
+                    to="/prof/dashboard/tests/$courseId"
+                    params={{ courseId: course.id }}
+                  >
+                    Tests
+                  </Link>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-dashed hover:border-primary hover:bg-primary/5"
+                  asChild
+                >
+                  <Link
+                    to="/prof/dashboard/grades/$courseId"
+                    params={{ courseId: course.id }}
+                  >
+                    Grades
+                  </Link>
+                </Button>
 
                 <Button asChild size="sm" className="group/btn shadow-md">
                   <Link

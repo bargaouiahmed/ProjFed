@@ -1,26 +1,25 @@
-import { useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../axios";
 
 export interface SerializedAttachment {
-  // Assuming attachmentUrls is an array of strings based on the docs
   attachmentUrls: string[];
 }
 
-export interface BaseEntity extends SerializedAttachment {
+export interface BaseEntity {
   id: string;
-  createdAt: string; // ISO string format
+  createdAt: string; 
   updatedAt: string;
 }
 
-export interface McqQuestion extends BaseEntity {
+export interface McqQuestion extends BaseEntity, SerializedAttachment {
   questionText: string;
-  options: string; // JSON string or comma-separated as per docs
-  correctOptions: string;
+  options: string; 
+  correctOptions?: string;
   questionMark: number;
   explanation?: string;
 }
 
-export interface RedactionQuestion extends BaseEntity {
+export interface RedactionQuestion extends BaseEntity, SerializedAttachment {
   questionText: string;
   questionMark: number;
 }
@@ -34,7 +33,7 @@ export interface Assessment extends BaseEntity {
   redactionQuestions: RedactionQuestion[];
 }
 
-export interface Chapter extends BaseEntity {
+export interface Chapter extends BaseEntity, SerializedAttachment {
   courseId: string;
   title: string;
   description: string;
@@ -53,9 +52,10 @@ export interface SerializedCourse {
 }
 
 export default function useCourses() {
-  return useMutation({
-    mutationFn: async () => {
-      const response = await api.post<SerializedCourse[]>("/student");
+  return useQuery({
+    queryKey: ["student-courses"],
+    queryFn: async () => {
+      const response = await api.get<SerializedCourse[]>("/student");
       return response.data;
     },
   });
