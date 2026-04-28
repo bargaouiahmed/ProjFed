@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import useAcceptRequest from "@/querys/admin/useAcceptRequest";
 import useGetRequests from "@/querys/admin/useGetRequests";
 import useRejectRequest from "@/querys/admin/useRejectRequest";
+import { getApiUrl } from "@/querys/axios";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -104,25 +105,25 @@ function RouteComponent() {
                   <TableCell>
                     <div className="flex flex-col items-center gap-2">
                       <Button variant={"outline"} size={"sm"} asChild>
-                        <Link
-                          from="/"
-                          to={"api/v0" + req.proofDocumentUrl}
+                        <a
+                          href={getApiUrl(req.proofDocumentUrl)}
                           target="_blank"
+                          rel="noreferrer"
                           className="w-34"
                         >
                           proof document
-                        </Link>
+                        </a>
                       </Button>
 
                       <Button variant={"outline"} size={"sm"} asChild>
-                        <Link
-                          from="/"
-                          to={"api/v0" + req.identityDocumentUrl}
+                        <a
+                          href={getApiUrl(req.identityDocumentUrl)}
                           target="_blank"
+                          rel="noreferrer"
                           className="w-34"
                         >
                           identity document
-                        </Link>
+                        </a>
                       </Button>
                     </div>
                   </TableCell>
