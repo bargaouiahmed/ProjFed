@@ -1,11 +1,20 @@
 import axios from "axios";
 
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ??
+  (import.meta.env.PROD ? "https://api.softsolution.site/api/v0" : "/api/v0");
+
+export function getApiUrl(path?: string | null) {
+  if (!path) return "";
+  return `${API_BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+}
+
 export const api = axios.create({
-  baseURL: "/api/v0",
+  baseURL: API_BASE_URL,
 });
 
 const authApi = axios.create({
-  baseURL: "/api/v0",
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use(

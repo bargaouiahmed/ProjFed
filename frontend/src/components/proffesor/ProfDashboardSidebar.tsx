@@ -40,6 +40,7 @@ import { useState } from "react";
 import useNotifications from "@/querys/useNotifications";
 import { ScrollArea } from "../ui/scroll-area";
 import NotificationCard from "../NotificationCard";
+import { getApiUrl } from "@/querys/axios";
 
 export default function ProfDashboardSidebar() {
   const navigate = useNavigate();
@@ -102,7 +103,7 @@ export default function ProfDashboardSidebar() {
               <div className="flex items-center gap-2 overflow-clip">
                 {account?.pfpUrl ? (
                   <img
-                    src={"http://localhost:5173/api/v0" + account.pfpUrl}
+                    src={getApiUrl(account.pfpUrl)}
                     className="w-8 h-8 rounded-full object-cover border shadow-sm"
                   />
                 ) : (

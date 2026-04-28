@@ -3,7 +3,6 @@ import {
   IconBook,
   IconFileText,
   IconClipboardList,
-  IconUser,
   IconArrowLeft,
   IconDownload,
   IconLoader2,

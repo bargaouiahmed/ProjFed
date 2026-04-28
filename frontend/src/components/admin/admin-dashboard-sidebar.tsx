@@ -38,6 +38,7 @@ import {
 } from "../ui/dialog";
 import { useState } from "react";
 import useNotifications from "@/querys/useNotifications";
+import { getApiUrl } from "@/querys/axios";
 
 export default function AdminDashboardSideBar() {
   const navigate = useNavigate();
@@ -81,7 +82,7 @@ export default function AdminDashboardSideBar() {
               <div className="flex items-center gap-2">
                 {account?.pfpUrl ? (
                   <img
-                    src={"http://localhost:5173/api/v0" + account.pfpUrl}
+                    src={getApiUrl(account.pfpUrl)}
                     className="w-8 h-8 rounded-full object-cover border shadow-sm"
                   />
                 ) : (

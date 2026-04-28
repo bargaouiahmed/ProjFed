@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../axios";
-import { Exam as Test } from "./useExams";
+import type { Exam as Test } from "./useExams";
 
 export default function useGetTest(testId: string) {
   return useQuery({

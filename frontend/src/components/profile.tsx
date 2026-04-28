@@ -20,6 +20,7 @@ import * as yup from "yup";
 import { FormikInput } from "./form/formikInput";
 import { Button } from "./ui/button";
 import ImageUpload from "./UploadImage";
+import { getApiUrl } from "@/querys/axios";
 
 export default function Profile() {
   const { data: account, isPending } = useAccount();
@@ -83,10 +84,7 @@ export default function Profile() {
                 <section className="flex flex-col items-center gap-3">
                   <ImageUpload
                     name="pfp"
-                    preview={
-                      //localhost:5173/api/v0/uploads/institutes/uniname/admindocuments/proofdocuments/520c4bbd-63b8-489e-b6f4-b5e3353a3bf4.png
-                      "http://localhost:5173/api/v0" + account?.pfpUrl
-                    }
+                    preview={getApiUrl(account?.pfpUrl)}
                   />
 
                   <h1>

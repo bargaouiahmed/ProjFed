@@ -27,17 +27,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
 import { toast } from "sonner";
 
-interface Data extends FormData {
-  id: string;
-  title?: string;
-  description: string;
-  attachments?: File[];
-}
 export default function useUpdateChapter() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: [""],
-    mutationFn: async ({ data }: { data: Data }) => {
+    mutationFn: async ({ data }: { data: FormData }) => {
       const response = await api.put(`/professor/chapters`, data);
       return response.data;
     },

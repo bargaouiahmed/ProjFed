@@ -46,6 +46,7 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { FormikInput } from "../form/formikInput";
 import useAddStudentToClass from "@/querys/student/useAddStudentToClass";
+import { getApiUrl } from "@/querys/axios";
 
 export default function StudentDashboardSidebar() {
   const navigate = useNavigate();
@@ -143,7 +144,7 @@ export default function StudentDashboardSidebar() {
               <div className="flex items-center gap-2 overflow-clip">
                 {account?.pfpUrl ? (
                   <img
-                    src={"/api/v0" + account.pfpUrl}
+                    src={getApiUrl(account.pfpUrl)}
                     className="w-8 h-8 rounded-full object-cover border shadow-sm"
                   />
                 ) : (
