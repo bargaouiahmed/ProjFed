@@ -5,6 +5,7 @@ using Backend.Admin.Services;
 using Backend.FileSystem;
 using Backend.Auth.Services;
 using Backend.Database.Auth;
+using Backend.Database.Seeders;
 using Backend.ProfessorSpace.Services;
 using Backend.StudentSpace.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +18,7 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
+var seedDemoData = args.Any(arg => string.Equals(arg, "--seed-demo-data", StringComparison.OrdinalIgnoreCase));
 
 var connStr = string.Empty;
 if (builder.Environment.IsDevelopment())
@@ -165,6 +167,13 @@ using (var scope = app.Services.CreateScope())
 
     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
     await authService.EnsureSuperAdminExistsAsync();
+
+    if (seedDemoData)
+    {
+        var seedResult = await DemoDataSeeder.SeedAsync(dbContext, app.Environment);
+        Console.WriteLine(seedResult);
+        return;
+    }
 }
 
 app.UseHttpsRedirection();
