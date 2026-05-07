@@ -69,6 +69,7 @@ public static class DemoDataSeeder
                 cancellationToken);
         }
 
+            await db.SaveChangesAsync(cancellationToken);
             await EnsureActiveInstituteShowcaseAsync(db, result, cancellationToken);
 
         foreach (var request in JoinRequests)
@@ -273,25 +274,38 @@ public static class DemoDataSeeder
 
     private static async Task EnsureActiveInstituteShowcaseAsync(AppDbContext db, DemoSeedResult result, CancellationToken cancellationToken)
     {
-        var instituteName = ActiveInstituteName.ToLower();
-        var institute = await db.Institutes
-            .Include(i => i.AvailableClassSelection)
-            .FirstOrDefaultAsync(i => i.Name.ToLower() == instituteName, cancellationToken);
-
-        if (institute == null)
+        var activeSeed = AcceptedInstitutes.FirstOrDefault(seed =>
+            string.Equals(seed.Name, ActiveInstituteName, StringComparison.OrdinalIgnoreCase));
+        if (activeSeed == null)
         {
             return;
         }
 
-        var classMetadata = institute.AvailableClassSelection.FirstOrDefault(cm =>
-            cm.LevelOfStudies == ActiveClassMetadataSeed.LevelOfStudies &&
-            cm.Specialty == ActiveClassMetadataSeed.Specialty &&
-            cm.Level == ActiveClassMetadataSeed.Level);
+        var institute = db.Institutes.Local.FirstOrDefault(i =>
+            string.Equals(i.Name, ActiveInstituteName, StringComparison.OrdinalIgnoreCase));
 
-        if (classMetadata == null)
+        if (institute == null)
         {
-            classMetadata = await EnsureClassMetadataAsync(db, institute, ActiveClassMetadataSeed, result, cancellationToken);
+            institute = await db.Institutes
+                .Include(i => i.AvailableClassSelection)
+                .FirstOrDefaultAsync(i => i.Name.ToLower() == ActiveInstituteName.ToLower(), cancellationToken);
         }
+
+        if (institute == null)
+        {
+            institute = new Institute
+            {
+                Id = Guid.NewGuid(),
+                Name = activeSeed.Name,
+                Country = activeSeed.Country,
+                City = activeSeed.City,
+                PostalCode = activeSeed.PostalCode
+            };
+            db.Institutes.Add(institute);
+            result.InstitutesCreated++;
+        }
+
+        var classMetadata = await EnsureClassMetadataAsync(db, institute, ActiveClassMetadataSeed, result, cancellationToken);
 
         var classesByNumber = new Dictionary<int, UniClass>();
         foreach (var classNumber in ActiveClassNumbers)
@@ -385,12 +399,21 @@ public static class DemoDataSeeder
         DemoSeedResult result,
         CancellationToken cancellationToken)
     {
-        var metadata = await db.ClassMetadata.FirstOrDefaultAsync(cm =>
-            cm.InstituteId == institute.Id &&
+        var metadata = db.ClassMetadata.Local.FirstOrDefault(cm =>
+            (cm.InstituteId == institute.Id || cm.Institute == institute) &&
             cm.Level == seed.Level &&
             cm.LevelOfStudies == seed.LevelOfStudies &&
-            cm.Specialty == seed.Specialty,
-            cancellationToken);
+            cm.Specialty == seed.Specialty);
+
+        if (metadata == null)
+        {
+            metadata = await db.ClassMetadata.FirstOrDefaultAsync(cm =>
+                cm.InstituteId == institute.Id &&
+                cm.Level == seed.Level &&
+                cm.LevelOfStudies == seed.LevelOfStudies &&
+                cm.Specialty == seed.Specialty,
+                cancellationToken);
+        }
 
         if (metadata != null)
         {
@@ -422,9 +445,15 @@ public static class DemoDataSeeder
         DemoSeedResult result,
         CancellationToken cancellationToken)
     {
-        var existing = await db.UniClasses.FirstOrDefaultAsync(uc =>
-            uc.MetadataId == metadata.Id && uc.Number == number,
-            cancellationToken);
+        var existing = db.UniClasses.Local.FirstOrDefault(uc =>
+            (uc.MetadataId == metadata.Id || uc.Metadata == metadata) && uc.Number == number);
+
+        if (existing == null)
+        {
+            existing = await db.UniClasses.FirstOrDefaultAsync(uc =>
+                uc.MetadataId == metadata.Id && uc.Number == number,
+                cancellationToken);
+        }
 
         if (existing != null)
         {
@@ -525,9 +554,15 @@ public static class DemoDataSeeder
         DemoSeedResult result,
         CancellationToken cancellationToken)
     {
-        var invitation = await db.UniStaffInvitations.FirstOrDefaultAsync(i =>
-            i.IdentityId == identity.Id && i.InstituteId == institute.Id,
-            cancellationToken);
+        var invitation = db.UniStaffInvitations.Local.FirstOrDefault(i =>
+            i.IdentityId == identity.Id && i.InstituteId == institute.Id);
+
+        if (invitation == null)
+        {
+            invitation = await db.UniStaffInvitations.FirstOrDefaultAsync(i =>
+                i.IdentityId == identity.Id && i.InstituteId == institute.Id,
+                cancellationToken);
+        }
 
         if (invitation == null)
         {
@@ -690,11 +725,19 @@ public static class DemoDataSeeder
         DemoSeedResult result,
         CancellationToken cancellationToken)
     {
-        var course = await db.Courses.FirstOrDefaultAsync(c =>
-            c.UniClassId == uniClass.Id &&
+        var course = db.Courses.Local.FirstOrDefault(c =>
+            (c.UniClassId == uniClass.Id || c.UniClass == uniClass) &&
             c.Term == seed.Term &&
-            c.Name == seed.Name,
-            cancellationToken);
+            c.Name == seed.Name);
+
+        if (course == null)
+        {
+            course = await db.Courses.FirstOrDefaultAsync(c =>
+                c.UniClassId == uniClass.Id &&
+                c.Term == seed.Term &&
+                c.Name == seed.Name,
+                cancellationToken);
+        }
 
         if (course != null)
         {
@@ -729,9 +772,15 @@ public static class DemoDataSeeder
         DemoSeedResult result,
         CancellationToken cancellationToken)
     {
-        var invitation = await db.ProfessorInvitations.FirstOrDefaultAsync(i =>
-            i.IdentityId == identityId && i.CourseId == course.Id,
-            cancellationToken);
+        var invitation = db.ProfessorInvitations.Local.FirstOrDefault(i =>
+            i.IdentityId == identityId && i.CourseId == course.Id);
+
+        if (invitation == null)
+        {
+            invitation = await db.ProfessorInvitations.FirstOrDefaultAsync(i =>
+                i.IdentityId == identityId && i.CourseId == course.Id,
+                cancellationToken);
+        }
 
         if (invitation == null)
         {
