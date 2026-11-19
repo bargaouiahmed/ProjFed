@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Resend</id>
+    <version>0.2.1</version>
+    <authors>Filipe Toscano</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/resend/resend-dotnet/</projectUrl>
+    <iconUrl>https://media.githubusercontent.com/media/resend/resend-dotnet/master/docs/img/icon.png</iconUrl>
+    <description>.NET client for Resend mail API</description>
+    <copyright>Copyright © Filipe Toscano</copyright>
+    <tags>email resend</tags>
+    <repository type="git" url="https://github.com/resend/resend-dotnet.git" commit="66e556b0140157a531b9c27f09ee6bea22adf802" />
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="Microsoft.AspNetCore.WebUtilities" version="8.0.20" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Options" version="8.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
